@@ -5,6 +5,7 @@ points to), never from the repository.
 """
 
 import os
+import re
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Literal
@@ -12,15 +13,32 @@ from typing import Literal
 DEFAULT_BASE_URL = "https://openrouter.ai/api/v1"
 
 
+def _parse_value(raw: str) -> str:
+    """Parse the right-hand side of a dotenv line.
+
+    A quoted value ends at its closing quote, so anything after it (such as
+    a comment) is dropped and ``#`` inside the quotes is kept. An unquoted
+    value ends at the first ``#`` preceded by whitespace.
+    """
+    raw = raw.strip()
+    if raw[:1] in ("'", '"'):
+        closing = raw.find(raw[0], 1)
+        return raw[1:closing] if closing != -1 else raw[1:]
+    comment = re.search(r"\s#", raw)
+    return (raw[: comment.start()] if comment else raw).strip()
+
+
 def read_env_file(path: Path) -> dict[str, str]:
     """Parse a dotenv-style file of ``NAME=value`` lines.
+
+    Handles comment lines, inline comments, ``export`` prefixes and single
+    or double quotes (``#`` inside quotes is part of the value).
 
     Args:
         path: The file to read.
 
     Returns:
-        Variables defined in the file, with surrounding quotes removed.
-        Comments, blank lines and ``export`` prefixes are handled.
+        Variables defined in the file.
     """
     values: dict[str, str] = {}
     for raw_line in path.read_text(encoding="utf-8").splitlines():
@@ -28,7 +46,7 @@ def read_env_file(path: Path) -> dict[str, str]:
         if not line or line.startswith("#") or "=" not in line:
             continue
         name, value = line.split("=", 1)
-        values[name.strip()] = value.strip().strip("'\"")
+        values[name.strip()] = _parse_value(value)
     return values
 
 
