@@ -90,10 +90,11 @@ should have graded, pooled judgments and enough queries to separate engines.
   ([math-ir/arqmath](math-ir/arqmath.md)).
 - **Sample the way users actually search.** Logs are heavy-tailed: in math web
   search about 90% of distinct queries occur once, so frequency buckets
-  collapse. Stratify by query form × intent × client instead, draw a
-  traffic-weighted random sample for the headline number, and over-sample rare
-  but important forms (goals, partial names) as reweighted strata, as
-  Baidu-ULTR did. Every filter (difficulty, frequency band, privacy threshold)
+  collapse. Stratify by query form × intent × client instead. Log-based
+  collections usually draw a traffic-weighted sample for the headline number
+  and over-sample rare forms (goals, partial names) as reweighted strata, as
+  Baidu-ULTR did. We instead use the log only to find categories and weight
+  them equally (§2b). Every filter (difficulty, frequency band, privacy threshold)
   moves the set away from real traffic, so document each one
   ([test-collection-construction/query-logs-characterisation-and-sampling](test-collection-construction/query-logs-characterisation-and-sampling.md)).
 - **Estimate the intent mix from logs, not surveys.** Surveys and forums skew
@@ -149,6 +150,59 @@ conditions:
     expose judge bias and keep τ from being inflated by easy comparisons.
   - Re-validate whenever the generator, judge, Mathlib snapshot or engine set
     changes.
+
+### 2b. Building categories from our own logs
+
+Our plan: use LeanExplore's de-identified query log to *discover* query
+categories, then write 60–100 synthetic queries per category and report each
+category separately. **Categories come from the log; benchmark weights do
+not.** Copying log shares would let one heavy API client set the benchmark.
+
+- **Privacy constraints come first.** Our Privacy Policy forbids publishing
+  real queries or sending them to external LLM APIs. So the code is public, runs
+  on the server next to the data, and tests against a generated dummy log.
+  - Embeddings, cluster assignments and centroids never leave the server.
+    Embeddings can be inverted back to text.
+  - Only aggregate tables (cells ≥ 10), reviewed category descriptions and
+    synthetic queries may leave. Synthetic queries are generated from
+    descriptions, never from real queries in the prompt, and are checked for
+    overlap with the log before release
+  ([test-collection-construction/query-logs-private-analysis-pipeline](test-collection-construction/query-logs-private-analysis-pipeline.md)).
+- **Deduplicate first.** Collapse exact and near-duplicate queries (MinHash,
+  edit similarity > 0.8) within each source and day, and work on distinct
+  queries. This absorbs agent bursts, which make up most of today's log.
+- **Split by form with rules, then cluster within each form.**
+  - Regexes sort queries into proof state, type pattern, exact name, fuzzy
+    name, LaTeX/Unicode and natural language. Check them on 200 hand-labelled
+    queries.
+  - Within each form, embed with a local Qwen3-Embedding model and cluster
+    two ways: UMAP → HDBSCAN, and agglomerative clustering for a hierarchy.
+    Over-cluster; merging is cheap
+  ([test-collection-construction/query-clustering-embeddings](test-collection-construction/query-clustering-embeddings.md)).
+- **Name and organise categories with a local LLM.** Use TnT-LLM-style
+  taxonomy generation and Clio-style facet clustering, run several times, and
+  keep categories that recur. Don't prune by traffic share, since that removes
+  the rare but distinct types we want
+  ([test-collection-construction/query-logs-llm-taxonomy-induction](test-collection-construction/query-logs-llm-taxonomy-induction.md)).
+- **Validate without labels.**
+  - Internal indices (silhouette, DBCV) only to compare runs, against a
+    shuffled-embedding null.
+  - Bootstrap stability: a cluster becomes a category only at Hennig Jaccard
+    ≥ 0.75.
+  - Intrusion tests and two annotators on about 15 queries per category
+    (Krippendorff α ≥ 0.667).
+  - Usefulness: categories should differ in zero-result rate or in how
+    engines rank on them; merge categories that rank engines identically.
+  - UMAP plots are for private exploration only; never read distances or
+    cluster sizes from them
+  ([test-collection-construction/query-clustering-validation-and-visualization](test-collection-construction/query-clustering-validation-and-visualization.md)).
+- **Floors and freezing.** A candidate category needs at least 5 distinct
+  queries over at least 2 days to be kept for generation. That is separate from
+  the publication floor of 10 per cell. Freeze the category granularity before
+  scoring any engine, because splitting a category doubles its weight in an
+  equal-weight average.
+- **Validate the pipeline on a planted log** with known categories, including
+  rare ones at about 1%, before trusting it on real data.
 
 ### 3. Relevance labels
 
@@ -445,9 +499,13 @@ correctly prompted reranker
 - [test-collection-construction/no-answer-lean-formal-evidence](test-collection-construction/no-answer-lean-formal-evidence.md): "The lemma doesn't exist": evidence from Lean / formal-math work, and a proposed no-answer track
 - [test-collection-construction/no-answer-qa-rag-abstention](test-collection-construction/no-answer-qa-rag-abstention.md): Unanswerable queries in QA and RAG evaluation (SQuAD 2.0, RGB, NoMIRACL, CRAG, UAEval4RAG, AbstentionBench, selective QA)
 - [test-collection-construction/no-answer-retrieval-qpp-and-truncation](test-collection-construction/no-answer-retrieval-qpp-and-truncation.md): "Nothing relevant here" on the retrieval side: empty relevance sets, ranked-list truncation, and query performance prediction (QPP) evaluation
+- [test-collection-construction/query-clustering-embeddings](test-collection-construction/query-clustering-embeddings.md): Clustering search queries in embedding space: short-text clustering, topic-model pipelines, intent discovery and rule-based query-form baselines
+- [test-collection-construction/query-clustering-validation-and-visualization](test-collection-construction/query-clustering-validation-and-visualization.md): Validating query clusters without labels (internal indices, stability, intrusion tests, agreement) and visualising them safely
 - [test-collection-construction/query-logs-agent-vs-human-queries](test-collection-construction/query-logs-agent-vs-human-queries.md): Agent-issued vs human-issued queries: what 2025–2026 log studies show (synthesis)
 - [test-collection-construction/query-logs-characterisation-and-sampling](test-collection-construction/query-logs-characterisation-and-sampling.md): Query-log characterisation and how test collections sample queries from logs (synthesis)
 - [test-collection-construction/query-logs-intent-taxonomies](test-collection-construction/query-logs-intent-taxonomies.md): Query intent taxonomies: web search, code search and math search (synthesis)
+- [test-collection-construction/query-logs-llm-taxonomy-induction](test-collection-construction/query-logs-llm-taxonomy-induction.md): Inducing a query taxonomy from a log with LLMs and classifying the log at scale (TnT-LLM, Clio, GoalEx, TopicGPT)
+- [test-collection-construction/query-logs-private-analysis-pipeline](test-collection-construction/query-logs-private-analysis-pipeline.md): Which artefacts of a query-log analysis can leak real queries (embeddings, labels, synthetic text, small counts) and how to gate them
 - [test-collection-construction/query-logs-privacy-and-release](test-collection-construction/query-logs-privacy-and-release.md): Releasing query logs privately: AOL, k-anonymity thresholds, differential privacy, synthetic queries
 - [test-collection-construction/synthetic-query-generation-and-simulation](test-collection-construction/synthetic-query-generation-and-simulation.md): Synthetic queries: training-time generators (InPars, Promptagator, GPL), query simulation, and LLM query variants
 - [test-collection-construction/synthetic-test-collections](test-collection-construction/synthetic-test-collections.md): Synthetic test collections: LLM-written queries and LLM labels (Rahmani et al. SIGIR 2024, SynDL, and the bias evidence)
