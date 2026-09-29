@@ -11,8 +11,8 @@ reproducible footing.
 
 `lean_explore_bench.infra` holds code shared across the project. It currently
 has an async OpenRouter client (`OpenRouterClient`) with retries on
-transient errors, a concurrency cap, JSON-schema output, and running token
-and cost totals. By default it only routes to providers that do not store
+transient errors, a cap on requests in flight, JSON output validated against
+a schema, and running token and cost totals. By default it only routes to providers that do not store
 or train on prompts (`data_collection: "deny"`).
 
 ```python

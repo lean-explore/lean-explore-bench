@@ -28,6 +28,7 @@ from types import TracebackType
 from typing import Any
 
 import httpx2
+import jsonschema
 import openai
 from openai import AsyncOpenAI
 from openai.types.chat import ChatCompletion, ChatCompletionMessageParam
@@ -205,9 +206,11 @@ class OpenRouterClient:
             wait=wait_exponential_jitter(initial=1, max=30),
             reraise=True,
         )
-        async with self._semaphore:
-            async for attempt in retrying:
-                with attempt:
+        # Hold a concurrency slot only while a request is in flight, so a
+        # request backing off after a rate limit does not block others.
+        async for attempt in retrying:
+            with attempt:
+                async with self._semaphore:
                     response = await self._request(
                         messages, model, temperature, max_tokens, response_format
                     )
@@ -222,7 +225,10 @@ class OpenRouterClient:
         name: str = "response",
         **kwargs: Any,
     ) -> Any:
-        """Request a completion constrained to a JSON schema and parse it.
+        """Request a completion constrained to a JSON schema, then check it.
+
+        The schema is sent as ``response_format``, but providers do not all
+        enforce it, so the parsed value is also validated locally.
 
         Args:
             messages: Chat messages.
@@ -231,10 +237,11 @@ class OpenRouterClient:
             **kwargs: Passed to :meth:`complete`.
 
         Returns:
-            The parsed JSON value.
+            The parsed JSON value, guaranteed to match ``schema``.
 
         Raises:
             json.JSONDecodeError: If the model returned invalid JSON.
+            jsonschema.ValidationError: If the JSON does not match ``schema``.
         """
         response_format = {
             "type": "json_schema",
@@ -243,7 +250,9 @@ class OpenRouterClient:
         completion = await self.complete(
             messages, response_format=response_format, **kwargs
         )
-        return json.loads(completion.text)
+        value = json.loads(completion.text)
+        jsonschema.validate(value, schema)
+        return value
 
     async def complete_many(
         self,

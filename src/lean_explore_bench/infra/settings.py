@@ -77,6 +77,7 @@ class OpenRouterSettings:
 
         Raises:
             KeyError: If no API key is configured.
+            ValueError: If a numeric setting is out of range.
         """
         values = read_env_file(env_file) if env_file else {}
         values.update(
@@ -90,6 +91,21 @@ class OpenRouterSettings:
             default_model=values.get("OPENROUTER_MODEL"),
             max_concurrency=int(values.get("OPENROUTER_MAX_CONCURRENCY", "8")),
         )
+
+    def __post_init__(self) -> None:
+        """Reject values that would hang or disable the client."""
+        if self.max_concurrency < 1:
+            raise ValueError(
+                f"max_concurrency must be at least 1, not {self.max_concurrency}"
+            )
+        if self.max_attempts < 1:
+            raise ValueError(
+                f"max_attempts must be at least 1, not {self.max_attempts}"
+            )
+        if self.timeout_seconds <= 0:
+            raise ValueError(
+                f"timeout_seconds must be positive, not {self.timeout_seconds}"
+            )
 
     def provider_preferences(self) -> dict[str, object]:
         """Return the ``provider`` object sent with every request."""

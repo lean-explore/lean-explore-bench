@@ -2,6 +2,7 @@ import asyncio
 import json
 
 import httpx2 as httpx
+import jsonschema
 import openai
 import pytest
 
@@ -109,9 +110,17 @@ def test_does_not_retry_client_errors():
     assert len(server.bodies) == 1
 
 
+SCHEMA = {
+    "type": "object",
+    "properties": {"queries": {"type": "array", "items": {"type": "string"}}},
+    "required": ["queries"],
+    "additionalProperties": False,
+}
+
+
 def test_complete_json_sends_schema_and_parses():
     server = Server([httpx.Response(200, json=_reply('{"queries": ["a", "b"]}'))])
-    schema = {"type": "object", "properties": {"queries": {"type": "array"}}}
+    schema = SCHEMA
 
     async def go():
         async with _client(server) as client:
@@ -121,6 +130,51 @@ def test_complete_json_sends_schema_and_parses():
     sent = server.bodies[0]["response_format"]
     assert sent["type"] == "json_schema"
     assert sent["json_schema"]["schema"] == schema
+
+
+def test_complete_json_rejects_output_that_breaks_the_schema():
+    server = Server([httpx.Response(200, json=_reply('{"queries": "not a list"}'))])
+
+    async def go():
+        async with _client(server) as client:
+            return await client.complete_json(MESSAGES, SCHEMA)
+
+    with pytest.raises(jsonschema.ValidationError):
+        _run(go())
+
+
+def test_backoff_does_not_hold_a_concurrency_slot(monkeypatch):
+    server = Server(
+        [
+            httpx.Response(429, json={"error": {"message": "slow down"}}),
+            httpx.Response(200, json=_reply("ok")),
+        ]
+    )
+    client = _client(server, max_concurrency=1)
+    held_while_sleeping = []
+
+    async def sleep(_seconds: float) -> None:
+        held_while_sleeping.append(client._semaphore.locked())
+
+    monkeypatch.setattr(asyncio, "sleep", sleep)
+    assert _run(client.complete(MESSAGES)).text == "ok"
+    assert held_while_sleeping == [False]
+
+
+@pytest.mark.parametrize(
+    "overrides",
+    [{"max_concurrency": 0}, {"max_attempts": 0}, {"timeout_seconds": 0}],
+)
+def test_settings_reject_values_that_would_hang(overrides):
+    with pytest.raises(ValueError):
+        OpenRouterSettings(api_key="k", **overrides)
+
+
+def test_settings_reject_zero_concurrency_from_env(monkeypatch):
+    monkeypatch.setenv("OPENROUTER_API_KEY", "k")
+    monkeypatch.setenv("OPENROUTER_MAX_CONCURRENCY", "0")
+    with pytest.raises(ValueError):
+        OpenRouterSettings.from_env()
 
 
 def test_complete_many_keeps_order_and_failures():
