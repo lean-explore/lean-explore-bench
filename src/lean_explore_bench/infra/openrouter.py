@@ -72,9 +72,41 @@ class Completion:
     cost: float | None
 
 
+@dataclass(frozen=True)
+class ResponseUsage:
+    """Tokens and cost billed for one response, whatever its content.
+
+    Attributes:
+        prompt_tokens: Input tokens.
+        completion_tokens: Output tokens.
+        cost: Cost in USD, when OpenRouter reports it.
+    """
+
+    prompt_tokens: int
+    completion_tokens: int
+    cost: float | None
+
+    @classmethod
+    def of(cls, response: ChatCompletion) -> "ResponseUsage":
+        """Read the usage block of a response (zeros when it is missing)."""
+        usage = response.usage
+        if usage is None:
+            return cls(0, 0, None)
+        cost = (usage.model_extra or {}).get("cost")
+        return cls(
+            prompt_tokens=usage.prompt_tokens,
+            completion_tokens=usage.completion_tokens,
+            cost=float(cost) if isinstance(cost, int | float) else None,
+        )
+
+
 @dataclass
 class UsageTotals:
-    """Running totals over every completion made by a client."""
+    """Running totals over every response a client received.
+
+    Responses rejected afterwards (for example with no content) still count,
+    because they were billed.
+    """
 
     requests: int = 0
     prompt_tokens: int = 0
@@ -82,27 +114,25 @@ class UsageTotals:
     cost: float = 0.0
     _lock: asyncio.Lock = field(default_factory=asyncio.Lock, repr=False)
 
-    async def add(self, completion: Completion) -> None:
-        """Add one completion to the totals."""
+    async def add(self, usage: ResponseUsage) -> None:
+        """Add one response's usage to the totals."""
         async with self._lock:
             self.requests += 1
-            self.prompt_tokens += completion.prompt_tokens
-            self.completion_tokens += completion.completion_tokens
-            self.cost += completion.cost or 0.0
+            self.prompt_tokens += usage.prompt_tokens
+            self.completion_tokens += usage.completion_tokens
+            self.cost += usage.cost or 0.0
 
 
-def _to_completion(response: ChatCompletion) -> Completion:
-    if not response.choices or response.choices[0].message.content is None:
+def _to_completion(response: ChatCompletion, usage: ResponseUsage) -> Completion:
+    content = response.choices[0].message.content if response.choices else None
+    if content is None:
         raise EmptyCompletionError(f"No content in response from {response.model}")
-    usage = response.usage
-    extra = (usage.model_extra or {}) if usage else {}
-    cost = extra.get("cost")
     return Completion(
-        text=response.choices[0].message.content,
+        text=content,
         model=response.model,
-        prompt_tokens=usage.prompt_tokens if usage else 0,
-        completion_tokens=usage.completion_tokens if usage else 0,
-        cost=float(cost) if isinstance(cost, int | float) else None,
+        prompt_tokens=usage.prompt_tokens,
+        completion_tokens=usage.completion_tokens,
+        cost=usage.cost,
     )
 
 
@@ -214,9 +244,9 @@ class OpenRouterClient:
                     response = await self._request(
                         messages, model, temperature, max_tokens, response_format
                     )
-        completion = _to_completion(response)
-        await self.usage.add(completion)
-        return completion
+        usage = ResponseUsage.of(response)
+        await self.usage.add(usage)
+        return _to_completion(response, usage)
 
     async def complete_json(
         self,

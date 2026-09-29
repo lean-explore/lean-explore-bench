@@ -26,3 +26,8 @@ reports/
 *.pickle
 .env
 .env.*
+
+# Test coverage data
+.coverage
+.coverage.*
+htmlcov/
