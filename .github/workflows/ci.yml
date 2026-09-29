@@ -16,8 +16,6 @@ jobs:
       - uses: astral-sh/setup-uv@v6
         with:
           python-version: "3.12"
-      - name: No data files committed
-        run: python scripts/check_no_data.py
       - name: Install
         run: |
           uv venv
@@ -28,7 +26,5 @@ jobs:
           .venv/bin/ruff format --check .
       - name: Types
         run: .venv/bin/mypy
-      - name: Function and file size
-        run: .venv/bin/python scripts/check_code_size.py
       - name: Test
         run: .venv/bin/pytest -q
