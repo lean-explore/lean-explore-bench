@@ -80,6 +80,66 @@ should have graded, pooled judgments and enough queries to separate engines.
 - **Hidden intent note.** Each query gets a short narrative for judges only,
   describing the need and what counts as relevant
   ([math-ir/arqmath](math-ir/arqmath.md)).
+- **Sample the way users actually search.** Logs are heavy-tailed: in math web
+  search about 90% of distinct queries occur once, so frequency buckets
+  collapse. Stratify by query form × intent × client instead, draw a
+  traffic-weighted random sample for the headline number, and over-sample rare
+  but important forms (goals, partial names) as reweighted strata, as
+  Baidu-ULTR did. Every filter (difficulty, frequency band, privacy threshold)
+  moves the set away from real traffic, so document each one
+  ([test-collection-construction/query-logs-characterisation-and-sampling](test-collection-construction/query-logs-characterisation-and-sampling.md)).
+- **Estimate the intent mix from logs, not surveys.** Surveys and forums skew
+  it badly: in Broder's study sexual queries were under 1% of survey answers but
+  about 12% of the log. Label intent multi-label, since about a quarter of
+  queries are ambiguous
+  ([test-collection-construction/query-logs-intent-taxonomies](test-collection-construction/query-logs-intent-taxonomies.md)).
+- **Treat agents and humans as separate populations.** Agent queries run 7.6–12.7
+  terms against 2–4 for people, come in bursts of 2–4+, repeat themselves, and
+  draw about half their new words from earlier results. Sample whole agent
+  searches, deduplicate loops, and score at the fixed k agents request
+  ([test-collection-construction/query-logs-agent-vs-human-queries](test-collection-construction/query-logs-agent-vs-human-queries.md)).
+- **Publicly released query sets look easier than real traffic.** Any
+  privacy threshold drops the rare tail, where engines do worst. Pair a public
+  set with a held-out set that keeps the tail
+  ([test-collection-construction/query-logs-privacy-and-release](test-collection-construction/query-logs-privacy-and-release.md)).
+
+### 2a. Synthetic queries: generate, then validate against real ones
+
+Most of the benchmark will likely be LLM-generated, which works only under
+conditions:
+
+- **Synthetic sets reproduce engine *rankings*, not scores.** Fully synthetic
+  collections ranked 31 TREC systems with Kendall's τ ≈ 0.86 against human
+  ones, but every system scored higher on synthetic queries. Report rankings and
+  differences, not absolute numbers
+  ([test-collection-construction/synthetic-test-collections](test-collection-construction/synthetic-test-collections.md)).
+- **Never label only the source declaration as correct.** That design dropped
+  τ to 0.157; pool and grade instead (same note).
+- **Humans filter first.** TREC kept only 31 of 97 generated queries after
+  expert review. Do not filter with a retriever or reranker (the InPars /
+  Promptagator training filters), since that favours similar engines
+  ([test-collection-construction/synthetic-query-generation-and-simulation](test-collection-construction/synthetic-query-generation-and-simulation.md)).
+- **Same-model bias is real.** A Gemini judge scored a Gemini reranker above a
+  perfect ordering built from human labels. LeanExplore's index text is
+  written by Gemini and LeanSearch v2's by Qwen3, so pick query generators and
+  judges from other families, or use two of each and report per family.
+- **Validate on a small human anchor set.** Tune the generator until engine
+  rankings on synthetic queries match rankings on real queries for the same
+  targets. TREC's tip-of-the-tongue track did this, reaching τ = 0.847 between
+  forum and synthetic queries. A role-play prompt with MUST/COULD rules, a
+  summary of the target, low temperature, and rejecting any query that leaks
+  the name were what worked
+  ([test-collection-construction/known-item-trec-tot](test-collection-construction/known-item-trec-tot.md),
+  [test-collection-construction/known-item-tot-query-simulation](test-collection-construction/known-item-tot-query-simulation.md)).
+  - Size: statistical correction (prediction-powered inference) gave valid
+    intervals from about 30 human-labelled queries for one system's score;
+    comparing engines needs more (about 150 labelled items in ARES). Plan on
+    50–80 human-judged queries plus 30 real Zulip questions, frozen and private
+    ([test-collection-construction/synthetic-validation-budget-and-protocol](test-collection-construction/synthetic-validation-budget-and-protocol.md)).
+  - Include oracle and deliberately degraded runs in the validation pool; they
+    expose judge bias and keep τ from being inflated by easy comparisons.
+  - Re-validate whenever the generator, judge, Mathlib snapshot or engine set
+    changes.
 
 ### 3. Relevance labels
 
@@ -213,6 +273,45 @@ should have graded, pooled judgments and enough queries to separate engines.
   ([ir-evaluation/industry-online-evaluation](ir-evaluation/industry-online-evaluation.md),
   [lean-engines/leandex](lean-engines/leandex.md)).
 
+### 6a. Specialised tracks
+
+- **Tip of the tongue ("I know it exists but not its name").** One gold
+  declaration plus its accepted equivalents (aliases, deprecated names, the
+  `iff`/`symm` twin), scored mainly by MRR@10 with Success@1/5/10. Collect real
+  queries from Zulip threads where the asker confirmed the answer, and keep
+  "partial name recall" queries as their own stratum
+  ([test-collection-construction/known-item-tot-datasets-and-metrics](test-collection-construction/known-item-tot-datasets-and-metrics.md)).
+- **No answer ("the lemma doesn't exist").** No Lean search benchmark tests
+  this, yet invented names are 7.7% of proof failures in one study. Build
+  queries from names agents actually invented, real lemmas altered so they
+  become false, and results missing at the pinned commit, each with a recorded
+  plausible wrong answer. Score by how well an engine's top-1 confidence
+  separates answerable from unanswerable queries (AUROC, risk–coverage), and
+  keep these queries out of the main nDCG/MRR averages, where they score 0 for
+  everyone. Keep easy off-topic controls separate: pooled with natural cases
+  they made abstention look useful
+  ([test-collection-construction/no-answer-lean-formal-evidence](test-collection-construction/no-answer-lean-formal-evidence.md),
+  [test-collection-construction/no-answer-retrieval-qpp-and-truncation](test-collection-construction/no-answer-retrieval-qpp-and-truncation.md)).
+- **Type pattern (Loogle-style).** Give each query two labels: "matches the
+  pattern" (Loogle is perfect on this by construction) and "is the lemma the
+  user wanted". Group queries by the flexibility needed (reordered hypotheses,
+  currying, generalisation, swapped sides). Mine queries from `exact foo` /
+  `apply foo` steps in Mathlib proofs, and keep a regression tier of
+  Hoogle-style assertions ("top hit", "in top k", "must not appear", "known
+  failure") ([code-search/type-directed-api-search](code-search/type-directed-api-search.md),
+  [code-search/type-directed-synthesis-user-studies](code-search/type-directed-synthesis-user-studies.md)).
+- **Cross-formality (optional).** Informal theorem engines (TheoremSearch,
+  Matlas) cannot be scored against Mathlib answers, except TheoremSearch's
+  formal endpoint. A separate track with targets that exist both in Mathlib and
+  informally (Stacks tags, 100/1000-theorems) could compare them, scoring
+  coverage separately from ranking
+  ([lean-engines/informal-theoremsearch](lean-engines/informal-theoremsearch.md),
+  [lean-engines/informal-matlas](lean-engines/informal-matlas.md)).
+- **Live services:** query one request at a time with retries (parallel runs
+  gave spurious empty results on both informal engines), save every raw
+  response with a timestamp, and score only from the saved copy
+  ([lean-engines/informal-other-engines](lean-engines/informal-other-engines.md)).
+
 ### 7. Statistics
 
 From [statistics/reporting-and-reproducibility](statistics/reporting-and-reproducibility.md)
@@ -285,6 +384,10 @@ correctly prompted reranker
 
 ### Lean search engines (and informal theorem search engines) (`lean-engines/`)
 
+- [lean-engines/informal-mathlas-mcp](lean-engines/informal-mathlas-mcp.md): mathlas (community MCP server, Krishi Attri), local informal theorem search plus a Loogle/LeanSearch proxy
+- [lean-engines/informal-matlas](lean-engines/informal-matlas.md): Matlas (PKU BICMR AI4M / FrenzyMath), informal statement search over journals and textbooks
+- [lean-engines/informal-other-engines](lean-engines/informal-other-engines.md): Other informal and cross-formality search services (zbMATH Open, Stacks/ProofWiki, formula engines, LLM web search), plus the protocols that evaluated them
+- [lean-engines/informal-theoremsearch](lean-engines/informal-theoremsearch.md): TheoremSearch (UW Math AI Lab), informal theorem search with a formal side-index
 - [lean-engines/lean-finder](lean-engines/lean-finder.md): Lean Finder
 - [lean-engines/leandex](lean-engines/leandex.md): LeanDex (Project Numina)
 - [lean-engines/leanexplore](lean-engines/leanexplore.md): LeanExplore
@@ -317,6 +420,22 @@ correctly prompted reranker
 - [premise-selection/real-prover](premise-selection/real-prover.md): REAL-Prover: Retrieval Augmented Lean Prover (LeanSearch-PS)
 - [premise-selection/retrieval-augmented-autoformalization](premise-selection/retrieval-augmented-autoformalization.md): Retrieval-augmented autoformalization (MS-RAG, RAutoformalizer, DRIFT, DDR)
 - [premise-selection/theoremgraph](premise-selection/theoremgraph.md): TheoremGraph: Bridging Formal and Informal Mathematics (Kurgan, Wang, Leonen, et al.)
+
+### Building test collections: queries, known-item search, synthetic data, no-answer queries (`test-collection-construction/`)
+
+- [test-collection-construction/known-item-tot-datasets-and-metrics](test-collection-construction/known-item-tot-datasets-and-metrics.md): Tip-of-the-tongue query analysis, ToT datasets, and known-item metrics
+- [test-collection-construction/known-item-tot-query-simulation](test-collection-construction/known-item-tot-query-simulation.md): Simulating known-item and tip-of-the-tongue queries, and validating the simulation
+- [test-collection-construction/known-item-trec-tot](test-collection-construction/known-item-trec-tot.md): TREC Tip-of-the-Tongue (ToT) track, 2023–2025
+- [test-collection-construction/no-answer-lean-formal-evidence](test-collection-construction/no-answer-lean-formal-evidence.md): "The lemma doesn't exist": evidence from Lean / formal-math work, and a proposed no-answer track
+- [test-collection-construction/no-answer-qa-rag-abstention](test-collection-construction/no-answer-qa-rag-abstention.md): Unanswerable queries in QA and RAG evaluation (SQuAD 2.0, RGB, NoMIRACL, CRAG, UAEval4RAG, AbstentionBench, selective QA)
+- [test-collection-construction/no-answer-retrieval-qpp-and-truncation](test-collection-construction/no-answer-retrieval-qpp-and-truncation.md): "Nothing relevant here" on the retrieval side: empty relevance sets, ranked-list truncation, and query performance prediction (QPP) evaluation
+- [test-collection-construction/query-logs-agent-vs-human-queries](test-collection-construction/query-logs-agent-vs-human-queries.md): Agent-issued vs human-issued queries: what 2025–2026 log studies show (synthesis)
+- [test-collection-construction/query-logs-characterisation-and-sampling](test-collection-construction/query-logs-characterisation-and-sampling.md): Query-log characterisation and how test collections sample queries from logs (synthesis)
+- [test-collection-construction/query-logs-intent-taxonomies](test-collection-construction/query-logs-intent-taxonomies.md): Query intent taxonomies: web search, code search and math search (synthesis)
+- [test-collection-construction/query-logs-privacy-and-release](test-collection-construction/query-logs-privacy-and-release.md): Releasing query logs privately: AOL, k-anonymity thresholds, differential privacy, synthetic queries
+- [test-collection-construction/synthetic-query-generation-and-simulation](test-collection-construction/synthetic-query-generation-and-simulation.md): Synthetic queries: training-time generators (InPars, Promptagator, GPL), query simulation, and LLM query variants
+- [test-collection-construction/synthetic-test-collections](test-collection-construction/synthetic-test-collections.md): Synthetic test collections: LLM-written queries and LLM labels (Rahmani et al. SIGIR 2024, SynDL, and the bias evidence)
+- [test-collection-construction/synthetic-validation-budget-and-protocol](test-collection-construction/synthetic-validation-budget-and-protocol.md): Validating synthetic queries and labels: how much human data, which checks, and a protocol for Lean search
 
 ### Math information retrieval outside Lean (`math-ir/`)
 
@@ -374,3 +493,5 @@ correctly prompted reranker
 - [code-search/newer-retrieval-benchmarks](code-search/newer-retrieval-benchmarks.md): Newer (2025–2026) code retrieval benchmarks: ExecRetrieval, FreshStack, RepoAlign-Bench, MM-IssueLoc, AlgoSimBench
 - [code-search/search-evaluation-methodology](code-search/search-evaluation-methodology.md): How code search is evaluated: query sources, relevance, metrics, leakage (cross-cutting synthesis)
 - [code-search/swe-bench-localization](code-search/swe-bench-localization.md): SWE-bench-derived code localization evals (SWE-bench retrieval, Loc-Bench, SweRank/SweLoc, KA-LogicQuery)
+- [code-search/type-directed-api-search](code-search/type-directed-api-search.md): Type-directed and signature-based API search outside Lean (and how it was evaluated)
+- [code-search/type-directed-synthesis-user-studies](code-search/type-directed-synthesis-user-studies.md): Type-directed synthesis and composition search: benchmarks and user studies (Hoogle+, TyGAR, Hoogle⋆, Prospector, PARSEWeb, InSynth, Perelman et al.)
