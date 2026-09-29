@@ -36,7 +36,7 @@ These papers stop scoring agents only by final task success (resolved or not). I
 
 ## Evaluation
 
-- **SWE-Explore:** "agentic explorers form a clear tier above classical retrieval". BM25, TF-IDF and a lightweight static-embedding RAG retriever "remain close to Random on most metrics". General coding agents (Claude Code, Codex, OpenHands, Mini-SWE-Agent, AweAgent) "have closely matched profiles", with high file hit but **low line-level recall**, so "Low F1 is mostly a recall problem" ([§5](https://arxiv.org/abs/2606.07297)). Caveat: the dense baseline was a small static-embedding model, not a strong code embedder.
+- **SWE-Explore:** "agentic explorers form a clear tier above classical retrieval". BM25, TF-IDF and a lightweight static-embedding RAG retriever "remain close to Random on most metrics". General coding agents (Claude Code, Codex, OpenHands, Mini-SWE-Agent, AweAgent) "have closely matched profiles", with high file hit but **low line-level recall**, so low F1 is mostly a recall problem: "the limiting term is usually line-level recall rather than precision" ([§5](https://arxiv.org/abs/2606.07297)). Caveat: the dense baseline was a small static-embedding model, not a strong code embedder.
 - **Agent Retrieval Bench:** "No single retrieval family dominates":
   - Qwen3-Embedding-4B has the best MRR, and Qwen3-Embedding-8B the best Recall@20.
   - **RepoMap is best at budgeted context yield at 8K tokens.**

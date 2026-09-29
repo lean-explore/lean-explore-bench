@@ -3,7 +3,7 @@
 - **Kind:** search engine (agentic, LLM in the loop)
 - **Links:** https://leandex.projectnumina.ai ; API `https://leandex.projectnumina.ai/api/v1/search` ; fork of LeanExplore https://github.com/project-numina/lean-explore ; Zulip announcement https://leanprover.zulipchat.com/#narrow/near/554153512
 - **Authors / org, date:** Project Numina (announced by Bolton Bailey), 2025-11-06.
-- **Status:** Live (site HTTP 200 and working API on 2026-09-28, checked by us). The GitHub fork's description is "A search engine for Lean 4 declarations for numina" and it was last pushed 2026-01-29 ([GitHub API](https://github.com/project-numina/lean-explore)). Whether the deployed service matches the fork is unverified. The Numina maintainers said "Yes, I think so" when asked ([Zulip](https://leanprover.zulipchat.com/#narrow/near/554181117)). No license was checked for the fork (upstream LeanExplore is Apache-2.0).
+- **Status:** Live on 2026-09-28 (site HTTP 200 and working API, checked by us), but the site returned HTTP 522 twice on 2026-09-29. The GitHub fork's description is "A search engine for Lean 4 declarations for numina" and it was last pushed 2026-01-29 ([GitHub API](https://github.com/project-numina/lean-explore)). Whether the deployed service matches the fork is unverified. The Numina maintainers said "Yes, I think so" when asked ([Zulip](https://leanprover.zulipchat.com/#narrow/near/554181117)). No license was checked for the fork (upstream LeanExplore is Apache-2.0).
 
 ## What it is
 

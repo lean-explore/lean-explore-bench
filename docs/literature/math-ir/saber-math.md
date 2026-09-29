@@ -19,7 +19,7 @@ A **fully automated** (no expert annotation) reranking benchmark for math IR. It
   - Two annotators agreed on **75.0%** of the 20 items they both labelled.
   - The pairwise LLM judge agreed with humans on 78.0% (95% CI 0.718–0.832). An *ordinal* (absolute-score) judge reached 75.0%, and a 5-vote majority 77.5%.
   - The Swiss-tournament ordering agreed 78.0%, full Bradley–Terry 79.0%, and random scheduling 75.6%.
-- **Headline scores** (nDCG@10) ([tables/dedup_*.tex](https://arxiv.org/abs/2606.29894)): ReasonEmbed-Qwen3-8B-Rewrite scores 0.738, Qwen3-Embedding-8B 0.611, Approach Zero 0.468, BM25 0.416 and Jaccard 0.412.
+- **Headline scores** (nDCG@10) ([tables/dedup_*.tex](https://arxiv.org/abs/2606.29894)): ReasonReranker-Qwen3-32B-Rewrite scores 0.741 (the top system), ReasonEmbed-Qwen3-8B-Rewrite 0.738, Qwen3-Embedding-8B 0.611, Approach Zero 0.468, BM25 0.416 and Jaccard 0.412.
 - **External validity:** SABER nDCG@10 correlates with a downstream deduplication task at Spearman ρ = 0.96 (over the full 71K pool). Correlation with MTEB is Pearson 0.77 and Spearman 0.82, falling to 0.62 and 0.73 for models released in 2025 or later ([main_results.tex, appendix](https://arxiv.org/abs/2606.29894)).
 - **Formula over-reliance:** Approach Zero (a structural formula engine) gets median duplicate rank 1 on the dedup task but ranks 43rd of 49 on SABER. Rewrites that keep formula structure reward formula matching while real relevance does not ([appendix](https://arxiv.org/abs/2606.29894)).
 

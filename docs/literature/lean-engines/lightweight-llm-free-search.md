@@ -1,4 +1,4 @@
-# Lightweight and LLM-Free Semantic Search for mathlib4 (Isaac Li)
+# Towards Lightweight and LLM-Free Semantic Search for mathlib4 (Isaac Li)
 
 - **Kind:** search engine (research prototype) and paper
 - **Links:** AITP 2025 abstract https://aitp-conference.org/2025/abstract/AITP_2025_paper_12.pdf ; code/demo https://github.com/IsaacLi74/Lightweight-and-LLM-Free-Semantic-Search-for-mathlib4 ; adapter https://huggingface.co/Isaac74/qwen3-0.6b-lightweight-semantic-mathlib-search-adapter

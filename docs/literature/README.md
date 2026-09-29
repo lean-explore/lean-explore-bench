@@ -2,8 +2,9 @@
 
 This folder holds one note per system, benchmark, paper or methodology topic,
 grouped into topic subfolders (listed in the index below),
-collected while working out how to benchmark Lean 4 search engines well. Each
-note follows [`_TEMPLATE.md`](_TEMPLATE.md), links a source for every claim,
+collected while working out how to benchmark Lean 4 search engines well. Notes
+on a single system follow [`_TEMPLATE.md`](_TEMPLATE.md); cluster and synthesis
+notes are organised by topic and cite inline. Every note links a source for every claim,
 and marks anything that could not be checked as *(unverified)*. Research was
 done on 2026-09-28; hosted services and leaderboards change, so check dates
 before relying on a number.
@@ -15,15 +16,18 @@ half is an index.
 
 ### 1. What already exists, and the gap
 
-- Every published Lean search comparison was run by one engine's authors, on
-  their own query set, and the authors' engine wins each time
+- Every Lean search comparison run by an engine's own authors on their own
+  query set favours that engine
   ([lean-engines/leanexplore](lean-engines/leanexplore.md),
   [lean-engines/lean-finder](lean-engines/lean-finder.md),
-  [premise-selection/leansearch-v2](premise-selection/leansearch-v2.md)).
+  [premise-selection/leansearch-v2](premise-selection/leansearch-v2.md)). The
+  one comparison by an outside team on another team's queries, TheoremGraph on
+  MathlibQR, did not beat LeanSearch v2 (nDCG@10 0.558 vs 0.623)
+  ([premise-selection/theoremgraph](premise-selection/theoremgraph.md)).
 - The only independent comparison is the
   [Legendre leaderboard](lean-benchmarks/legendre-leaderboard.md): 13 systems on
   [MathlibQR](lean-benchmarks/mathlibqr.md), with a pinned corpus and bootstrap CIs, but
-  no published code. The top three are statistically tied at about 73–74% R@10.
+  no published code. The top three are statistically tied at 72.6–74.4% R@10.
   LeanExplore is 8th (R@10 56.5%, nDCG@10 0.385).
 - Existing Lean sets are small (50–200 targets), mostly synthetic or written
   by an engine team, and mostly allow one correct answer per query
@@ -32,9 +36,12 @@ half is an index.
   [lean-benchmarks/mathlibmpr](lean-benchmarks/mathlibmpr.md)).
 - No published numbers exist for Loogle, `exact?`/`apply?`, `rw?`, `#find` or
   doc-gen4 search ([lean-tools/loogle](lean-tools/loogle.md),
-  [lean-tools/exact-apply](lean-tools/exact-apply.md)).
-- No paper compares search engines as tools inside the same agent loop, in Lean
-  or in code search
+  [lean-tools/exact-apply](lean-tools/exact-apply.md),
+  [lean-tools/symbolic-baselines](lean-tools/symbolic-baselines.md)).
+- Only LeanSearch v2's Prove task compares retrievers inside one fixed proving
+  loop, and Lean Finder swaps retrievers inside REAL-Prover. No paper compares
+  search engines as tools an agent calls itself under one fixed loop, in Lean
+  or in code search, and none includes LeanExplore
   ([premise-selection/agents-with-search-tools](premise-selection/agents-with-search-tools.md),
   [code-search/embedding-vs-grep-evidence](code-search/embedding-vs-grep-evidence.md)).
 
@@ -54,8 +61,9 @@ should have graded, pooled judgments and enough queries to separate engines.
   - LLM-generated queries.
 - **Free seed set.** Mathlib's `docs/100.yaml`, `docs/1000.yaml`,
   `overview.yaml`, `undergrad.yaml` and `@[stacks]` tags hold roughly 1,600
-  informal-to-declaration pairs before deduplication: about 290 famous
-  theorems, 950 concepts and 370 Stacks tags
+  informal entries before deduplication: about 290 famous theorems, 950
+  concepts and 370 distinct Stacks tags. Counted as links to declarations this
+  is about 1,900, and the 1000-theorem list contains the 100-theorem list
   ([math-ir/informal-formal-alignment](math-ir/informal-formal-alignment.md)).
 - **Separate tracks by query type.** Natural language, name, type pattern
   (Loogle syntax), proof state, multi-premise and agent-issued queries rank
@@ -65,7 +73,7 @@ should have graded, pooled judgments and enough queries to separate engines.
   blended score.
 - **Watch for the keyword shortcut.** Queries built from statements or
   docstrings often contain the target's own name parts, and more than half of
-  SWE-bench Lite issues name the file to fix
+  SWE-bench Lite issues mention a file, class or function name
   ([code-search/swe-bench-localization](code-search/swe-bench-localization.md)).
   - Measure word overlap between each query and its target after splitting
     snake_case, CamelCase and namespaces.
@@ -94,7 +102,7 @@ should have graded, pooled judgments and enough queries to separate engines.
   queries are ambiguous
   ([test-collection-construction/query-logs-intent-taxonomies](test-collection-construction/query-logs-intent-taxonomies.md)).
 - **Treat agents and humans as separate populations.** Agent queries run 7.6–12.7
-  terms against 2–4 for people, come in bursts of 2–4+, repeat themselves, and
+  terms, against about 2 in classic web and code search logs, come in bursts of 2–4+, repeat themselves, and
   draw about half their new words from earlier results. Sample whole agent
   searches, deduplicate loops, and score at the fixed k agents request
   ([test-collection-construction/query-logs-agent-vs-human-queries](test-collection-construction/query-logs-agent-vs-human-queries.md)).
@@ -110,7 +118,7 @@ conditions:
 
 - **Synthetic sets reproduce engine *rankings*, not scores.** Fully synthetic
   collections ranked 31 TREC systems with Kendall's τ ≈ 0.86 against human
-  ones, but every system scored higher on synthetic queries. Report rankings and
+  ones, but systems of every type scored higher on synthetic queries. Report rankings and
   differences, not absolute numbers
   ([test-collection-construction/synthetic-test-collections](test-collection-construction/synthetic-test-collections.md)).
 - **Never label only the source declaration as correct.** That design dropped
@@ -120,13 +128,14 @@ conditions:
   Promptagator training filters), since that favours similar engines
   ([test-collection-construction/synthetic-query-generation-and-simulation](test-collection-construction/synthetic-query-generation-and-simulation.md)).
 - **Same-model bias is real.** A Gemini judge scored a Gemini reranker above a
-  perfect ordering built from human labels. LeanExplore's index text is
+  perfect ordering built from human labels (0.961 vs 0.876; humans gave 0.747
+  vs 0.892) ([test-collection-construction/synthetic-test-collections](test-collection-construction/synthetic-test-collections.md)). LeanExplore's index text is
   written by Gemini and LeanSearch v2's by Qwen3, so pick query generators and
   judges from other families, or use two of each and report per family.
 - **Validate on a small human anchor set.** Tune the generator until engine
   rankings on synthetic queries match rankings on real queries for the same
   targets. TREC's tip-of-the-tongue track did this, reaching τ = 0.847 between
-  forum and synthetic queries. A role-play prompt with MUST/COULD rules, a
+  forum and synthetic queries (0.737 against NIST-written queries). A role-play prompt with MUST/COULD rules, a
   summary of the target, low temperature, and rejecting any query that leaks
   the name were what worked
   ([test-collection-construction/known-item-trec-tot](test-collection-construction/known-item-trec-tot.md),
@@ -163,13 +172,14 @@ conditions:
     [ir-evaluation/trec-pooling-and-relevance-judgments](ir-evaluation/trec-pooling-and-relevance-judgments.md)).
 - **Treat "used in a proof" as a silver label.** Proof dependencies miss valid
   alternatives, and one study found only 48% of labels taken from source text
-  appear in the elaborated proof term
+  appear in the elaborated proof term (on a 300-task audit subset)
   ([premise-selection/cslib-premise-bench](premise-selection/cslib-premise-bench.md)). Use them for
   scale and for known-item metrics, not as the headline judgments.
-- **Measure agreement.** Human agreement on math relevance is low: κ 0.24–0.56
+- **Measure agreement.** Human agreement on math relevance is low: κ 0.24–0.69
   in ARQMath and NTCIR, yet system rankings stay stable. Double-judge 15–20% of
   pairs and report κ on both the graded and the binary labels
-  ([statistics/judgment-reliability-and-llm-assessors](statistics/judgment-reliability-and-llm-assessors.md)).
+  ([math-ir/arqmath](math-ir/arqmath.md), [math-ir/ntcir-math](math-ir/ntcir-math.md),
+  [statistics/judgment-reliability-and-llm-assessors](statistics/judgment-reliability-and-llm-assessors.md)).
 - **Use LLM judges only as helpers.** UMBRELA's system rankings match human
   ones closely (τ 0.87–0.94). But when the systems under test use the judge
   model, agreement on the top systems turns negative (τ −0.40).
@@ -177,7 +187,8 @@ conditions:
   - Use a different model family from every engine's reranker.
   - Randomise the order results are shown in. LeanSearch v2 measured a 0.4–0.6
     rank bias toward whichever engine was shown first
-    ([lean-benchmarks/leanexplore-llm-judge-eval](lean-benchmarks/leanexplore-llm-judge-eval.md)).
+    ([lean-benchmarks/mathlibqr](lean-benchmarks/mathlibqr.md),
+    [premise-selection/leansearch-v2](premise-selection/leansearch-v2.md)).
   - Keep a human-only holdout for final claims.
 - **Lean can verify some answers mechanically.** For goal-shaped queries,
   `exact`/`apply`/`rw` succeeding with the returned lemma is a check that code
@@ -192,7 +203,8 @@ conditions:
   missing target separately from a retrieval miss
   ([lean-benchmarks/legendre-leaderboard](lean-benchmarks/legendre-leaderboard.md),
   [premise-selection/leansearch-v2](premise-selection/leansearch-v2.md)).
-- **Split by time.** Random splits inflated Rango's results by 15–43%
+- **Split by time.** Random splits inflated Rango's results by 15%, and by 43%
+  for its no-retrieval ablation
   ([premise-selection/rango-coq](premise-selection/rango-coq.md)). The clean control is queries whose
   targets entered Mathlib after every engine's index date and after the models'
   training cutoffs. Libraries outside Mathlib (CSLib, miniCTX-v2) also work
@@ -225,9 +237,9 @@ conditions:
 - **Result caps.** Engines that cap results (LeanSearch v2 returns at most 50)
   get "undefined" for metrics beyond the cap, not zero.
 - **Unjudged results.** Report nDCG′ (unjudged results removed) as a
-  sensitivity check. One math search system scored P@10 of 0.285, 0.405 or
-  0.785 depending on how unjudged results were treated
-  ([math-ir/arqmath](math-ir/arqmath.md)).
+  sensitivity check. On NTCIR-12 formula search, Approach0 scored P@10 of
+  0.285, 0.405 or 0.785 depending on how unjudged results were treated
+  ([math-ir/ntcir-math](math-ir/ntcir-math.md)).
 
 ### 6. Evaluate each stage and the whole system
 
@@ -242,8 +254,8 @@ conditions:
   ceiling and an oracle rerank that perfectly sorts the candidates.
   - Reranker gains shrink sharply over strong first stages: 30–55% over BM25,
     against 2–20% over a strong retriever.
-  - Sweep rerank depth from 10 to 1000, since reranking more candidates hurts
-    in about half of published settings
+  - Sweep rerank depth from 10 to 1000, since reranking more candidates hurt
+    in about half of the settings in one study (Drowning in Documents)
     ([reranker-evaluation/fixed-candidate-protocol](reranker-evaluation/fixed-candidate-protocol.md),
     [reranker-evaluation/proposed-protocol](reranker-evaluation/proposed-protocol.md)).
 - **Component ablations:** retrieve-only vs retrieve+rerank, and removing each
@@ -315,7 +327,7 @@ conditions:
 ### 7. Statistics
 
 From [statistics/reporting-and-reproducibility](statistics/reporting-and-reproducibility.md)
-and the other `eval-stats-` notes:
+and the other notes in `statistics/`:
 
 1. **Pre-register** the query set (with a hash), the primary metric
    (nDCG@10), α = 0.05, and the smallest difference worth detecting
@@ -323,14 +335,16 @@ and the other `eval-stats-` notes:
 2. **Query count.** Run a pilot of about 50 judged queries to measure how much
    per-query differences between engines vary. No Lean benchmark reports this.
    The planning figure is about 300 queries, with 60–100 per query type.
-   Results within a single query type are descriptive only. Success@k needs
-   3–5× more queries than graded nDCG to detect the same difference.
+   Results within a single query type are descriptive only. By our own power
+   calculation (assumed variances, not a published result), Success@k needs
+   about 3–7× more queries than graded nDCG to detect the same difference.
 3. **Tests.** Use a paired t-test, confirmed by a paired permutation test with
    at least 10,000 permutations.
    - For all-pairs comparisons, use randomised Tukey HSD, implemented ourselves:
      ranx's `"tukey"` ignores that engines answer the same queries.
    - Use Holm correction when comparing only against one reference engine.
-   - Do not use Wilcoxon or sign tests.
+   - Avoid Wilcoxon and sign tests. Most studies advise against them for IR,
+     though Parapar 2020 and Otero 2025 recommend Wilcoxon.
 4. **Effect sizes.** Report each engine's mean with a 95% bootstrap CI over
    queries, and each pair's absolute difference with a CI. Never report a
    relative "% improvement" alone.
@@ -352,8 +366,10 @@ and the other `eval-stats-` notes:
   and silently reorders runs that don't
   ([reranker-evaluation/tooling](reranker-evaluation/tooling.md)).
 - Self-host engines where possible. LeanExplore's hosted API allows 30
-  requests/min, Loogle's public endpoint is throttled, and LeanStateSearch was
-  unreachable on 2026-09-28 ([lean-tools/lean-lsp-mcp](lean-tools/lean-lsp-mcp.md)).
+  requests/min ([lean-engines/leanexplore](lean-engines/leanexplore.md)),
+  lean-lsp-mcp throttles its own Loogle calls to 3 per 30 s, and LeanStateSearch
+  was unreachable on 2026-09-28 ([lean-tools/lean-lsp-mcp](lean-tools/lean-lsp-mcp.md),
+  [lean-tools/loogle](lean-tools/loogle.md)).
 - This benchmark is being built by LeanExplore's author. Say so, publish the
   code, and apply every rule above to LeanExplore first.
 
@@ -392,7 +408,7 @@ correctly prompted reranker
 - [lean-engines/leandex](lean-engines/leandex.md): LeanDex (Project Numina)
 - [lean-engines/leanexplore](lean-engines/leanexplore.md): LeanExplore
 - [lean-engines/leansearch](lean-engines/leansearch.md): LeanSearch (v1, 2024; v2, 2026)
-- [lean-engines/lightweight-llm-free-search](lean-engines/lightweight-llm-free-search.md): Lightweight and LLM-Free Semantic Search for mathlib4 (Isaac Li)
+- [lean-engines/lightweight-llm-free-search](lean-engines/lightweight-llm-free-search.md): Towards Lightweight and LLM-Free Semantic Search for mathlib4 (Isaac Li)
 - [lean-engines/octo-search](lean-engines/octo-search.md): Axiomatic Octo Search
 
 ### Name, pattern and in-editor tools (baselines) (`lean-tools/`)

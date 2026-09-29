@@ -2,7 +2,7 @@
 
 - **Kind:** search engine (for any Lean project)
 - **Links:** web search https://octo.axiomatic-ai.com/search ; product page https://prover.axiomatic-ai.com/octo ; manual https://axiomatic-ai.github.io/octo/ ; VS Code extension https://marketplace.visualstudio.com/items?itemName=AxiomaticAI.axiomatic-octo ; Zulip announcement https://leanprover.zulipchat.com/#narrow/near/617203019
-- **Authors / org, date:** Axiomatic AI (announced by Austin Letson and Luigi Massacci), 2026-08-18. Web search, public repo listing and MCP were added 2026-09-07 ([Zulip](https://leanprover.zulipchat.com/#narrow/near/622195251)).
+- **Authors / org, date:** Axiomatic AI (announced by Austin Letson), 2026-08-18. Web search, public repo listing and MCP were added 2026-09-07 ([Zulip](https://leanprover.zulipchat.com/#narrow/near/622195251)).
 - **Status:** Live, and described as "alpha" in the [manual](https://axiomatic-ai.github.io/octo/). Not yet open source: "We're also preparing to release Octo Search open source" ([Zulip](https://leanprover.zulipchat.com/#narrow/near/617203019)). A technical report is promised but not yet out ([Zulip](https://leanprover.zulipchat.com/#narrow/near/617871976)).
 
 ## What it is
