@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.egg-info/
+.venv/
+.pytest_cache/
+.ruff_cache/
+build/
+dist/
+
+# Real query data must never be committed. Notebook files can hold outputs
+# (query text), so they are ignored too.
+*.ipynb
+.ipynb_checkpoints/
+data/
+reports/
+*.db
+*.sqlite
+*.sqlite3
+*.parquet
+*.feather
+*.arrow
+*.jsonl
+*.npy
+*.npz
+*.pkl
+*.pickle
+.env
+.env.*
