@@ -38,7 +38,7 @@ This note covers the infrastructure that the reranker literature uses to supply 
   - Metrics have been "tested against TREC Eval for correctness".
   - `compare()` runs paired tests: Fisher randomization, Student's t (the default) or Tukey HSD. It exports LaTeX tables with significance superscripts ([compare docs](https://amenra.github.io/ranx/compare/)).
   - It includes about 25 fusion methods (RRF, CombSUM/MNZ and others) and 7 score normalisations. That is useful for rebuilding hybrid first stages such as LeanExplore's BM25+dense RRF as a controlled baseline.
-  - Whether `compare()` corrects for multiple comparisons is not documented on that page (unverified).
+  - It does not correct for multiple comparisons, and its `"tukey"` option calls the unpaired `scipy.stats.tukey_hsd` rather than the query-paired randomised Tukey HSD validated in IR (checked in the ranx source; see [../statistics/reporting-and-reproducibility.md](../statistics/reporting-and-reproducibility.md)).
 
 ## Relevance to lean-explore-bench
 

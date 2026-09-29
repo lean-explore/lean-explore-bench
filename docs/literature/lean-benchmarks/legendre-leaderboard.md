@@ -18,7 +18,7 @@ The task on the leaderboard is **Theorem search on MathlibQR** (see `mathlibqr.m
 - **Search:** exact inner product over L2-normalized vectors, with no HNSW or IVF approximate index. The stated reason is so that approximate-index recall error is not mixed into model error. Instruction-aware models get the instruction on the query side only, following each model card, and a harness test enforces this.
 - **Published engines:** these are queried over their own public HTTP APIs, and the ranking each returns is scored. The engine, its index, and its snapshot belong to the engine's operators. Endpoints:
   - LeanSearch v2: `POST leansearch.net/search`
-  - LeanExplore: `POST leanexplore.com/api/v2/search`
+  - LeanExplore: `POST leanexplore.com/api/v2/search` as the site states. On 2026-09-28 we found this endpoint answers `GET` and returns 405 to `POST` (see [../lean-engines/leanexplore.md](../lean-engines/leanexplore.md)), so either the site's description or the endpoint has changed.
   - Lean Finder v1: a Hugging Face inference endpoint
 - **Rate limits the site applies to itself:** leansearch.net at 3 requests per 30 s, LeanExplore at 24 POST per 60 s (its published limit is 30), and Lean Finder at 1 request per second. Every response is cached permanently, so each query is fetched once.
 - **Engine-specific caveats the site documents:**

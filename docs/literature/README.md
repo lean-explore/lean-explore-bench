@@ -53,8 +53,9 @@ should have graded, pooled judgments and enough queries to separate engines.
   - Expert-written queries.
   - LLM-generated queries.
 - **Free seed set.** Mathlib's `docs/100.yaml`, `docs/1000.yaml`,
-  `overview.yaml`, `undergrad.yaml` and `@[stacks]` tags hold roughly 1,300
-  informal-to-declaration pairs
+  `overview.yaml`, `undergrad.yaml` and `@[stacks]` tags hold roughly 1,600
+  informal-to-declaration pairs before deduplication: about 290 famous
+  theorems, 950 concepts and 370 Stacks tags
   ([math-ir/informal-formal-alignment](math-ir/informal-formal-alignment.md)).
 - **Separate tracks by query type.** Natural language, name, type pattern
   (Loogle syntax), proof state, multi-premise and agent-issued queries rank

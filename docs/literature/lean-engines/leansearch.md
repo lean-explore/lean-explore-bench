@@ -23,7 +23,7 @@ LeanSearch is the most widely used natural-language search engine for Mathlib. T
 - **Metrics:** nDCG@20, P@10 and R@10, where P and R count only "Exact match".
 - **Headline results (Table 3):** E5-mistral-7b with the formal+informal corpus and augmented queries scored nDCG@20 0.733, P@10 0.196, R@10 0.913. Moogle scored 0.365 / 0.092 / 0.513, but Moogle's non-theorem results were counted as irrelevant, so it is flagged as not directly comparable. BM25 on the formal corpus scored 0.024. OpenAI text-embedding-3-large on the formal+informal setup scored 0.691.
 - **Per-category results:** The largest gains from augmentation were on theorem-name queries (nDCG@20 0.294 → 0.855). On Lean-term queries the formal-only corpus did better (0.774 vs 0.654).
-- **Data release:** We found no v1 query set or labels in the v1 repo ([file tree](https://github.com/frenzymath/LeanSearch)). They may have been released somewhere else (unverified).
+- **Data release:** Not in the v1 code repo ([file tree](https://github.com/frenzymath/LeanSearch)), but released on Hugging Face as `hcju/leansearch_bench` (judged lists) and `hcju/mathlibretrieval` (40 informal queries, BEIR format), both CC-BY-4.0. See [../lean-benchmarks/leansearch-v1-benchmark.md](../lean-benchmarks/leansearch-v1-benchmark.md).
 
 ### v2: MathlibQR (single-query search) ([arXiv:2605.13137 §4 "Search" and "MathlibQR" appendix](https://arxiv.org/abs/2605.13137))
 - **Queries:** 200 Mathlib declarations picked by formalization experts, 8 from each of 25 top-level folders, balanced across declaration kinds and marked Easy or Hard. There are up to six expert-written query styles per declaration: Lean (199), LaTeX (200), natural (199), slogan (197), nickname (128), and special case (23), for 946 queries in total, built against Mathlib v4.29.1.
@@ -62,7 +62,7 @@ LeanSearch is the most widely used natural-language search engine for Mathlib. T
 
 - Which Mathlib snapshot does leansearch.net serve today? Has the post-v4.28 update shipped?
 - Is `/augment` query augmentation still considered part of the recommended pipeline in v2? The Lean Finder paper found that augmentation lowered LeanSearch's R@1 ([arXiv:2510.15940, "Additional Experiments" appendix](https://arxiv.org/abs/2510.15940)).
-- Were the v1 50-query labels ever published?
+- Is the full 50-query v1 set (including the 10 Lean-term queries) recoverable from the Hugging Face release? See [../lean-benchmarks/leansearch-v1-benchmark.md](../lean-benchmarks/leansearch-v1-benchmark.md).
 
 ## Sources
 

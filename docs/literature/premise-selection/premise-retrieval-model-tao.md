@@ -79,7 +79,7 @@ A small BERT pre-trained from scratch on Lean text retrieves candidates as a bi-
 
 ## Open questions
 
-- Is premise-search.com still live, and which Mathlib version does it index now ("real-time updating database")?
+- Which Mathlib version does premise-search.com index now ("real-time updating database")? On 2026-09-28 it did not respond from our machine ([../lean-tools/lean-state-search.md](../lean-tools/lean-state-search.md)).
 - Were queries or states from the RI test set seen during MLM pre-training? Pre-training used training-split states plus *all premise* statements, so test premises' statements were seen, but not as positives.
 
 ## Sources

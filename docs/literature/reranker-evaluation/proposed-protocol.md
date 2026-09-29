@@ -18,7 +18,7 @@ This is a concrete protocol for measuring what a second-stage reranker contribut
    - For each query, publish frozen top-K run files from at least three first stages:
      - (a) BM25 over names plus docstrings;
      - (b) a dense retriever, for example Qwen3-Embedding-0.6B over informalizations;
-     - (c) LeanExplore's own fused list (BM25 + FAISS, RRF, dependency boost), taken from its local backend with the reranker disabled. Whether `rerank_top = 0` disables it is unverified; check `local-backend.md`.
+     - (c) LeanExplore's own fused list (BM25 + FAISS, RRF, dependency boost), taken from its local backend with the reranker disabled. `rerank_top = 0` (or `None`) disables it: `rerank = bool(rerank_top and rerank_top > 0)` in `src/lean_explore/search/engine.py` (checked at commit 17b9d6c). The engine defaults to 25 and `Service` to 50.
    - Set K = 100, plus K = 1000 for depth studies.
    - Use strictly decreasing scores, because of the trec_eval tie-break on docno.
 2. **Report the ceiling of each first stage.** Precedent: survey §3.2.2; Expando-Mono-Duo §5.4.
@@ -49,7 +49,7 @@ This is a concrete protocol for measuring what a second-stage reranker contribut
    - Pool judgments across all first stages *and* all reranked outputs to depth 10 at least.
    - Report Judged@10 per run, so that rerankers surfacing unjudged declarations are not penalised silently.
 10. **Statistics and tooling.**
-    - Compute per-query results with ir-measures or trec_eval. Use paired randomization tests with Holm correction (ranx `compare()` plus our own correction).
+    - Compute per-query results with ir-measures or trec_eval. Use paired randomization tests with Holm correction (ranx `compare()` plus our own correction). Do not use ranx's `"tukey"` option: it runs an unpaired Tukey HSD and applies no correction to pairwise tests. The full statistical protocol is in [../statistics/reporting-and-reproducibility.md](../statistics/reporting-and-reproducibility.md).
     - Release all run files, so reranker-only claims can be re-checked against the frozen candidates.
 
 ## Open questions
