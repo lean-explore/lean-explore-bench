@@ -96,7 +96,7 @@ should have graded, pooled judgments and enough queries to separate engines.
 - **Pool across every engine.** Judge the union of the top 10–20 results from
   every system, including BM25, name-match and grep baselines. Drawing
   candidates only from BM25 or name matching biases the benchmark against
-  semantic engines ([math-ir/bright-theoremqa](math-ir/bright-theoremqa.md)).
+  semantic engines ([embedding-evaluation/bright](embedding-evaluation/bright.md)).
   - Report the unjudged share of each engine's top 10. On TREC-COVID, judging
     the missing results raised one system's nDCG@10 from 0.654 to 0.735
     ([embedding-evaluation/beir](embedding-evaluation/beir.md),
@@ -254,7 +254,7 @@ and the other `eval-stats-` notes:
   ([reranker-evaluation/tooling](reranker-evaluation/tooling.md)).
 - Self-host engines where possible. LeanExplore's hosted API allows 30
   requests/min, Loogle's public endpoint is throttled, and LeanStateSearch was
-  unreachable on 2026-09-28 ([lean-engines/lean-lsp-mcp](lean-engines/lean-lsp-mcp.md)).
+  unreachable on 2026-09-28 ([lean-tools/lean-lsp-mcp](lean-tools/lean-lsp-mcp.md)).
 - This benchmark is being built by LeanExplore's author. Say so, publish the
   code, and apply every rule above to LeanExplore first.
 
@@ -273,49 +273,104 @@ correctly prompted reranker
 ## Index
 
 ### Lean search benchmarks and leaderboards (`lean-benchmarks/`)
-- [lean-benchmarks/legendre-leaderboard](lean-benchmarks/legendre-leaderboard.md): independent leaderboard, 13 systems on MathlibQR
-- [lean-benchmarks/mathlibqr](lean-benchmarks/mathlibqr.md): 200 declarations × up to 6 phrasings; single gold answer
-- [lean-benchmarks/mathlibmpr](lean-benchmarks/mathlibmpr.md): 69 theorems with groups of interchangeable premises
-- [lean-benchmarks/leansearch-v1-benchmark](lean-benchmarks/leansearch-v1-benchmark.md): 50 queries, graded pooled labels
-- [lean-benchmarks/lean-finder-eval](lean-benchmarks/lean-finder-eval.md): Lean Finder test sets and user study
-- [lean-benchmarks/leanexplore-llm-judge-eval](lean-benchmarks/leanexplore-llm-judge-eval.md): LeanExplore paper's LLM-judge protocol
-- [lean-benchmarks/mathleap-meld-blueprints](lean-benchmarks/mathleap-meld-blueprints.md): MELD and the Blueprints set
-- [lean-benchmarks/leandojo-premise-retrieval](lean-benchmarks/leandojo-premise-retrieval.md): LeanDojo Benchmark 4 as a search eval
-- MIRB, seen three ways: [lean-benchmarks/mirb](lean-benchmarks/mirb.md) (Lean parts), [embedding-evaluation/mirb](embedding-evaluation/mirb.md) (as an embedding benchmark), [math-ir/mirb](math-ir/mirb.md) (non-Lean parts)
 
-### Lean search engines (`lean-engines/`)
-- [lean-engines/leanexplore](lean-engines/leanexplore.md), [lean-engines/leansearch](lean-engines/leansearch.md), [lean-engines/lean-finder](lean-engines/lean-finder.md), [lean-engines/leandex](lean-engines/leandex.md), [lean-engines/octo-search](lean-engines/octo-search.md), [lean-engines/lightweight-llm-free-search](lean-engines/lightweight-llm-free-search.md), [lean-engines/moogle](lean-engines/moogle.md) (defunct)
-- How engines are reached: [lean-engines/leansearchclient](lean-engines/leansearchclient.md) / [lean-tools/leansearchclient](lean-tools/leansearchclient.md), [lean-engines/lean-lsp-mcp](lean-engines/lean-lsp-mcp.md) / [lean-tools/lean-lsp-mcp](lean-tools/lean-lsp-mcp.md)
+- [lean-benchmarks/lean-finder-eval](lean-benchmarks/lean-finder-eval.md): Lean Finder evaluation sets and user study
+- [lean-benchmarks/leanexplore-llm-judge-eval](lean-benchmarks/leanexplore-llm-judge-eval.md): LeanExplore paper evaluation (LLM-as-judge, 300 queries)
+- [lean-benchmarks/leansearch-v1-benchmark](lean-benchmarks/leansearch-v1-benchmark.md): Mathlib4 Semantic Search Benchmark (LeanSearch v1)
+- [lean-benchmarks/legendre-leaderboard](lean-benchmarks/legendre-leaderboard.md): Legendre Leaderboard
+- [lean-benchmarks/mathleap-meld-blueprints](lean-benchmarks/mathleap-meld-blueprints.md): MathLeap evaluation sets: MELD and the Blueprints retrieval set
+- [lean-benchmarks/mathlibmpr](lean-benchmarks/mathlibmpr.md): MathlibMPR (global premise retrieval benchmark)
+- [lean-benchmarks/mathlibqr](lean-benchmarks/mathlibqr.md): MathlibQR (LeanSearch v2 theorem-search benchmark)
+- [lean-benchmarks/mirb](lean-benchmarks/mirb.md): MIRB: Mathematical Information Retrieval Benchmark
+
+### Lean search engines (and informal theorem search engines) (`lean-engines/`)
+
+- [lean-engines/lean-finder](lean-engines/lean-finder.md): Lean Finder
+- [lean-engines/leandex](lean-engines/leandex.md): LeanDex (Project Numina)
+- [lean-engines/leanexplore](lean-engines/leanexplore.md): LeanExplore
+- [lean-engines/leansearch](lean-engines/leansearch.md): LeanSearch (v1, 2024; v2, 2026)
+- [lean-engines/lightweight-llm-free-search](lean-engines/lightweight-llm-free-search.md): Lightweight and LLM-Free Semantic Search for mathlib4 (Isaac Li)
+- [lean-engines/octo-search](lean-engines/octo-search.md): Axiomatic Octo Search
 
 ### Name, pattern and in-editor tools (baselines) (`lean-tools/`)
-- [lean-tools/loogle](lean-tools/loogle.md), [lean-tools/mathlib-find](lean-tools/mathlib-find.md), [lean-tools/doc-gen4-search](lean-tools/doc-gen4-search.md), [lean-tools/lean-check-and-completion](lean-tools/lean-check-and-completion.md)
-- [lean-tools/exact-apply](lean-tools/exact-apply.md), [lean-tools/rw-search](lean-tools/rw-search.md), [lean-tools/hint](lean-tools/hint.md), [lean-tools/lean-state-search](lean-tools/lean-state-search.md), [lean-tools/lean-library-suggestions](lean-tools/lean-library-suggestions.md)
+
+- [lean-tools/exact-apply](lean-tools/exact-apply.md): `exact?` / `apply?` (library search tactics, formerly `library_search`)
+- [lean-tools/lean-library-suggestions](lean-tools/lean-library-suggestions.md): Lean core library suggestions (`suggestions`, `set_library_suggestions`, `grind +suggestions`)
+- [lean-tools/lean-lsp-mcp](lean-tools/lean-lsp-mcp.md): lean-lsp-mcp search tools (MCP bundle for agents)
+- [lean-tools/lean-state-search](lean-tools/lean-state-search.md): LeanStateSearch (premise-search.com)
+- [lean-tools/leansearchclient](lean-tools/leansearchclient.md): LeanSearchClient (`#search`, `#leansearch`, `#loogle`, `#statesearch` in Lean)
+- [lean-tools/loogle](lean-tools/loogle.md): Loogle
+- [lean-tools/symbolic-baselines](lean-tools/symbolic-baselines.md): Small symbolic baselines: `#check` and completion, doc-gen4 search, `#find`, `rw?`, `hint`
 
 ### Premise selection and retrieval-augmented proving (`premise-selection/`)
-- Lean: [premise-selection/leandojo-reprover](premise-selection/leandojo-reprover.md), [premise-selection/lean-copilot](premise-selection/lean-copilot.md), [premise-selection/leanagent](premise-selection/leanagent.md), [premise-selection/leanhammer-leanpremise](premise-selection/leanhammer-leanpremise.md), [premise-selection/piotrowski-ml-premise-selection-lean](premise-selection/piotrowski-ml-premise-selection-lean.md), [premise-selection/graph-augmented-premise-selection-lean](premise-selection/graph-augmented-premise-selection-lean.md), [premise-selection/premise-retrieval-model-tao](premise-selection/premise-retrieval-model-tao.md), [premise-selection/cslib-premise-bench](premise-selection/cslib-premise-bench.md), [premise-selection/theoremgraph](premise-selection/theoremgraph.md), [premise-selection/leansearch-v2](premise-selection/leansearch-v2.md), [premise-selection/real-prover](premise-selection/real-prover.md)
-- Agents and provers: [premise-selection/agents-with-search-tools](premise-selection/agents-with-search-tools.md), [premise-selection/frontier-provers-retrieval-usage](premise-selection/frontier-provers-retrieval-usage.md), [premise-selection/retrieval-augmented-autoformalization](premise-selection/retrieval-augmented-autoformalization.md)
-- Other systems: [premise-selection/magnushammer](premise-selection/magnushammer.md) (Isabelle), [premise-selection/rango-coq](premise-selection/rango-coq.md) (Coq)
+
+- [premise-selection/agents-with-search-tools](premise-selection/agents-with-search-tools.md): Do search tools help LLM agents write Lean? (cluster: Hilbert, Awakening the Sleeping Agent, Lean Finder RAG, Ax-Prover, Numina-Lean-Agent, Archon)
+- [premise-selection/cslib-premise-bench](premise-selection/cslib-premise-bench.md): CSLibPremiseBench: Structure-Guided Premise Retrieval and Label Robustness for Lean 4 Computer-Science Theorems (Ji)
+- [premise-selection/leandojo-reprover](premise-selection/leandojo-reprover.md): LeanDojo / ReProver (LeanDojo Benchmark, LeanDojo Benchmark 4)
+- [premise-selection/leanhammer-leanpremise](premise-selection/leanhammer-leanpremise.md): Premise Selection for a Lean Hammer (LeanPremise + LeanHammer)
+- [premise-selection/leansearch-v2](premise-selection/leansearch-v2.md): LeanSearch v2: Global Premise Retrieval for Lean 4 Theorem Proving (and LeanSearch v1 benchmark)
+- [premise-selection/magnushammer](premise-selection/magnushammer.md): Magnushammer: A Transformer-Based Approach to Premise Selection
+- [premise-selection/other-papers](premise-selection/other-papers.md): Other Lean premise-selection papers: Lean Copilot, LeanAgent, graph-augmented ReProver
+- [premise-selection/piotrowski-ml-premise-selection-lean](premise-selection/piotrowski-ml-premise-selection-lean.md): Machine-Learned Premise Selection for Lean (Piotrowski, Fernández Mir, Ayers)
+- [premise-selection/premise-retrieval-model-tao](premise-selection/premise-retrieval-model-tao.md): Learning an Effective Premise Retrieval Model for Efficient Mathematical Formalization (Tao, Liu, Wang, Xu)
+- [premise-selection/rango-coq](premise-selection/rango-coq.md): Rango: Adaptive Retrieval-Augmented Proving (Coq) and the CoqStoq dataset
+- [premise-selection/real-prover](premise-selection/real-prover.md): REAL-Prover: Retrieval Augmented Lean Prover (LeanSearch-PS)
+- [premise-selection/retrieval-augmented-autoformalization](premise-selection/retrieval-augmented-autoformalization.md): Retrieval-augmented autoformalization (MS-RAG, RAutoformalizer, DRIFT, DDR)
+- [premise-selection/theoremgraph](premise-selection/theoremgraph.md): TheoremGraph: Bridging Formal and Informal Mathematics (Kurgan, Wang, Leonen, et al.)
 
 ### Math information retrieval outside Lean (`math-ir/`)
-- Evaluation campaigns: [math-ir/arqmath](math-ir/arqmath.md), [math-ir/ntcir-math](math-ir/ntcir-math.md), [math-ir/saber-math](math-ir/saber-math.md)
-- Datasets: [math-ir/naturalproofs](math-ir/naturalproofs.md), [math-ir/bright-theoremqa](math-ir/bright-theoremqa.md), [math-ir/mse-duplicate-detection](math-ir/mse-duplicate-detection.md), [math-ir/informal-formal-alignment](math-ir/informal-formal-alignment.md)
-- Engines and other proof assistants: [math-ir/formula-search-engines](math-ir/formula-search-engines.md), [math-ir/isabelle-search](math-ir/isabelle-search.md), [math-ir/coq-rocq-search](math-ir/coq-rocq-search.md), [math-ir/hol-premise-selection](math-ir/hol-premise-selection.md), [math-ir/metamath-mizar-agda](math-ir/metamath-mizar-agda.md)
+
+- [math-ir/arqmath](math-ir/arqmath.md): ARQMath (CLEF 2020-2022): Answer Retrieval for Questions on Math
+- [math-ir/informal-formal-alignment](math-ir/informal-formal-alignment.md): Informal↔formal alignment resources (100 theorems, 1000+ theorems, Mathlib doc maps, Stacks tags, concept alignment, MMA)
+- [math-ir/naturalproofs](math-ir/naturalproofs.md): NaturalProofs (and ProofWiki premise selection)
+- [math-ir/ntcir-math](math-ir/ntcir-math.md): NTCIR Math tasks: NTCIR-10 Math Pilot, NTCIR-11 Math-2, NTCIR-12 MathIR
+- [math-ir/other-proof-assistants](math-ir/other-proof-assistants.md): Search and premise selection in other proof assistants (Isabelle, Coq/Rocq, HOL Light/HOL4, Metamath, Mizar, Agda)
+- [math-ir/saber-math](math-ir/saber-math.md): SABER-Math
 
 ### General IR evaluation (`ir-evaluation/`)
-- [ir-evaluation/trec-pooling-and-relevance-judgments](ir-evaluation/trec-pooling-and-relevance-judgments.md), [ir-evaluation/offline-metrics-and-significance-testing](ir-evaluation/offline-metrics-and-significance-testing.md), [ir-evaluation/msmarco-trecdl-beir-benchmarks](ir-evaluation/msmarco-trecdl-beir-benchmarks.md), [ir-evaluation/retrieval-models-evaluation-practices](ir-evaluation/retrieval-models-evaluation-practices.md)
-- [ir-evaluation/hybrid-fusion-rrf](ir-evaluation/hybrid-fusion-rrf.md), [ir-evaluation/ann-vector-search-benchmarks](ir-evaluation/ann-vector-search-benchmarks.md), [ir-evaluation/industry-online-evaluation](ir-evaluation/industry-online-evaluation.md), [ir-evaluation/twitter-the-algorithm](ir-evaluation/twitter-the-algorithm.md)
+
+- [ir-evaluation/hybrid-fusion-rrf](ir-evaluation/hybrid-fusion-rrf.md): Hybrid lexical + semantic fusion: RRF and convex combination, and how they were evaluated
+- [ir-evaluation/industry-online-evaluation](ir-evaluation/industry-online-evaluation.md): Industry search evaluation: offline vs online, A/B tests, interleaving, clicks, latency
+- [ir-evaluation/msmarco-trecdl-beir-benchmarks](ir-evaluation/msmarco-trecdl-beir-benchmarks.md): MS MARCO, TREC Deep Learning, BEIR: how the standard IR benchmarks are constructed
+- [ir-evaluation/offline-metrics-and-significance-testing](ir-evaluation/offline-metrics-and-significance-testing.md): Offline ranking metrics and significance testing for IR
+- [ir-evaluation/trec-pooling-and-relevance-judgments](ir-evaluation/trec-pooling-and-relevance-judgments.md): TREC-style judged relevance sets: pooling, incompleteness, sparse labels, LLM assessors
+- [ir-evaluation/twitter-the-algorithm](ir-evaluation/twitter-the-algorithm.md): Twitter/X open-sourced ranking and search code (the-algorithm, the-algorithm-ml, x-algorithm)
 
 ### Statistics of evaluation (`statistics/`)
-- [statistics/significance-tests-and-multiple-comparisons](statistics/significance-tests-and-multiple-comparisons.md), [statistics/effect-sizes-power-and-topic-set-size](statistics/effect-sizes-power-and-topic-set-size.md), [statistics/judgment-reliability-and-llm-assessors](statistics/judgment-reliability-and-llm-assessors.md), [statistics/metric-scales-and-correlation](statistics/metric-scales-and-correlation.md), [statistics/reporting-and-reproducibility](statistics/reporting-and-reproducibility.md)
+
+- [statistics/effect-sizes-power-and-topic-set-size](statistics/effect-sizes-power-and-topic-set-size.md): Effect sizes, confidence intervals, statistical power and topic-set size in IR
+- [statistics/judgment-reliability-and-llm-assessors](statistics/judgment-reliability-and-llm-assessors.md): Reliability of relevance judgments: assessor disagreement, incompleteness, LLM assessors
+- [statistics/metric-scales-and-correlation](statistics/metric-scales-and-correlation.md): Metric properties: measurement scales, metric sensitivity, and ranking correlation
+- [statistics/reporting-and-reproducibility](statistics/reporting-and-reproducibility.md): Reporting standards, reproducibility, and a statistical protocol for lean-explore-bench
+- [statistics/significance-tests-and-multiple-comparisons](statistics/significance-tests-and-multiple-comparisons.md): Significance tests and multiple-comparison corrections for IR evaluation
 
 ### Embedding model evaluation (`embedding-evaluation/`)
-- Benchmarks: [embedding-evaluation/mteb](embedding-evaluation/mteb.md), [embedding-evaluation/beir](embedding-evaluation/beir.md), [embedding-evaluation/bright](embedding-evaluation/bright.md), [embedding-evaluation/coir](embedding-evaluation/coir.md), [embedding-evaluation/benchmark-lessons](embedding-evaluation/benchmark-lessons.md)
-- Methodology: [embedding-evaluation/reporting-protocols](embedding-evaluation/reporting-protocols.md), [embedding-evaluation/first-stage-metrics](embedding-evaluation/first-stage-metrics.md), [embedding-evaluation/efficiency-tradeoffs](embedding-evaluation/efficiency-tradeoffs.md), [embedding-evaluation/critiques-and-robustness](embedding-evaluation/critiques-and-robustness.md), [embedding-evaluation/domain-benchmarks](embedding-evaluation/domain-benchmarks.md)
+
+- [embedding-evaluation/beir](embedding-evaluation/beir.md): BEIR (Benchmarking IR)
+- [embedding-evaluation/benchmark-lessons](embedding-evaluation/benchmark-lessons.md): Embedding / reranker benchmarks: lessons for lean-explore-bench
+- [embedding-evaluation/bright](embedding-evaluation/bright.md): BRIGHT (reasoning-intensive retrieval)
+- [embedding-evaluation/critiques-and-robustness](embedding-evaluation/critiques-and-robustness.md): Critiques of embedding evaluation: leaderboard overfitting, static-benchmark saturation, instruction and paraphrase sensitivity, representational limits
+- [embedding-evaluation/domain-benchmarks](embedding-evaluation/domain-benchmarks.md): Domain-specific embedding evaluations: how CoIR (code), BRIGHT (reasoning/math), LitSearch and SciRepEval (science) build queries and labels
+- [embedding-evaluation/efficiency-tradeoffs](embedding-evaluation/efficiency-tradeoffs.md): Evaluating embeddings under efficiency constraints: Matryoshka truncation, quantization, exact vs ANN indexes
+- [embedding-evaluation/first-stage-metrics](embedding-evaluation/first-stage-metrics.md): Metrics for the first-stage (embedding) retriever: Recall@K as a ceiling, nDCG@10, MRR@10
+- [embedding-evaluation/mteb](embedding-evaluation/mteb.md): MTEB / MMTEB / RTEB (Massive Text Embedding Benchmark family)
+- [embedding-evaluation/reporting-protocols](embedding-evaluation/reporting-protocols.md): How embedding-model papers report evaluation (E5, BGE, GTE, E5-mistral, NV-Embed, Gemini Embedding, Qwen3-Embedding)
 
 ### Reranker evaluation (`reranker-evaluation/`)
-- [reranker-evaluation/fixed-candidate-protocol](reranker-evaluation/fixed-candidate-protocol.md), [reranker-evaluation/llm-order-cost-contamination](reranker-evaluation/llm-order-cost-contamination.md), [reranker-evaluation/model-card-reporting](reranker-evaluation/model-card-reporting.md), [reranker-evaluation/tooling](reranker-evaluation/tooling.md), [reranker-evaluation/proposed-protocol](reranker-evaluation/proposed-protocol.md)
+
+- [reranker-evaluation/fixed-candidate-protocol](reranker-evaluation/fixed-candidate-protocol.md): Reranker evaluation: the fixed-candidate protocol, first-stage dependence and rerank depth
+- [reranker-evaluation/llm-order-cost-contamination](reranker-evaluation/llm-order-cost-contamination.md): LLM reranker evaluation: order sensitivity, nondeterminism, cost reporting and contamination
+- [reranker-evaluation/proposed-protocol](reranker-evaluation/proposed-protocol.md): Proposed protocol: evaluating the reranking stage in lean-explore-bench
+- [reranker-evaluation/tooling](reranker-evaluation/tooling.md): Reranker evaluation tooling: trec_eval, ir-measures, ranx, ir_datasets, Pyserini, RankLLM, rerankers
 
 ### Code search (`code-search/`)
-- Benchmarks: [code-search/codesearchnet](code-search/codesearchnet.md), [code-search/cosqa](code-search/cosqa.md), [code-search/coir](code-search/coir.md), [code-search/coderag-bench](code-search/coderag-bench.md), [code-search/swe-bench-localization](code-search/swe-bench-localization.md), [code-search/repo-completion-retrieval](code-search/repo-completion-retrieval.md), [code-search/newer-retrieval-benchmarks](code-search/newer-retrieval-benchmarks.md)
-- Agents and production: [code-search/agent-retrieval-evals](code-search/agent-retrieval-evals.md), [code-search/embedding-vs-grep-evidence](code-search/embedding-vs-grep-evidence.md), [code-search/production-search-engines](code-search/production-search-engines.md)
-- Synthesis: [code-search/search-evaluation-methodology](code-search/search-evaluation-methodology.md)
+
+- [code-search/agent-retrieval-evals](code-search/agent-retrieval-evals.md): Evaluating retrieval inside coding agents (SWE-Explore, Agent Retrieval Bench, semantic vs. deep agentic search on SWE-QA, RepoQA)
+- [code-search/coderag-bench](code-search/coderag-bench.md): CodeRAG-Bench
+- [code-search/codesearchnet](code-search/codesearchnet.md): CodeSearchNet (Corpus, Challenge) and CodeXGLUE AdvTest
+- [code-search/coir](code-search/coir.md): CoIR (Code Information Retrieval Benchmark)
+- [code-search/cosqa](code-search/cosqa.md): CoSQA, CodeXGLUE WebQueryTest, and CoSQA+
+- [code-search/embedding-vs-grep-evidence](code-search/embedding-vs-grep-evidence.md): Embeddings vs. agentic grep in production coding tools: what vendors report and how they evaluated it
+- [code-search/newer-retrieval-benchmarks](code-search/newer-retrieval-benchmarks.md): Newer (2025–2026) code retrieval benchmarks: ExecRetrieval, FreshStack, RepoAlign-Bench, MM-IssueLoc, AlgoSimBench
+- [code-search/search-evaluation-methodology](code-search/search-evaluation-methodology.md): How code search is evaluated: query sources, relevance, metrics, leakage (cross-cutting synthesis)
+- [code-search/swe-bench-localization](code-search/swe-bench-localization.md): SWE-bench-derived code localization evals (SWE-bench retrieval, Loc-Bench, SweRank/SweLoc, KA-LogicQuery)

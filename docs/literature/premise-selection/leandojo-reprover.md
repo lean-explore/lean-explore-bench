@@ -79,3 +79,11 @@ ReProver is a DPR-style dense retriever: a ByT5-small encoder with cosine simila
 - LeanDojo site: <https://leandojo.org/>; code: <https://github.com/lean-dojo/LeanDojo>, <https://github.com/lean-dojo/ReProver>
 - Zenodo datasets: <https://doi.org/10.5281/zenodo.8016385>, <https://doi.org/10.5281/zenodo.8040109>
 - Lean Zulip archive, "Releasing LeanDojo" thread (split critique): <https://leanprover-community.github.io/archive/stream/219941-Machine-Learning-for-Theorem-Proving/topic/Releasing.20LeanDojo.html>
+
+## Merged detail: LeanDojo Benchmark 4 as a search eval (from the former `lean-benchmarks/leandojo-premise-retrieval.md`)
+
+- **Scale and provenance.** This is the largest non-synthetic query→declaration dataset for Lean, with gold extracted automatically by the elaborator. Downloadable from Zenodo under CC BY 2.0.
+- **MIRB packaging.** MIRB repackages the `novel_premises` split as 4,109 queries over 180,944 documents; general embedders score nDCG@10 of about 5–13 (BM25 6.9, voyage-3-large 13.0). See [../lean-benchmarks/mirb.md](../lean-benchmarks/mirb.md).
+- **Legendre** lists a "LeanDojo B4" premise task on its methodology page and keeps it separate from the tasks built on its v4.28.0-rc1 corpus ([methodology](https://www.legendre-leaderboard.com/methodology)).
+- **Different query modality.** Queries are proof states, not what a human types. It suits a separate proof-state/agent track and engines that accept goals (LeanStateSearch, Lean Finder, Loogle-like tools), not natural-language search.
+- **Stale snapshot.** The October 2023 snapshot has seen many renames. Scoring engines on a current corpus needs re-extraction with LeanDojo or Lean's own premise data (e.g. `chasenorman/premises-mathlib-v4.30.0` on Hugging Face, provenance unverified).

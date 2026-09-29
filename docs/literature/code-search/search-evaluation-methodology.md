@@ -1,7 +1,7 @@
 # How code search is evaluated: query sources, relevance, metrics, leakage (cross-cutting synthesis)
 
 - **Kind:** paper (synthesis note)
-- **Links:** see the per-benchmark notes: [codesearchnet.md](codesearchnet.md), [cosqa.md](cosqa.md), [coir.md](coir.md), [coderag-bench.md](coderag-bench.md), [swe-bench-localization.md](swe-bench-localization.md), [repo-completion-retrieval.md](repo-completion-retrieval.md), [agent-retrieval-evals.md](agent-retrieval-evals.md), [newer-retrieval-benchmarks.md](newer-retrieval-benchmarks.md), [embedding-vs-grep-evidence.md](embedding-vs-grep-evidence.md), [production-search-engines.md](production-search-engines.md)
+- **Links:** see the per-benchmark notes: [codesearchnet.md](codesearchnet.md), [cosqa.md](cosqa.md), [coir.md](coir.md), [coderag-bench.md](coderag-bench.md), [swe-bench-localization.md](swe-bench-localization.md), [agent-retrieval-evals.md](agent-retrieval-evals.md), [newer-retrieval-benchmarks.md](newer-retrieval-benchmarks.md), [embedding-vs-grep-evidence.md](embedding-vs-grep-evidence.md)
 - **Authors / org, date:** this repo, Sept 2026
 - **Status:** living note
 

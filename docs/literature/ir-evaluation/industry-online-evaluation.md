@@ -16,7 +16,7 @@ This note covers how production search teams decide whether a change is better. 
   - Offline evaluation: **recall@K over 10,000 sampled search sessions**, where the targets are clicked results or human-rated relevant documents, using exact KNN over the whole index.
   - The authors also deployed "several configs of the ANN algorithms and parameters online" to measure the real performance impact.
   - Precision was controlled by a **human-rating feedback loop**: newly retrieved EBR results were sent to raters, and the ratings were used to retrain a relevance filter.
-  - Offline gains did not always transfer online, as the quantisation example in [ann-vector-search-benchmarks.md](ann-vector-search-benchmarks.md) shows.
+  - Offline gains did not always transfer online, as the quantisation example shows: a model with better exact-kNN recall lost that advantage after quantisation, so "the actual benefit diminished when serving it online" ([arXiv:2006.11632](https://arxiv.org/abs/2006.11632), §6).
 - **Airbnb, deep learning for search** ([arXiv:1810.09591](https://arxiv.org/abs/1810.09591)).
   - The principal offline metric was NDCG. The online metric was bookings in A/B tests.
   - Several documented gaps between the two:

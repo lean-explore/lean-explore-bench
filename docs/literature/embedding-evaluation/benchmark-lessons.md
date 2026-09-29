@@ -1,6 +1,6 @@
 # Embedding / reranker benchmarks: lessons for lean-explore-bench
 
-- **Kind:** synthesis (cross-cutting notes over [mteb.md](mteb.md), [beir.md](beir.md), [bright.md](bright.md), [coir.md](coir.md), [mirb.md](mirb.md))
+- **Kind:** synthesis (cross-cutting notes over [mteb.md](mteb.md), [beir.md](beir.md), [bright.md](bright.md), [../code-search/coir.md](../code-search/coir.md), [../lean-benchmarks/mirb.md](../lean-benchmarks/mirb.md))
 - **Date:** 2026-09-28
 - **Status:** working notes; the recommendations are ours, and every factual claim links to its source.
 

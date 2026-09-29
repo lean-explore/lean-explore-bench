@@ -25,7 +25,7 @@ An informal-math corpus of 32k theorem statements plus proofs, 14k definitions, 
 - **Zero-shot on the textbooks:** TF-IDF *beats* the neural models on Real Analysis (mAP 15.79 against 13.24 for BERT-pair trained on ProofWiki), and the two are comparable on Number Theory. Joint training did not help out of domain ([Table 6](https://arxiv.org/abs/2104.01112)).
 - **Title ablation:** on ProofWiki, TF-IDF and pairwise BERT did better with **titles only** than with title plus content. Descriptive names carry most of the signal ([title/content ablation table](https://arxiv.org/abs/2104.01112)).
 - The authors note in their qualitative analysis that highly ranked non-gold references were often topically *relevant* but not cited. The citation-based ground truth therefore undercounts relevance ([qualitative evaluation paragraph](https://arxiv.org/abs/2104.01112)).
-- MIRB later reuses NaturalProofs as its natural-language premise-retrieval task. Best nDCG@10 there is 37.21 (NV-Embed-v2) ([MIRB Table 4](https://arxiv.org/abs/2505.15585)); see `mirb.md`.
+- MIRB later reuses NaturalProofs as its natural-language premise-retrieval task. Best nDCG@10 there is 37.21 (NV-Embed-v2) ([MIRB Table 4](https://arxiv.org/abs/2505.15585)); see `../lean-benchmarks/mirb.md`.
 
 ## Relevance to lean-explore-bench
 - **Split pattern to borrow.** Holding out leaf nodes of the dependency graph maps directly onto Mathlib: evaluate on declarations that nothing else in the corpus uses. For Lean you can hold out whole recent files or modules instead.

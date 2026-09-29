@@ -55,3 +55,20 @@ No evaluation of the MCP bundle or of `lean_local_search` was found.
 - Fork source (read locally): <https://github.com/project-numina/lean-lsp-mcp/blob/5c0eddf0a67881aae10589e9c399538f90f1eff6/src/lean_lsp_mcp/server.py>, <https://github.com/project-numina/lean-lsp-mcp/blob/5c0eddf0a67881aae10589e9c399538f90f1eff6/src/lean_lsp_mcp/search_utils.py>
 - Upstream repo/README: <https://github.com/oOo0oOo/lean-lsp-mcp>
 - Backends: <https://loogle.lean-lang.org/>, <https://premise-search.com/>, <https://github.com/hanwenzhu/lean-premise-server>, <https://leansearch.net/>, <https://arxiv.org/abs/2510.15940>
+
+## Merged detail (from the former `lean-engines/lean-lsp-mcp.md`)
+
+| Tool | Backend | Query style | Client throttle (upstream) |
+|---|---|---|---|
+| `lean_leansearch` | `POST https://leansearch.net/search` | NL, mixed, names, Lean terms | 90 / 30 s |
+| `lean_leanfinder` | HF inference endpoint (`LEAN_FINDER_URL`) | NL, questions, proof state and intent | 10 / 30 s |
+| `lean_loogle` | loogle.lean-lang.org or a local Loogle | formula and pattern | 3 / 30 s |
+| `lean_state_search` | premise-search.com (`LEAN_STATE_SEARCH_URL`) | goal at a file position | 6 / 30 s |
+| `lean_hammer_premise` | leanpremise.net (`LEAN_HAMMER_URL`) | goal | 6 / 30 s |
+| `lean_local_search` | ripgrep over the local project | name prefix | none |
+
+Sources: [tools/search.py](https://github.com/oOo0oOo/lean-lsp-mcp/blob/main/src/lean_lsp_mcp/tools/search.py), [config.py](https://github.com/oOo0oOo/lean-lsp-mcp/blob/main/src/lean_lsp_mcp/config.py).
+
+- **Usage context.** LeanSearch reported usage rising sharply from January 2026 "coinciding with the wave of coding agents" and asked lean-lsp-mcp to raise its throttle ([Zulip](https://leanprover.zulipchat.com/#narrow/near/596070778)).
+- **Output normalisation differs per engine.** Upstream `lean_leansearch` returns only `name`, `module_name`, `kind` and `type` and drops the informal text; `lean_leanfinder` drops any result whose URL is not a mathlib4_docs link. An agent therefore sees different evidence from different engines, so any LLM-judge protocol should present results in one uniform format hydrated from one metadata source, as LeanSearch v2 did.
+- **Numina fork:** adds `lean_leandex` (LeanDex SSE API with `generate_query=False`, `analyze_result=False`, rate limiter commented out) and has no `lean_leansearch` in code although its README documents one. Neither version wraps LeanExplore, which ships its own MCP server ([../lean-engines/leanexplore.md](../lean-engines/leanexplore.md)).

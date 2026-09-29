@@ -60,3 +60,14 @@ Average NDCG@10 from the paper's Table 3 ([arXiv 2407.02883](https://arxiv.org/a
 - CoIR paper: https://arxiv.org/abs/2407.02883
 - CoIR code: https://github.com/CoIR-team/coir
 - CodeXEmbed: https://arxiv.org/abs/2411.12644
+
+## Merged detail (from the former `embedding-evaluation/coir.md`)
+
+**Dataset sizes** (train/dev/test queries; corpus) ([arXiv:2407.02883](https://arxiv.org/abs/2407.02883)): APPS 5k/–/3.8K, 9K; CosQA 19k/–/500, 21K; Synthetic Text2SQL 100k/–/6K, 106K; CodeSearchNet 905k/41k/53K, 1M; CodeSearchNet-CCR (new: a function cut at a random 40–70% point, the prefix is the query and the rest the only positive) same sizes; CodeTransOcean-DL 564/72/180, 816; -Contest 561/226/446, 1K; StackOverflow QA (new) 13k/3k/2K, 20K; CodeFeedBack-ST 125k/–/31K, 156K; CodeFeedBack-MT 53k/–/13K, 66K.
+
+- **"Zero-shot" with shipped training splits.** CoIR calls itself a zero-shot benchmark but ships train splits, so fine-tuned models are in-domain and the benchmark does not track it.
+- **Protocol:** open models truncated at 512 tokens (Voyage queries at 256 because of rate limits), last-token pooling for E5-Mistral and mean pooling otherwise, cosine similarity.
+- **Rankings shift:** GTE-Base drops from 2nd on BEIR to 6th on CoIR, while E5-Base rises from 4th to 2nd.
+- **Input length matters:** at a 4,096-token cap GTE improves sharply (CodeFeedBack-MT 38.20 → 51.32; StackOverflow QA 64.36 → 78.63) while BGE-M3 moves both ways.
+- **Limitations stated by the authors:** English only; exactly one ground truth per query; no metadata-aware queries.
+- **For Lean:** score each query category separately and average per category, so the largest category does not dominate. Record truncation per system: LeanExplore truncates embedding inputs at 512 tokens and reranker inputs at 256 (`EMBEDDING_MAX_LENGTH`, `RERANKER_MAX_LENGTH` in [engine.py](https://github.com/lean-explore/lean-explore/blob/main/src/lean_explore/search/engine.py), commit 17b9d6c), so a long-statement slice is worth having.

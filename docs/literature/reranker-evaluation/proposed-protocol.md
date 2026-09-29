@@ -4,7 +4,6 @@
 - **Links:**
   - [fixed-candidate-protocol.md](fixed-candidate-protocol.md)
   - [llm-order-cost-contamination.md](llm-order-cost-contamination.md)
-  - [model-card-reporting.md](model-card-reporting.md)
   - [tooling.md](tooling.md)
 - **Status:** a proposal, not yet implemented.
 

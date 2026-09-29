@@ -4,7 +4,7 @@
 - **Links:** CoIR [arXiv:2407.02883](https://arxiv.org/abs/2407.02883), [github.com/CoIR-team/coir](https://github.com/CoIR-team/coir); BRIGHT [arXiv:2407.12883](https://arxiv.org/abs/2407.12883); LitSearch [arXiv:2407.18940](https://arxiv.org/abs/2407.18940); SciRepEval [arXiv:2211.13308](https://arxiv.org/abs/2211.13308)
 - **Authors / org, date:** CoIR: Huawei Noah's Ark et al., Jul 2024 (ACL 2025). BRIGHT: HKU / Princeton / Stanford et al., Jul 2024 (ICLR 2025). LitSearch: Princeton, Jul 2024 (EMNLP 2024). SciRepEval: AI2, Nov 2022 (EMNLP 2023).
 - **Status:** All public. CoIR and BRIGHT are also MTEB tasks ([mteb.md](mteb.md)).
-- **Not repeated here:** BRIGHT's theorem subsets (TheoremQA-Q/T, AoPS), their numbers and the TheoremQA de-lexicalization are in [../math-ir/bright-theoremqa.md](../math-ir/bright-theoremqa.md). CodeSearchNet itself is in [../code-search/codesearchnet.md](../code-search/codesearchnet.md). Math-retrieval suites are in [../lean-benchmarks/mirb.md](../lean-benchmarks/mirb.md) and [../math-ir/saber-math.md](../math-ir/saber-math.md).
+- **Not repeated here:** BRIGHT's theorem subsets (TheoremQA-Q/T, AoPS), their numbers and the TheoremQA de-lexicalization are in [bright.md](bright.md). CodeSearchNet itself is in [../code-search/codesearchnet.md](../code-search/codesearchnet.md). Math-retrieval suites are in [../lean-benchmarks/mirb.md](../lean-benchmarks/mirb.md) and [../math-ir/saber-math.md](../math-ir/saber-math.md).
 
 ## What it is
 

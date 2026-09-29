@@ -16,9 +16,7 @@ This is the serving and ranking code behind X's For You timeline, notifications 
 
 ## How it works (context only)
 
-- **Earlybird search.** The index is split into realtime (about 7 days), protected and archive clusters. Each cluster is partitioned, and root services scatter/gather requests across partitions. The superroot queries the archive only "if realtime and protected clusters don't return enough results" ([earlybird_root README](https://github.com/twitter/the-algorithm/blob/main/src/java/com/twitter/search/earlybird_root/README.md)).
-- **Earlybird relevance scoring.** `LinearScoringFunction.java` computes a weighted linear sum of the Lucene text score and static and realtime features. Examples are reputation, a text-quality score, log2 retweet/fav/reply counts, `hasUrl` and `isReply`. Weights come from request parameters, and the function emits a per-feature *explanation* of the score ([source](https://github.com/twitter/the-algorithm/blob/main/src/java/com/twitter/search/earlybird/search/relevance/scoring/LinearScoringFunction.java)).
-- **Heavy ranker (2023).** A parallel MaskNet predicts about 10 engagement probabilities. The final score is `sum_i w_i * p_i`, and the README lists the weights as of 2023-04-05 (for example reply 13.5, report -369.0) ([recap README](https://github.com/twitter/the-algorithm-ml/blob/main/projects/home/recap/README.md)).
+A funnel of candidate sources, a light ranker, a heavy ranker (a MaskNet predicting about 10 engagement probabilities, combined as a weighted sum), then filters. Earlybird search scores tweets with a weighted linear sum of the Lucene text score and static and realtime features, and emits a per-feature explanation of each score ([LinearScoringFunction.java](https://github.com/twitter/the-algorithm/blob/main/src/java/com/twitter/search/earlybird/search/relevance/scoring/LinearScoringFunction.java)).
 
 ## Evaluation and experimentation infrastructure the code reveals
 
@@ -43,8 +41,7 @@ The repos contain **no offline relevance benchmark for search**: no judged query
    - A broad launch at 20 followed three days later.
    - Weeks later the value was reset to 15 after experiment results and qualitative user feedback.
 6. **Training metrics only for Phoenix.** The Phoenix trainer writes per-step `metrics.jsonl` including loss, and the shipped path is described as "an offline verification harness" ([TRAINING.md](https://github.com/xai-org/x-algorithm/blob/main/phoenix/TRAINING.md)). No retrieval-quality benchmark is published.
-7. **Latency and scale (secondary source).** The 2023 blog reportedly states about 1,500 candidates per request, a ~48M-parameter heavy ranker, about 1.5 s for the full pipeline and 5 billion runs per day (quoted via search-result summaries of the blog; the primary page returned 403) (unverified against primary).
-8. **Objective tuning is online.** The heavy-ranker weights were "originally set so that ... each weighted engagement probability contributes a near-equal amount", then "periodically adjusted ... to optimize for platform metrics" ([recap README](https://github.com/twitter/the-algorithm-ml/blob/main/projects/home/recap/README.md)). In other words, the final ranking objective is chosen by online metrics, not by an offline relevance set.
+7. **Objective tuning is online.** The heavy-ranker weights were "originally set so that ... each weighted engagement probability contributes a near-equal amount", then "periodically adjusted ... to optimize for platform metrics" ([recap README](https://github.com/twitter/the-algorithm-ml/blob/main/projects/home/recap/README.md)). In other words, the final ranking objective is chosen by online metrics, not by an offline relevance set.
 
 ## Relevance to lean-explore-bench
 
@@ -56,7 +53,6 @@ The repos contain **no offline relevance benchmark for search**: no judged query
 ## Open questions
 
 - Did Twitter search (Top/Latest) ever have an offline judged set? Nothing in the repo shows one.
-- The primary blog text could not be fetched, so its numbers are unverified.
 
 ## Sources
 
@@ -64,4 +60,3 @@ The repos contain **no offline relevance benchmark for search**: no judged query
 - https://github.com/twitter/the-algorithm/blob/main/src/python/twitter/deepbird/projects/timelines/scripts/models/earlybird/README.md (the light ranker is logistic regression and "last trained several years ago")
 - https://github.com/twitter/the-algorithm-ml (`projects/home/recap/README.md`, `metrics/rce.py`)
 - https://github.com/xai-org/x-algorithm (README, `phoenix/README.md`, `phoenix/TRAINING.md`, `docs/BIDIRECTIONAL_BOOST_CHANGE.md`)
-- Blog figures via search summary: https://blog.x.com/engineering/en_us/topics/open-source/2023/twitter-recommendation-algorithm (unverified; 403)

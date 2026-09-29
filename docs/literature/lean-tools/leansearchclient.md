@@ -39,3 +39,10 @@ None. It is a client, not an engine.
 - Repo/README: <https://github.com/leanprover-community/LeanSearchClient>
 - Loogle syntax: <https://github.com/leanprover-community/LeanSearchClient/blob/main/LeanSearchClient/LoogleSyntax.lean>
 - Mathlib manifest/import: <https://github.com/leanprover-community/mathlib4/blob/ab4e75d4a94f9bb4c0f47bded965aa5504e39422/lake-manifest.json>, <https://github.com/leanprover-community/mathlib4/blob/ab4e75d4a94f9bb4c0f47bded965aa5504e39422/Mathlib/Tactic/Common.lean>
+
+## Merged detail (from the former `lean-engines/leansearchclient.md`)
+
+- **Backend selection:** the option `leansearchclient.backend` chooses the backend for `#search`. A natural-language query is sent only when the sentence ends with "." or "?". A bare `#search` inside a tactic block uses the current goal ([README](https://github.com/leanprover-community/LeanSearchClient)).
+- **Moogle removed** as "defunct" on 2025-10-21 ([PR #24](https://github.com/leanprover-community/LeanSearchClient/pull/24)).
+- **Why it matters for the benchmark:** it fixes which engines Mathlib users reach by default (LeanSearch for natural language, LeanStateSearch for goals, Loogle for patterns), so these defaults belong among the headline engines.
+- Open question: does it send a user agent that lets engines distinguish editor traffic in their statistics? (unverified)

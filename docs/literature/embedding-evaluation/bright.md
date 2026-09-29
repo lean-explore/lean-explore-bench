@@ -59,7 +59,7 @@ Scores are therefore not comparable across system classes without reading each e
   3. Keep `excluded_ids`-style masks. For Lean: exclude the declaration the query was derived from, plus its auto-generated aliases.
   4. Report query-rewriting variants as separate tracks.
 - **Mistake to avoid:** a single leaderboard that mixes "embedder only", "engine + LLM rewriting" and "agentic" systems. We should report tracks by system class and require a cost/latency disclosure.
-- **Reranker transfer is a real risk.** Rerankers trained on general-domain data can reduce nDCG on reasoning and math retrieval. MIRB found the same thing ([mirb.md](mirb.md)). Our benchmark should always report "retriever alone" next to "retriever + reranker".
+- **Reranker transfer is a real risk.** Rerankers trained on general-domain data can reduce nDCG on reasoning and math retrieval. MIRB found the same thing ([../lean-benchmarks/mirb.md](../lean-benchmarks/mirb.md)). Our benchmark should always report "retriever alone" next to "retriever + reranker".
 
 ## Open questions
 
@@ -72,3 +72,15 @@ Scores are therefore not comparable across system classes without reading each e
 - Code: https://github.com/xlang-ai/BRIGHT
 - Dataset schema: https://datasets-server.huggingface.co/info?dataset=xlangai/BRIGHT (queried 2026-09-28)
 - MTEB integration: https://github.com/embeddings-benchmark/mteb/blob/main/mteb/tasks/retrieval/eng/bright_retrieval.py
+
+## Merged detail: the theorem subsets (from the former `math-ir/bright-theoremqa.md`)
+
+- **Source.** TheoremQA ([arXiv:2305.12524](https://arxiv.org/abs/2305.12524)) has 800 expert-curated questions over 350 theorems in math, physics, EE/CS and finance; it is a QA benchmark, not retrieval.
+- **De-lexicalised queries.** TheoremQA questions often name the theorem outright, so keyword retrievers would win trivially. GPT-4 rewrote each into an applied scenario needing the same theorem; humans checked solvability and consistency, keeping 206 of 800 ([BRIGHT, TheoremQA appendix](https://arxiv.org/abs/2407.12883)). AoPS problems were not rewritten.
+- **TheoremQA-T gold construction** ([BRIGHT, "Annotating relevant theorems"](https://arxiv.org/abs/2407.12883)):
+  1. Candidate pool from ProofWiki: documents containing the theorem name as a substring (dropped if more than 100 hits), plus BM25 top-10 on theorem name plus definition.
+  2. GPT-4 judges whether each candidate's theorem is used in the solution.
+  3. 50 instances hand-annotated: Cohen's κ = 0.62 against GPT-4.
+  4. Queries with no positive dropped.
+- **Pooling weakness.** Because candidates came only from name-substring and BM25, the pool is biased toward lexical systems; dense engines surfacing valid theorems outside the pool are counted wrong. With several Lean engines to compare, pool from **all** engines under test.
+- **For Lean:** TheoremQA-T (problem → library theorem statement) is the closest informal analogue of our task. Keep separate query strata: named-concept queries, paraphrased/definitional queries, and applied-scenario queries where the theorem is implicit. With 76 queries, bootstrap CIs are wide.

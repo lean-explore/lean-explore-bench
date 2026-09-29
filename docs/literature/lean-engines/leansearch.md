@@ -49,7 +49,7 @@ LeanSearch is the most widely used natural-language search engine for Mathlib. T
 - **Rate limits:** Capacity is about 40 req/s with a per-IP limit of 120 req/min (as of 2026-05-19), adjusted dynamically. IPs are now logged ([Zulip](https://leanprover.zulipchat.com/#narrow/near/596070778)). The upstream lean-lsp-mcp throttles itself to 90 requests per 30 s ([config.py](https://github.com/oOo0oOo/lean-lsp-mcp/blob/main/src/lean_lsp_mcp/config.py)).
 - **Index snapshot:** Mathlib v4.28.0-rc1 as of May 2026, with an update pending that needs a Jixia upgrade ([Zulip](https://leanprover.zulipchat.com/#narrow/near/596070778)). Whether it has been updated since is unverified. The API does not expose which snapshot it serves, so a harness should record the response date and check whether gold declarations exist through `/fetch`.
 - **Self-hosting:** `scripts/serve.sh` runs standard mode on 2 GPUs ([README](https://github.com/frenzymath/LeanSearch-v2)). This makes a frozen, reproducible copy possible.
-- **MCP:** LeanSearch has no first-party MCP server. It is reached through lean-lsp-mcp (see [lean-lsp-mcp.md](lean-lsp-mcp.md)).
+- **MCP:** LeanSearch has no first-party MCP server. It is reached through lean-lsp-mcp (see [../lean-tools/lean-lsp-mcp.md](../lean-tools/lean-lsp-mcp.md)).
 
 ## Relevance to lean-explore-bench
 

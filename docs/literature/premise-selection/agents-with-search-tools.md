@@ -77,3 +77,20 @@ Calls/tokens are averages over samples needing decomposition. Takeaway: on a sat
 - Ax-Prover: https://arxiv.org/abs/2510.12787 (read tool list, baselines, tool-usage analysis)
 - Numina-Lean-Agent: https://arxiv.org/abs/2601.14027 (read full text)
 - Rethlas/Archon: https://arxiv.org/abs/2604.03789 (searched full text for LeanSearch/Matlas/ablation passages)
+
+## Merged detail: do frontier provers use retrieval? (from the former `agents-with-search-tools.md`)
+
+Full LaTeX of seven prover papers was searched for retrieval, search-tool and contamination passages.
+
+| Paper | Retrieval / search component |
+|---|---|
+| DeepSeek-Prover-V1.5 ([2408.08152](https://arxiv.org/abs/2408.08152)), V2 ([2504.21801](https://arxiv.org/abs/2504.21801)) | none described |
+| Kimina-Prover Preview ([2504.11354](https://arxiv.org/abs/2504.11354)) | none described |
+| Goedel-Prover ([2502.07640](https://arxiv.org/abs/2502.07640)), V2 ([2508.03613](https://arxiv.org/abs/2508.03613)) | none; Goedel's PutnamBench table shows ReProver with and without retrieval both at 0/644 |
+| Seed-Prover 1.0 ([2507.23726](https://arxiv.org/abs/2507.23726)) | retrieval over its own lemma pool, not Mathlib |
+| Seed-Prover 1.5 ([2512.17260](https://arxiv.org/abs/2512.17260)) | an embedding-based Mathlib search tool "calibrated to a fixed Mathlib commit (i.e., v4.22.0)"; about 10 search calls per trajectory on FATE-H vs 1–2 on Putnam; **no with/without-search ablation** |
+
+- **Benchmark choice decides whether retrieval matters:** competition sets (miniF2F, PutnamBench) need few library lemmas; library-heavy sets (FATE, research repositories, MiniCTX) are where search is used.
+- **Contamination practice worth copying:** Kimina's 13-gram decontamination plus source-based removal; Seed-Prover's use of MiniCTX-v2 problems written after Nov 2024 (a temporal split); DeepSeek-Prover-V2 shows scores shift with benchmark statement fixes and Lean version, so record both.
+- **Budget specification:** Seed-Prover 1.5 fixes 64K tokens and at most 28 tool calls per trajectory — a model for fixed agentic budgets.
+
