@@ -14,6 +14,16 @@ reproducible footing.
 The literature review behind the benchmark design is in
 [`docs/literature/`](docs/literature/README.md).
 
+## Workflows
+
+- [Offline reports and retrieval evaluation](tools/offline/README.md): Python-only
+  report building, local annotation, ranking metrics and paired comparisons.
+- [Candidate selection experiments](experiments/candidate_selection/README.md):
+  reproducible ablations and the initial 12-query public pilot.
+- [Consolidation and publication scope](docs/benchmark-consolidation.md): source
+  inventory, preserved interfaces and the distinction between private log
+  analysis and public benchmark artifacts.
+
 ## Query log analysis
 
 `lean_explore_bench.querylog` loads LeanExplore's de-identified search log,

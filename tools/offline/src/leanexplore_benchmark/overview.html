@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LeanExplore: what the query log tells us</title>
+<style>
+:root{font-family:system-ui,sans-serif;color:#172b40;background:#f4f6f9;line-height:1.5}
+body{max-width:1120px;margin:36px auto;padding:0 24px}h1{font-size:2.2rem;line-height:1.15;max-width:750px}h2{font-size:1.2rem;margin:0 0 12px}p{max-width:900px}
+section,.card{background:#fff;border:1px solid #dce2e9;border-radius:10px;padding:22px;margin:18px 0}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.card{margin:0}.big{font-size:1.9rem;display:block;font-weight:650}.muted,small{color:#4e6174}.tag{color:#246c8a;font-size:.85rem;text-transform:uppercase;letter-spacing:.06em}
+.controls{display:flex;gap:20px;flex-wrap:wrap;margin:22px 0}select{font:inherit;padding:8px;border:1px solid #abb9c8;border-radius:6px;background:white}
+table{width:100%;border-collapse:collapse;font-size:.94rem}th,td{padding:10px 8px;text-align:right;border-bottom:1px solid #e6ebef}th:first-child,td:first-child{text-align:left}th{font-weight:600;color:#42576d}
+.scroll{overflow-x:auto}.bars{display:grid;gap:12px}.barrow{display:grid;grid-template-columns:minmax(165px,2fr) 4fr minmax(95px,1fr);gap:14px;align-items:center}.track{background:#eef1f5;height:14px;border-radius:3px;overflow:hidden}.fill{height:100%;background:#287da0}.value{text-align:right;font-variant-numeric:tabular-nums}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:20px}.two section{margin:0}.note{background:#edf5f8;border-left:4px solid #287da0;padding:14px 18px}.warning{background:#fff7e5;border-left-color:#a77517}a{color:#17668a}
+#daily .barrow{grid-template-columns:100px 1fr 80px;gap:10px}#daily .track{height:9px}.legend{font-size:.9rem}.spaced{margin-top:24px}
+@media(max-width:750px){.kpis{grid-template-columns:1fr 1fr}.two{grid-template-columns:1fr}.barrow{grid-template-columns:140px 1fr 80px}body{padding:0 14px}h1{font-size:1.7rem}}
+@media print{body{max-width:none;background:white}.controls{display:none}section{break-inside:avoid}.two{display:block}}
+</style>
+</head>
+<body>
+<p class="tag">LeanExplore / query evidence</p>
+<h1>What should the benchmark cover?</h1>
+<p id="range" class="muted"></p>
+<p>This report measures the workload in the supplied log. It identifies sampling risks and query forms worth testing. Search relevance and task success still require judged results.</p>
+<div class="kpis" id="kpis"></div>
+<section>
+<h2>The first day changes the picture</h2>
+<div class="scroll"><table><thead><tr><th>Window</th><th>Requests</th><th>Distinct requests</th><th>Extra occurrences</th><th>At most 2 words</th><th>With package filters</th></tr></thead><tbody id="windows"></tbody></table></div>
+<p class="legend">Extra occurrences = requests beyond the first occurrence of the same normalized text and package filters. Distinct requests are deduplicated across channels in this table. Removing the first day is a sensitivity check; its traffic is not known to be invalid.</p>
+</section>
+<div class="controls">
+<label>Window <select id="window"><option value="full">Full export</option><option value="first_day">First day</option><option value="later">After the first day</option></select></label>
+<label>Count <select id="view"><option value="requests">Every request (workload)</option><option value="distinct">Distinct requests (variety)</option></select></label>
+</div>
+<section>
+<h2>Different channels need different test cases</h2>
+<div class="scroll"><table><thead><tr><th>Channel</th><th>Requests</th><th>Extra occurrences</th><th>At most 2 words</th><th>Standalone name</th><th>Name mixed with text</th></tr></thead><tbody id="channels"></tbody></table></div>
+<p class="legend">Word and form shares follow the selected count view. Request volume and extra-occurrence share always describe traffic. Each channel has its own denominator; API, MCP and web do not establish human or agent identity. Sections require at least 100 requests.</p>
+</section>
+<div class="controls"><label>Query details <select id="channel"><option value="all">All channels</option></select></label></div>
+<div class="two">
+<section><h2>Query length</h2><div class="bars" id="length"></div><p class="legend">Whitespace-separated words. Percentages use the selected channel, window and count view.</p></section>
+<section><h2>Observable query form</h2><div class="bars" id="surface"></div><p class="legend">Rules describe syntax, not intent. "Other text" includes keywords and prose that the rules cannot distinguish.</p></section>
+</div>
+<section>
+<h2>How much weight do repeated requests receive?</h2>
+<div class="bars" id="frequency"></div>
+<p class="legend">Share of traffic belonging to requests seen once, 2–5 times, or at least 6 times in this window. Same text plus same package filters defines a request. Repetition is not proof of retries, automation or dissatisfaction.</p>
+<div id="recurrence" class="note"></div>
+</section>
+<section>
+<h2>Daily volume</h2>
+<label><input type="checkbox" id="hidefirst"> Hide the first day and rescale</label>
+<div id="daily" class="bars spaced"></div>
+<p class="legend">Bars share a zero baseline. The scale uses the largest visible day. Missing dates have no records in this export; this does not establish that the service received no traffic.</p>
+</section>
+<section>
+<h2>What to do with this evidence</h2>
+<ul>
+<li>Build the pilot from distinct requests, stratified by channel and time window. Keep original frequencies as separate workload weights.</li>
+<li>Include short queries, standalone Lean names, names mixed with text, and longer descriptions. Review the broad "other text" category before inventing semantic labels.</li>
+<li>Use a channel-balanced score as well as a traffic-weighted score. State the weights: the API-heavy mix should not silently define the whole benchmark.</li>
+<li>Collect relevant declaration IDs and ranked search results for sampled tasks. Then report retrieval quality, latency and verified task outcomes separately.</li>
+</ul>
+<p class="note warning">The export contains no ranked result IDs, relevance judgments, sessions, latency or verified success. It cannot tell us which engine is better or whether repeating a query means the user was dissatisfied.</p>
+</section>
+<details><summary>Data handling and detailed audit</summary>
+<p>All displayed counts are rounded to tens. Groups below ten and a complementary cell are suppressed; their labels are withheld. Percentages are approximate and use rounded counts. Suppressed values are unavailable, never zero. Multiple marginal tables are not a formal anonymity guarantee. No raw query, package name, per-query identifier or individual annotation is included.</p>
+<p><a href="full/index.html">Full detailed audit</a> · <a id="laterlink" href="without-first-day/index.html">Audit after the first day</a> · <a href="summary.csv">Aggregate CSV</a> · <a href="summary.json">Aggregate JSON</a> · <a href="manifest.json">Reproduction manifest</a></p>
+</details>
+<script>
+const D=__SUMMARY__;
+const $=id=>document.getElementById(id);
+const labels={identifier_only:"Standalone Lean-like name",mixed_identifier_text:"Name mixed with text",other_text:"Other text",proof_state_or_statement:"Proof state or statement",question_like:"Question-like",symbolic_expression:"Symbolic expression",latex_present:"LaTeX present",empty:"Empty",suppressed:"Suppressed categories",once:"Seen once","2-5":"Seen 2–5 times","6+":"Seen at least 6 times"};
+const names={full:"Full export",first_day:"First day",later:"After the first day"};
+const fmt=n=>n===null||n===undefined?"Unavailable":n.toLocaleString("en-US");
+const pct=(n,d)=>n===null||n===undefined||!d?"Unavailable":(100*n/d).toFixed(1)+"%";
+const denominator=(g,v)=>v==="requests"?g.requests:g.repeat_accounting.distinct;
+const share=(g,v,k,c)=>pct(g.views[v][k][c],denominator(g,v));
+const full=D.windows.full.all;
+$("range").textContent=D.first_day+" to "+D.last_day+" · Private input, aggregate output · No external services";
+const cards=[["Requests",fmt(full.requests)],["Distinct requests",fmt(full.repeat_accounting.distinct)],["Traffic on first day",pct(D.windows.first_day.all.requests,full.requests)],["Extra occurrences",pct(full.repeat_accounting.extra_occurrences,full.requests)]];
+$("kpis").innerHTML=cards.map(([l,n])=>'<div class="card"><small>'+l+'</small><span class="big">'+n+'</span></div>').join("");
+$("windows").innerHTML=Object.entries(D.windows).map(([k,w])=>{const g=w.all;return g?'<tr><td>'+names[k]+'</td><td>'+fmt(g.requests)+'</td><td>'+fmt(g.repeat_accounting.distinct)+'</td><td>'+pct(g.repeat_accounting.extra_occurrences,g.requests)+'</td><td>'+share(g,"requests","length","0-2")+'</td><td>'+share(g,"requests","filters","with_filter")+'</td></tr>':""}).join("");
+if(!D.windows.later.all){$("window").querySelector('[value="later"]').disabled=true;$("laterlink").hidden=true;}
+function bars(id,counts,denom){
+ $(id).innerHTML=Object.entries(counts).map(([k,n])=>{const p=n===null||!denom?null:100*n/denom;return '<div class="barrow"><span>'+(labels[k]||k)+'</span><div class="track"><div class="fill" style="width:'+(p===null?0:Math.min(100,p))+'%"></div></div><span class="value">'+pct(n,denom)+'</span></div>'}).join("");
+}
+function update(repopulate=false){
+ const w=D.windows[$("window").value],v=$("view").value;
+ if(repopulate){const old=$("channel").value;$("channel").innerHTML='<option value="all">All channels</option>'+Object.keys(w.channels).map(c=>'<option value="'+c+'">'+c.toUpperCase()+'</option>').join("");$("channel").value=old==="all"||w.channels[old]?old:"all";}
+ $("channels").innerHTML=Object.entries(w.channels).map(([c,g])=>'<tr><td>'+c.toUpperCase()+'</td><td>'+fmt(g.requests)+'</td><td>'+pct(g.repeat_accounting.extra_occurrences,g.requests)+'</td><td>'+share(g,v,"length","0-2")+'</td><td>'+share(g,v,"surface","identifier_only")+'</td><td>'+share(g,v,"surface","mixed_identifier_text")+'</td></tr>').join("");
+ const g=$("channel").value==="all"?w.all:w.channels[$("channel").value];
+ bars("length",Object.fromEntries(["0-2","3-8","9-16","17+","suppressed"].filter(k=>k in g.views[v].length).map(k=>[k,g.views[v].length[k]])),denominator(g,v));
+ bars("surface",g.views[v].surface,denominator(g,v));bars("frequency",g.frequency_events,g.requests);
+ const across=g.recurrence_distinct.multiple_days;
+ $("recurrence").textContent=across===undefined||across===null?"Cross-day recurrence is unavailable after suppression.":fmt(across)+" distinct requests appear on more than one day ("+pct(across,g.repeat_accounting.distinct)+"). This identifies recurring query keys, not returning people.";
+}
+function daily(){
+ const rows=Object.entries(D.daily).filter(([d])=>d!=="suppressed"&&(!$("hidefirst").checked||d!==D.first_day));
+ const max=Math.max(1,...rows.map(([,n])=>n||0));
+ $("daily").innerHTML=rows.map(([d,n])=>'<div class="barrow"><span>'+d.slice(5)+'</span><div class="track"><div class="fill" style="width:'+(100*(n||0)/max)+'%"></div></div><span class="value">'+fmt(n)+'</span></div>').join("");
+}
+$("window").addEventListener("change",()=>update(true));$("view").addEventListener("change",()=>update());$("channel").addEventListener("change",()=>update());$("hidefirst").addEventListener("change",daily);update(true);daily();
+</script>
+</body>
+</html>

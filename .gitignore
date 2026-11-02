@@ -31,3 +31,15 @@ reports/
 .coverage
 .coverage.*
 htmlcov/
+
+# Local analysis inputs, models and scratch outputs
+.mypy_cache/
+private/
+reference/
+models/
+*.log
+*.safetensors
+*.pt
+*.bin
+*.index
+benchmark_queries_export*

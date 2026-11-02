@@ -20,7 +20,7 @@ def test_a_lone_small_group_takes_the_next_smallest_with_it() -> None:
 def test_suppressed_total_under_the_floor_is_hidden() -> None:
     frame = pd.DataFrame({"form": ["a"] * 20 + ["b"] * 2 + ["c"]})
     table = releasable_counts(frame, ["form"], min_count=10)
-    assert pd.isna(table.set_index("form").loc["<suppressed>", "n"])
+    assert table.set_index("form")["n"].isna().loc["<suppressed>"]
 
 
 def test_refuses_text_columns() -> None:

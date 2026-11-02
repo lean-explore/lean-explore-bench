@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "leanexplore-query-benchmark"
+version = "0.2.0"
+description = "Local query evidence and retrieval evaluation for LeanExplore"
+requires-python = ">=3.10"
+dependencies = []
+
+[project.scripts]
+leq-bench = "leanexplore_benchmark.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]
+
+[tool.mypy]
+strict = true
+files = ["src"]
+
+
+[tool.setuptools.package-data]
+leanexplore_benchmark = ["overview.html"]
