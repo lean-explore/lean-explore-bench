@@ -1,0 +1,5 @@
+* text=auto eol=lf
+# Preserve the exact public input bytes hashed by the recorded pilot.
+experiments/candidate_selection/results/2026-11-02/pilot-queries.json -text whitespace=cr-at-eol
+experiments/candidate_selection/runner.py -text whitespace=cr-at-eol
+experiments/candidate_selection/patches/*.patch -whitespace

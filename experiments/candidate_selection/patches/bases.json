@@ -1,0 +1,11 @@
+{
+  "lean-explore": {
+    "repository": "https://github.com/lean-explore/lean-explore.git",
+    "commit": "17b9d6c87a2bf0dc4ea27de05da8a1c9965391b7"
+  },
+  "lean-explore-app": {
+    "repository": "https://github.com/lean-explore/lean-explore-app.git",
+    "commit": "d14cd65b4f118b84de99a181b2b8d0c1e66c0f5f",
+    "note": "Private repository. Optional integration patch with zero context; only changed lines and newly authored files are included."
+  }
+}

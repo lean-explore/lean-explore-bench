@@ -6,13 +6,23 @@ Benchmarks for Lean 4 search engines.
 > unstable: interfaces, categories, data formats and numbers will change
 > without notice. Do not rely on it yet.
 
-The goal of this repository is to measure how well search engines — such as
-[LeanExplore](https://github.com/lean-explore/lean-explore) — help find the
+The goal of this repository is to measure how well search engines â€” such as
+[LeanExplore](https://github.com/lean-explore/lean-explore) â€” help find the
 declarations needed to write Lean 4 code, and to compare them on a fair,
 reproducible footing.
 
 The literature review behind the benchmark design is in
 [`docs/literature/`](docs/literature/README.md).
+
+## Workflows
+
+- [Offline reports and retrieval evaluation](tools/offline/README.md): Python-only
+  report building, local annotation, ranking metrics and paired comparisons.
+- [Candidate selection experiments](experiments/candidate_selection/README.md):
+  reproducible ablations and the initial 12-query public pilot.
+- [Consolidation and publication scope](docs/benchmark-consolidation.md): source
+  inventory, preserved interfaces and the distinction between private log
+  analysis and public benchmark artifacts.
 
 ## Query log analysis
 

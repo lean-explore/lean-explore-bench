@@ -1,0 +1,10 @@
+{
+  "Qwen/Qwen3-Embedding-0.6B": {
+    "revision": "97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3",
+    "url": "https://huggingface.co/Qwen/Qwen3-Embedding-0.6B/tree/97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3"
+  },
+  "Qwen/Qwen3-Reranker-0.6B": {
+    "revision": "e61197ed45024b0ed8a2d74b80b4d909f1255473",
+    "url": "https://huggingface.co/Qwen/Qwen3-Reranker-0.6B/tree/e61197ed45024b0ed8a2d74b80b4d909f1255473"
+  }
+}
