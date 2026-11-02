@@ -45,11 +45,7 @@ REVIEWED_ARTIFACTS = dict(
         ),
         (
             "experiments/candidate_selection/patches/bases.json",
-            "bd5825ea8176c0ca0339e987dd35c35618b4d36475423424acc14cc99322b2b5",
-        ),
-        (
-            "experiments/candidate_selection/patches/lean-explore-app.patch",
-            "4c03824ef474bcb12294b69fdcd7f303a6a3dd1a1b82a0c63f9e0ad134992d4d",
+            "70e0953f6fbc3746cf1f6ffe87ce4f4bde678889a74d71cb66ec291f3fa47cd2",
         ),
         (
             "experiments/candidate_selection/patches/lean-explore.patch",

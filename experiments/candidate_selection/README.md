@@ -13,14 +13,11 @@ is unchanged.
 
 - `runner.py`: the exact runner used for the pilot.
 - `patches/lean-explore.patch`: opt-in candidate controls and in-memory traces.
-- `patches/lean-explore-app.patch`: optional HTTP depth configuration and tests.
 - `tests/`: synthetic regression tests for selection, tracing and evaluation.
 - `results/2026-11-02/`: public query subset, measured records and provenance.
 
 The engine patch is against the public commit recorded in
-[patches/bases.json](patches/bases.json). The app repository is private; its patch
-contains only changed lines and newly authored code. It is not needed to run
-the benchmark. Neither patch changes serving defaults.
+[patches/bases.json](patches/bases.json). It does not change serving defaults.
 
 ## Prepare the engine
 
@@ -88,15 +85,13 @@ Use private query files only in a private environment. A report omitting raw
 query text can still reveal information through identifiers and results.
 Only the explicitly reviewed public pilot is tracked here.
 
-## Optional HTTP integration
+## HTTP integration
 
-Maintainers with access to `lean-explore-app` can apply its patch at the
-recorded base using `git apply --check --unidiff-zero` followed by
-`git apply --unidiff-zero`. The environment variable
-`LEAN_EXPLORE_SEARCH_RERANK_DEPTH=50` or `100` separates reranking depth from
-the HTTP result limit. Leaving it unset preserves depth equal to the limit.
-The effective depth is at least the requested limit; configured values must
-be between 1 and 200. Hosted MCP already supports a separate depth.
+The matching `lean-explore-app` change, an optional
+`LEAN_EXPLORE_SEARCH_RERANK_DEPTH` that separates reranking depth from the
+HTTP result limit, is in that private repository
+(lean-explore/lean-explore-app#66) rather than here. It is not needed to run
+the benchmark. Hosted MCP already supports a separate depth.
 
 ## Attribution
 

@@ -6,8 +6,8 @@ Benchmarks for Lean 4 search engines.
 > unstable: interfaces, categories, data formats and numbers will change
 > without notice. Do not rely on it yet.
 
-The goal of this repository is to measure how well search engines â€” such as
-[LeanExplore](https://github.com/lean-explore/lean-explore) â€” help find the
+The goal of this repository is to measure how well search engines — such as
+[LeanExplore](https://github.com/lean-explore/lean-explore) — help find the
 declarations needed to write Lean 4 code, and to compare them on a fair,
 reproducible footing.
 

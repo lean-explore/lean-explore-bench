@@ -30,7 +30,7 @@ Installing `tools/offline` also preserves the `leq-bench` command. The existing
 ## Candidate selection
 
 [experiments/candidate_selection](../experiments/candidate_selection/README.md)
-contains the runner, synthetic tests, engine/app integration patches, the
+contains the runner, synthetic tests, the engine integration patch, the
 12 public pilot queries, all 288 measured records and reproduction manifests.
 
 Published result files replace absolute machine paths with relative labels.
@@ -51,4 +51,5 @@ supplement a content review; they cannot determine whether arbitrary prose
 contains private information.
 
 Original repositories and worktrees remain intact. The integration branch
-does not deploy the engine or app patches.
+does not deploy the engine patch. The matching app change is in the private
+`lean-explore-app` repository (lean-explore/lean-explore-app#66).
