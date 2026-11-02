@@ -36,6 +36,7 @@ jobs:
       - uses: astral-sh/setup-uv@v6
         with:
           python-version: "3.12"
+          enable-cache: false
       - name: Test standalone offline tools
         run: python tools/offline/scripts/check.py
       - name: Check publication scope
