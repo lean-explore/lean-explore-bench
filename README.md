@@ -14,6 +14,9 @@ reproducible footing.
 The literature review behind the benchmark design is in
 [`docs/literature/`](docs/literature/README.md).
 
+See [benchmark status](docs/benchmark-status.md) for what is ready, what has
+been checked and what remains before a validated benchmark release.
+
 ## Workflows
 
 - [Offline reports and retrieval evaluation](tools/offline/README.md): Python-only
