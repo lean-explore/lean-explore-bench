@@ -12,8 +12,6 @@ before relying on a number.
 The first half of this file distils the notes into a working guide. The second
 half is an index.
 
-## How to benchmark search well
-
 ### 1. What already exists, and the gap
 
 - Every Lean search comparison run by an engine's own authors on their own
@@ -50,15 +48,6 @@ should have graded, pooled judgments and enough queries to separate engines.
 
 ### 2. Queries: where they come from and what shape they take
 
-- **Match real use.** Models trained on docstring-like text did worse on real
-  search-engine queries, and simple lexical baselines held up
-  ([code-search/codesearchnet](code-search/codesearchnet.md)). Mix query sources and tag each
-  query by source:
-  - Agent traces: queries an agent issued while proving, labelled by the lemmas
-    the finished proof used.
-  - Real human queries, for example Zulip "is there a lemma for…" threads.
-  - Expert-written queries.
-  - LLM-generated queries.
 - **Free seed set.** Mathlib's `docs/100.yaml`, `docs/1000.yaml`,
   `overview.yaml`, `undergrad.yaml` and `@[stacks]` tags hold roughly 1,600
   informal entries before deduplication: about 290 famous theorems, 950
@@ -133,23 +122,6 @@ conditions:
   vs 0.892) ([test-collection-construction/synthetic-test-collections](test-collection-construction/synthetic-test-collections.md)). LeanExplore's index text is
   written by Gemini and LeanSearch v2's by Qwen3, so pick query generators and
   judges from other families, or use two of each and report per family.
-- **Validate on a small human anchor set.** Tune the generator until engine
-  rankings on synthetic queries match rankings on real queries for the same
-  targets. TREC's tip-of-the-tongue track did this, reaching τ = 0.847 between
-  forum and synthetic queries (0.737 against NIST-written queries). A role-play prompt with MUST/COULD rules, a
-  summary of the target, low temperature, and rejecting any query that leaks
-  the name were what worked
-  ([test-collection-construction/known-item-trec-tot](test-collection-construction/known-item-trec-tot.md),
-  [test-collection-construction/known-item-tot-query-simulation](test-collection-construction/known-item-tot-query-simulation.md)).
-  - Size: statistical correction (prediction-powered inference) gave valid
-    intervals from about 30 human-labelled queries for one system's score;
-    comparing engines needs more (about 150 labelled items in ARES). Plan on
-    50–80 human-judged queries plus 30 real Zulip questions, frozen and private
-    ([test-collection-construction/synthetic-validation-budget-and-protocol](test-collection-construction/synthetic-validation-budget-and-protocol.md)).
-  - Include oracle and deliberately degraded runs in the validation pool; they
-    expose judge bias and keep τ from being inflated by easy comparisons.
-  - Re-validate whenever the generator, judge, Mathlib snapshot or engine set
-    changes.
 
 ### 2b. Building categories from our own logs
 
@@ -341,12 +313,6 @@ not.** Copying log shares would let one heavy API client set the benchmark.
 
 ### 6a. Specialised tracks
 
-- **Tip of the tongue ("I know it exists but not its name").** One gold
-  declaration plus its accepted equivalents (aliases, deprecated names, the
-  `iff`/`symm` twin), scored mainly by MRR@10 with Success@1/5/10. Collect real
-  queries from Zulip threads where the asker confirmed the answer, and keep
-  "partial name recall" queries as their own stratum
-  ([test-collection-construction/known-item-tot-datasets-and-metrics](test-collection-construction/known-item-tot-datasets-and-metrics.md)).
 - **No answer ("the lemma doesn't exist").** No Lean search benchmark tests
   this, yet invented names are 7.7% of proof failures in one study. Build
   queries from names agents actually invented, real lemmas altered so they
@@ -438,8 +404,6 @@ already *lowered* scores on math retrieval in BRIGHT and MIRB. The first
 ablation should therefore compare retrieve-only, the current reranker, and a
 correctly prompted reranker
 ([embedding-evaluation/benchmark-lessons](embedding-evaluation/benchmark-lessons.md)).
-
-## Index
 
 ### Lean search benchmarks and leaderboards (`lean-benchmarks/`)
 

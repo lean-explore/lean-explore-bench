@@ -24,6 +24,12 @@ jobs:
         run: |
           .venv/bin/ruff check .
           .venv/bin/ruff format --check .
+      - name: Offline lint and types
+        working-directory: tools/offline
+        run: |
+          ../../.venv/bin/ruff check .
+          ../../.venv/bin/ruff format --check .
+          ../../.venv/bin/mypy
       - name: Types
         run: .venv/bin/mypy
       - name: Test

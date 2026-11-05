@@ -2,7 +2,6 @@
 
 - **Kind:** search engine
 - **Links:** live service https://www.leanexplore.com ; code https://github.com/lean-explore/lean-explore (also at https://github.com/justincasher/lean-explore) ; paper [arXiv:2506.11085](https://arxiv.org/abs/2506.11085) (PDF also in the repo as `LeanExplore.pdf`) ; PyPI `lean-explore`
-- **Authors / org, date:** Justin Asher (independent). Launched 2025-05-09 ([Zulip](https://leanprover.zulipchat.com/#narrow/near/517187812)). Paper June 2025. Rewritten as v1.0.0 in January 2026; the CHANGELOG labels 1.0.0 "2025-01-27", but 1.0.1 follows on 2026-01-28, so 2026 is likely what was meant (unverified). v1.3.0 released 2026-08-02 ([CHANGELOG](https://github.com/lean-explore/lean-explore/blob/main/CHANGELOG.md)).
 - **Status:** Live (the hosted API answered on 2026-09-28, checked by us). Apache-2.0. Actively maintained. **Note:** lean-explore-bench is built by the LeanExplore author, which is a conflict of interest to disclose in any published comparison.
 
 ## What it is
@@ -16,8 +15,6 @@ The engine has had two generations, and they differ a lot. Any benchmark result 
 - **v0.x (paper, June 2025):** "StatementGroups" are embedded from several sources: name, docstring, a Gemini-2.0-Flash informalization produced in dependency order, and file-path keywords. The embedder is bge-base-en-v1.5 (109M parameters), indexed in FAISS IVF. Candidates below a similarity threshold of 0.525 are dropped. The final score is a weighted sum of normalized semantic, BM25+ and PageRank scores with weights 1 / 1 / 0.2 ([paper §3](https://arxiv.org/abs/2506.11085)).
 - **v1.x (current):** Declarations are extracted through doc-gen4 and informalized with `google/gemini-3-flash-preview` by default. Retrieval combines two BM25 indices over names (raw and split into sub-tokens) with FAISS over Qwen3-Embedding-0.6B embeddings of the informalizations. The lists are merged with reciprocal-rank fusion, candidates get a dependency boost, and a Qwen3-Reranker-0.6B cross-encoder reranks the top 25–50. The final score is not the reranker score alone: it adds BM25 over the informal text (weight 0.4), the dependency score (0.2) and a fuzzy name-match bonus (1.0 above 0.7 similarity) (`src/lean_explore/search/ranking.py`), so a reranker ablation must hold these fixed ([docs/local-backend.md](https://github.com/lean-explore/lean-explore/blob/main/docs/local-backend.md), [docs/extraction-pipeline.md](https://github.com/lean-explore/lean-explore/blob/main/docs/extraction-pipeline.md)).
 - **Query styles:** declaration names (`List.map`, including fuzzy forms like `list.map`) and natural language ([local-backend.md](https://github.com/lean-explore/lean-explore/blob/main/docs/local-backend.md)). Proof-state queries are not supported (the paper lists them as future work).
-
-## Evaluation
 
 ### Self-reported (paper §6, [arXiv:2506.11085](https://arxiv.org/abs/2506.11085)), v0.x engine
 - **Queries:** 300 AI-generated short topical queries such as "group definition", "Heine-Borel theorem" and "Krull dimension". All are listed in Appendix C, so they are effectively released. There is no gold set.
@@ -60,7 +57,6 @@ The engine has had two generations, and they differ a lot. Any benchmark result 
 
 - Paper: https://arxiv.org/abs/2506.11085 (local copy `/Users/justinasher/Documents/Repositories/lean-explore/LeanExplore.pdf`)
 - Repo, README, CHANGELOG, docs, openapi.yaml: https://github.com/lean-explore/lean-explore
-- Zulip launch: https://leanprover.zulipchat.com/#narrow/near/517187812 ; June 2025 update: https://leanprover.zulipchat.com/#narrow/near/522433695
 - Lean Finder comparison: https://arxiv.org/abs/2510.15940
 - LeanSearch v2 comparison: https://arxiv.org/abs/2605.13137
 - AITP 2025 comparison: https://aitp-conference.org/2025/abstract/AITP_2025_paper_12.pdf

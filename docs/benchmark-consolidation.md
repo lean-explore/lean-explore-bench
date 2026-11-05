@@ -1,55 +1,29 @@
-# Benchmark consolidation
+# Benchmark tools
 
-The repository now contains the existing database analysis, the standalone
-offline tools from `shalashaska117/leanexplore-benchmark`, and the candidate
-selection pilot.
+The repository contains query-log analysis, standalone offline evaluation tools
+and candidate-selection experiment code.
 
-## Offline tools
+The offline tools live under [tools/offline](../tools/offline/README.md).
+Their migration inventory records source-code provenance. The original report
+builder and evaluator interfaces remain available.
 
-All 26 tracked files from source commit
-`8330c10` were imported under [tools/offline](../tools/offline/README.md).
-The [migration inventory](../tools/offline/migration.json) records the full
-source commit and original file hashes. Documentation and the publication
-checker are adapted to the new location.
+The [benchmark workflow](../tools/offline/docs/benchmark-workflow.md) adds corpus
+membership checks, split audits and blinded review exports. It consumes external
+inputs and preserves unreviewed cases without creating relevance labels.
 
-This includes the report builder and HTML template, annotation interface,
-retrieval evaluator and paired comparisons, public-data downloader, synthetic
-tests, data contracts, protocol, research sources and the dated telemetry
-privacy assessment. The latter remains a planning document from October
-2026, with its original scope and caveats.
+[Candidate-selection tools](../experiments/candidate_selection/README.md)
+include a runner, invented index fixtures and an engine preparation patch.
 
-The standalone layout preserves the Python-only report command:
+## Repository contents
 
-```sh
-python tools/offline/benchmark.py --input /private/export.json --out /private/report
-```
+Keep benchmark inputs, annotations, source inventories, hashes of inputs,
+measured outputs and reports outside Git checkouts. Source code and
+documentation use generic contracts. Tests construct invented records.
 
-Installing `tools/offline` also preserves the `leq-bench` command. The existing
-`leb-querylog` database workflow and its dependencies are unchanged.
+The publication check permits code, method documentation and a small explicit
+set of source-migration and patch artifacts. It rejects data directories and
+data formats even when renamed into a documentation subtree. Content review is
+still necessary: a source-file extension cannot prove that its text is suitable
+for publication.
 
-## Candidate selection
-
-[experiments/candidate_selection](../experiments/candidate_selection/README.md)
-contains the runner, synthetic tests, the engine integration patch, the
-12 public pilot queries, all 288 measured records and reproduction manifests.
-
-Published result files replace absolute machine paths with relative labels.
-Metric values, candidate counts, target ranks, timings and source hashes are
-preserved. Large corpus/model assets are referenced by revision and checksum;
-the reproduction helper downloads them outside the repository.
-
-## Publication scope
-
-Private query exports, annotations, export-derived reports and input hashes
-are not part of this migration. Source repository histories, local environments,
-model weights and database/index files are not imported.
-
-The publication check allows source and documentation plus an explicit set of
-reviewed public artifacts with fixed checksums. Adding another result file
-requires reviewing its source and updating that list. Path and checksum checks
-supplement a content review; they cannot determine whether arbitrary prose
-contains private information.
-
-Original repositories and worktrees remain intact. The integration branch
-does not deploy the engine patch. The matching app change is in the private
-`lean-explore-app` repository (lean-explore/lean-explore-app#66).
+Existing upstream history is not rewritten by this change.

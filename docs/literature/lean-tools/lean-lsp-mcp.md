@@ -69,6 +69,5 @@ No evaluation of the MCP bundle or of `lean_local_search` was found.
 
 Sources: [tools/search.py](https://github.com/oOo0oOo/lean-lsp-mcp/blob/main/src/lean_lsp_mcp/tools/search.py), [config.py](https://github.com/oOo0oOo/lean-lsp-mcp/blob/main/src/lean_lsp_mcp/config.py).
 
-- **Usage context.** LeanSearch reported usage rising sharply from January 2026 "coinciding with the wave of coding agents" and asked lean-lsp-mcp to raise its throttle ([Zulip](https://leanprover.zulipchat.com/#narrow/near/596070778)).
 - **Output normalisation differs per engine.** Upstream `lean_leansearch` returns only `name`, `module_name`, `kind` and `type` and drops the informal text; `lean_leanfinder` drops any result whose URL is not a mathlib4_docs link. An agent therefore sees different evidence from different engines, so any LLM-judge protocol should present results in one uniform format hydrated from one metadata source, as LeanSearch v2 did.
 - **Numina fork:** adds `lean_leandex` (LeanDex SSE API with `generate_query=False`, `analyze_result=False`, rate limiter commented out) and has no `lean_leansearch` in code although its README documents one. Neither version wraps LeanExplore, which ships its own MCP server ([../lean-engines/leanexplore.md](../lean-engines/leanexplore.md)).

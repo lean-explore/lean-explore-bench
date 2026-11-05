@@ -19,10 +19,13 @@ The literature review behind the benchmark design is in
 - [Offline reports and retrieval evaluation](tools/offline/README.md): Python-only
   report building, local annotation, ranking metrics and paired comparisons.
 - [Candidate selection experiments](experiments/candidate_selection/README.md):
-  reproducible ablations and the initial 12-query public pilot.
+  runners and invented fixtures for retrieval ablations.
 - [Consolidation and publication scope](docs/benchmark-consolidation.md): source
-  inventory, preserved interfaces and the distinction between private log
-  analysis and public benchmark artifacts.
+  provenance, preserved interfaces and external benchmark storage.
+
+Benchmark inputs, source records, annotations, hashes of inputs and measured
+outputs belong outside the repository. See the [preparation and review
+workflow](tools/offline/docs/benchmark-workflow.md).
 
 ## Query log analysis
 

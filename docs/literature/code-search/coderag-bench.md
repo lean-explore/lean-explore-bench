@@ -44,10 +44,6 @@ CodeRAG-Bench tests whether retrieval helps code generation. It has about 9k cod
 - **Gold-from-reference-proof mirrors the premise-selection convention** (gold = lemmas used in the human proof). CodeRAG-Bench shows the known weakness: valid alternatives go unrewarded.
 - **The "limited lexical overlap" failure is exactly the NL→Mathlib-name gap.** Stratify queries by lexical overlap with the gold declaration's name and docstring, as SweRank does for issues.
 
-## Open questions
-
-- Is there a Lean analogue of "open retrieval from heterogeneous sources" (Mathlib docs, Zulip, blueprint text, textbooks) worth benchmarking, or should we restrict to declarations?
-
 ## Sources
 
 - CodeRAG-Bench paper: https://arxiv.org/abs/2406.14497
