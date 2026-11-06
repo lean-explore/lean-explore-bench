@@ -1,80 +1,52 @@
 # Benchmark status
 
-Updated 5 November 2026.
+Use this checkpoint to assess completion of the initial two-week benchmark phase. Separate verified engineering outputs from mathematical review and release requirements.
 
-The technical workflow for preparing and reviewing a benchmark is ready on
-`feat/benchmark-calibration`, in [PR #7](https://github.com/lean-explore/lean-explore-bench/pull/7).
-The PR is still a draft. It has not been merged into `main` or deployed.
+Consult the [calibration decisions](benchmark-review-questions-2026-11-06.md) before freezing labels. Follow the [evaluation protocol](evaluation-protocol.md) for scoring and split rules.
 
-The benchmark is not yet ready for claims about search quality. Human relevance
-judgments, review of related theorem families, and a final test set are still
-needed.
+## Record the experimental evidence
 
-## What is ready
+Use the 20-case development batch, with four cases per query form, and the inventory of 408,970 canonical names. Record exact reproduction of all 20 final rankings and candidate-stage identity sequences. Limit that claim to the pinned local snapshot; do not extend it to a hosted service or another model configuration.
 
-- Corpus validation: checks the corpus version, document identities and aliases.
-  Missing documents in an incomplete inventory remain unresolved.
-- Case preparation: validates inputs and keeps linked cases in the same split.
-  Test cases require reviewed family assignments and no development exposure.
-- Run adaptation: converts ranked results into the evaluator format. Failed and
-  missing requests remain in operational counts.
-- Review packets: combine candidates from multiple runs, remove duplicates and
-  hide engine names and ranks. A separate audit records how the pool was built.
-- Review validation: checks that judgments belong to the assigned packet.
-  Acceptance is explicit. Assistant proposals and unresolved labels are not
-  scored as accepted human judgments.
-- Offline evaluation: the existing evaluator computes ranking metrics and paired
-  comparisons when the required judgments and runs are available.
-- Supporting tools: local report generation, an annotation interface and
-  candidate-selection experiment runners remain available.
+Compare first-stage prefixes at depths 50 and 100 from the same recorded retrieval, with 1,000 requested candidates per lexical and semantic channel:
 
-The new commands are `prepare`, `adapt-run`, `pool` and `check-reviews`.
-They connect to the existing `evaluate` command. The preparation and review
-workflow has been exercised end to end.
+| Candidate ranking | Proposed-target hit cases at 50 | Proposed-target hit cases at 100 |
+| --- | ---: | ---: |
+| Lexical | 7 | 7 |
+| Semantic | 12 | 14 |
+| Fusion before selection boost | 12 | 12 |
+| Fusion after selection boost | 11 | 12 |
 
-## What has been checked
+Interpret these counts as recovery of proposed target names, not reviewed mathematical success. Retain all 20 scheduled cases in operational accounting. Record that 19 cases have at least one proposed target present; a missing proposal does not establish an unanswerable query. Compare these raw candidate rankings before the final generated-declaration filter, without package restrictions.
 
-For the implementation in commit `3929440`:
+On fixed ten-candidate pools, record changed ordering in 9 of 20 cases after removing only the final dependency term, and in all 20 after using only neural scores. Verify that the unchanged mixture reproduces the baseline. Do not infer a quality improvement from an ordering change alone.
 
-- 116 main-package tests and 46 offline tests passed.
-- Main-package test coverage was 100%.
-- Lint, formatting and strict type checks passed for both packages.
-- Both publication checks passed.
-- All three CI jobs passed: `test`, `offline` and `candidate-selection`.
+For the bounded representation probe, verify four true statements and two counterexamples with Lean before scoring. Compare the same pairs under description-only, formal-only and combined inputs. Keep these invented controls separate from indexed declarations and human relevance labels.
 
-Tests cover invalid aliases, linked cases crossing splits, test exposure,
-conflicting judgments, failed requests and review-packet identity. Passing these
-checks establishes software behavior; mathematical validity still needs review.
+## Import the reference collection
 
-## Publication scope
+Retain the MathlibQR import of 946 nonempty query variants in 200 target groups. Record 196 target names present in the pinned corpus and four absent by name. Preserve original target identities and query-form fields. Assign the imported material to development and leave its local human labels unaccepted.
 
-The repository contains code, method documentation and invented test fixtures.
-Benchmark inputs, annotations, corpus inventories, input fingerprints and
-measured outputs stay outside Git checkouts. The new workflow commands reject
-outputs inside a Git checkout and refuse existing output directories.
+Describe this result as a validated format and grouping import. Do not claim reproduction of the published evaluation or equate single-target recovery with graded multi-answer relevance.
 
-Publication checks enforce allowed paths and file types. Content review is
-still required. Removing files from the current branch does not remove them
-from earlier Git history.
+## Account for review coverage
 
-## What remains
+Record four accepted positive pairs: the corresponding calibration queries against `Ordinal.inductionOn`, `InformationTheory.klDiv_eq_zero_iff`, `Nat.add_comm` and `Function.cantor_surjective`. Preserve the clarified intent and candidate-exposure history. Use the integrated partial-label collection only as a calibration diagnostic.
 
-1. Calibrate the relevance rubric with human reviewers and measure review time.
-2. Review theorem families and equivalences before assigning the final test set.
-3. Freeze a collection with accepted judgments and reproduce a baseline.
-4. Compare retrieval methods at fixed budgets, then examine reranking on fixed
-   candidate pools, including context completeness and truncation.
-5. Complete build provenance and deployed-process verification before claiming
-   an exact reproduction of the hosted service.
+Keep the two specialist interpretations proposed. Record zero independent second reviews and no measured active annotation rate. Retain the original 213-pair packet alongside the expanded 419-pair pool; do not transfer packet identities silently.
 
-The extraction work is a specification of a bounded normalization step. A
-general Lean parser and a formal correctness proof have not been implemented.
-Fine-tuning and serving changes are outside this milestone.
+Keep the pilot at 20 cases until review capacity is measured. Budget approximately 7.0, 14.0 or 27.9 hours for one pass over 419 pairs at one, two or four minutes per pair, respectively. Add query assessment, independent review and adjudication separately. Label these values as planning scenarios.
 
-## Documentation
+Retain 30 provisional source reservations with no generated test queries. Record verified separation from exposed topic identifiers, but leave mathematical-family disjointness and final test eligibility unresolved. Count zero final test cases.
 
-- [Preparation and review workflow](../tools/offline/docs/benchmark-workflow.md)
-- [Offline tools and evaluation](../tools/offline/README.md)
-- [Candidate-selection experiments](../experiments/candidate_selection/README.md)
-- [Extraction boundary](extraction-boundary.md)
-- [Repository publication scope](benchmark-consolidation.md)
+## Complete the remaining requirements
+
+- Finish calibration across the ten selected cases, including alternatives and negatives.
+- Resolve interpretations clarified after candidate exposure and the policy for general specializations.
+- Obtain independent specialist judgments where required and measure active review time.
+- Review theorem families before freezing test membership.
+- Complete the training-data specification, cost model and extraction/cache contract.
+- Preserve missing artifact-build and hosted-process provenance as explicit limitations.
+- Report actual completion by requirement. Do not mark the scientific benchmark complete while these review and release requirements remain open.
+
+Store raw datasets, full annotations and measured run artifacts outside Git checkouts. Publish method documents, aggregate checkpoints and review decisions here. Use the existing offline preparation, pooling and evaluation tools to reproduce the data flow.

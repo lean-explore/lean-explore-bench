@@ -27,3 +27,11 @@ still necessary: a source-file extension cannot prove that its text is suitable
 for publication.
 
 Existing upstream history is not rewritten by this change.
+
+## Published review records
+
+Publish calibration decisions and aggregate progress reports as Markdown.
+Include only the public or synthetic cases needed to explain a method decision.
+Use impersonal instructions and preserve the distinction between accepted
+judgments and unresolved proposals. Keep raw datasets, full annotation exports,
+private query logs, model artifacts and measured run files outside Git checkouts.
