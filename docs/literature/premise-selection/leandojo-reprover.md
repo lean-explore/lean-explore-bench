@@ -24,7 +24,6 @@ ReProver is a DPR-style dense retriever: a ByT5-small encoder with cosine simila
 **Splits (leakage control).**
 - `random`: theorems are split at random.
 - `novel_premises`: "It requires testing proofs to use at least one premise that has never been used in training." The paper motivates this split with blocks of near-duplicate theorems/proofs in mathlib. Under a random split, "the model can easily prove the other one by memorization" ([paper, Sec. 4](https://arxiv.org/abs/2306.15626)).
-- A community discussion on Zulip (Morrison, Macbeth, Xu, Yang) notes several effects of this split. It "would encourage clustering of subject matter": 449 of ~3,000 files appear in test, and the whole `analysis.convex.*` folder was cited as an example. Yang acknowledged the clustering and noted that single-tactic proofs end up restricted to training. Junyan Xu proposed a stricter criterion: the premises of a test proof should not be a subset of the premises of any training proof ([Zulip archive, "Releasing LeanDojo"](https://leanprover-community.github.io/archive/stream/219941-Machine-Learning-for-Theorem-Proving/topic/Releasing.20LeanDojo.html)).
 - Note: the split constrains *premise usage*, not premise *existence*. "Novel" premises are still in the retrieval corpus, and the theorem that defines one may appear in training with its own statement and proof. It is an inductive-generalization split, not a temporal or corpus-disjoint one. (This is our reading of the definition above; the paper does not discuss it.)
 
 **Metrics.** Retrieval: R@1, R@10 ("recall for the top k retrieved premises") and MRR. Proving: Pass@1, meaning one attempt within a 10-minute wall-clock limit ([paper, Sec. 6](https://arxiv.org/abs/2306.15626)).
@@ -78,7 +77,6 @@ ReProver is a DPR-style dense retriever: a ByT5-small encoder with cosine simila
 - Yang et al., "LeanDojo: Theorem Proving with Retrieval-Augmented Language Models", arXiv:2306.15626v2 (LaTeX source read in full): <https://arxiv.org/abs/2306.15626>
 - LeanDojo site: <https://leandojo.org/>; code: <https://github.com/lean-dojo/LeanDojo>, <https://github.com/lean-dojo/ReProver>
 - Zenodo datasets: <https://doi.org/10.5281/zenodo.8016385>, <https://doi.org/10.5281/zenodo.8040109>
-- Lean Zulip archive, "Releasing LeanDojo" thread (split critique): <https://leanprover-community.github.io/archive/stream/219941-Machine-Learning-for-Theorem-Proving/topic/Releasing.20LeanDojo.html>
 
 ## Merged detail: LeanDojo Benchmark 4 as a search eval (from the former `lean-benchmarks/leandojo-premise-retrieval.md`)
 

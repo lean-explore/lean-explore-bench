@@ -78,10 +78,8 @@ Sources: [2023 §1–3], [2024 §1–3], [2025 §2–3].
 
 **What transfers directly:**
 - **Task shape.** Each query has one gold item, the corpus is fixed and contains every answer, and systems return a ranked list. For a Lean ToT track this is: a query, one gold Mathlib declaration (plus equivalents; see the caveat below), a pinned Mathlib commit as the corpus, and ranked declaration names as runs.
-- **Mixed query provenance with per-source reporting.** Real CQA, human-elicited and LLM-synthetic queries are kept as separately labelled strata. Scores are reported per source, and the τ between sources is itself a published result. We should do the same with Zulip-mined, elicited and synthetic Lean queries.
 - **Validating synthetic queries by system-ranking agreement.** Tune the generator prompt until the system ordering on synthetic queries matches the ordering on a small real set for the *same targets*. This is the key methodological idea (details in `known-item-tot-query-simulation.md`).
 - **The elicitation protocol's validity checks** (recognise, cannot recall, confirm) map cleanly onto Lean. Show a mathematician a statement, or an informal rendering of it. Ask whether they know it exists and whether they can name it. If they can't, have them write the query, then show them the declaration to confirm.
-- **Contamination attestation.** It failed almost completely by 2024. Assume LLM-based engines may have seen Mathlib and Zulip. Prefer fresh or held-out targets, such as declarations added after a cutoff date, and hidden test answers.
 
 **What to do differently:**
 - **Single-answer qrels are too strict for Mathlib.** A ToT query can be satisfied by an `iff` form, a more general lemma, a `simp`-normal variant or a deprecated alias. The TREC setting has one Wikipedia page per entity, and Mathlib has no such structure. Keep a small set of accepted equivalents per query (see `../ir-evaluation/trec-pooling-and-relevance-judgments.md`).
@@ -92,7 +90,6 @@ Sources: [2023 §1–3], [2024 §1–3], [2025 §2–3].
 
 - The 2024 overview says only that prompts were iterated to maximise τ, and gives neither the number of systems nor the final τ per domain. He et al. 2025 do report these (see the simulation note).
 - The 2025 synthetic queries were validated against real queries only for the older domains. How reliable are they for the 50 new general domains? The overview does not report per-domain validation.
-- Would the 2025 finding (real CQA queries hardest, NIST queries easiest) replicate for Lean? That would mean real Zulip questions are harder than elicited or synthetic ones.
 
 ## Sources
 

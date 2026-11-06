@@ -14,15 +14,30 @@ reproducible footing.
 The literature review behind the benchmark design is in
 [`docs/literature/`](docs/literature/README.md).
 
+See [benchmark status](docs/benchmark-status.md) for what is ready, what has
+been checked and what remains before a validated benchmark release.
+
 ## Workflows
 
 - [Offline reports and retrieval evaluation](tools/offline/README.md): Python-only
   report building, local annotation, ranking metrics and paired comparisons.
 - [Candidate selection experiments](experiments/candidate_selection/README.md):
-  reproducible ablations and the initial 12-query public pilot.
+  runners and invented fixtures for retrieval ablations.
 - [Consolidation and publication scope](docs/benchmark-consolidation.md): source
-  inventory, preserved interfaces and the distinction between private log
-  analysis and public benchmark artifacts.
+  provenance, preserved interfaces and external benchmark storage.
+
+Benchmark inputs, source records, annotations, hashes of inputs and measured
+outputs belong outside the repository. See the [preparation and review
+workflow](tools/offline/docs/benchmark-workflow.md).
+
+## Benchmark specifications
+
+- [Methods and reporting](docs/benchmark-methods.md)
+- [Calibration decisions](docs/benchmark-review-questions-2026-11-06.md)
+- [Calibration review guide](docs/calibration-review-guide.md)
+- [Evaluation protocol](docs/evaluation-protocol.md)
+- [Reranker training specification](docs/reranker-training-specification.md)
+- [Extraction and cache contract](docs/extraction-boundary.md)
 
 ## Query log analysis
 
