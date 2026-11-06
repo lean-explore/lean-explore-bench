@@ -53,7 +53,7 @@ For each query-document pair, record a relation such as direct answer, equivalen
 
 These grades are not a universal ordering of theorem relations. A supporting lemma can satisfy a premise-selection task. Multi-premise routes need their own annotations and scoring.
 
-Use explicit statuses for target present, target name absent, unresolved availability and expert-reviewed absence of an adequate answer within the defined corpus/task. A newly introduced name, failed engine search or failed LLM judge does not prove absence of equivalent older results. Unknown relevance remains unjudged, not zero.
+Use explicit statuses for target present, target name absent, unresolved availability and expert-reviewed absence of an adequate answer within the defined corpus/task. A newly introduced name, failed engine search or failed LLM judge does not prove absence of equivalent older results. Keep unknown relevance unjudged. For ranking calculations, disclose that the evaluator assigns unjudged documents zero gain; this does not establish irrelevance.
 
 Pool deduplicated candidates from diverse retrieval channels and selected reranked results. Start with top-10 outputs plus proposed answers; audit deeper candidates where traces reveal misses. Record pool depth and judged coverage. A 100-case pilot does not imply exhaustive judgments of all top-50 pools.
 

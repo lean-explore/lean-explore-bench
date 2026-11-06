@@ -1,63 +1,66 @@
-# Extraction boundary for benchmark records
+# Extraction and cache contract
 
-The first component to specify is normalization of a versioned declaration
-envelope from elaborated metadata. The immediate benchmark requirement is a
-stable identity, complete statement context and traceable corpus membership.
+Implement the first verified component as normalization of elaborated declaration metadata. Use the contract below before starting a parser or proof. Preserve complete statements and stable identities; do not infer missing semantic context from a source snippet.
 
-## Input and output
+## Address the observed failure
 
-Input is a versioned envelope containing a corpus revision and declaration
-records. Each record has a fully qualified name, package/module identity,
-statement text and explicit context, plus its upstream artifact reference.
-The upstream extractor supplies resolved names and types. A source snippet alone
-does not establish them.
+Treat a snippet containing free section variables as incomplete input. For example, a statement mentioning a field, a finite group and a group-algebra module does not expose the required assumptions when those are declared outside the snippet. Retain the full enclosing context for inspection, then obtain the elaborated declaration type from the pinned Lean environment before marking the semantic record complete.
 
-Normalization validates the supported schema, rejects duplicate identities and
-missing required context, and preserves each accepted record's identity and
-mathematical text. Unknown schema versions and unsupported records return
-explicit errors. No parser implementation or proof is claimed by this document.
+Distinguish source inspection from successful elaboration. Check generated aliases and source spans against the actual pinned file; do not assume that a declaration's displayed source span is a complete statement.
 
-The candidate proof target is field preservation and identity uniqueness for
-successful normalization of the declared envelope schema. Specify a total
-function from decoded envelopes to either an error or normalized records.
-Prove that accepted records preserve name, statement and context; no record is
-invented, merged or silently dropped; output identities are unique.
+## Accept a versioned envelope
 
-This boundary does not prove parsing or elaboration of arbitrary Lean syntax.
-Upstream Lean/doc-gen semantics, byte decoding, IO, serialization, runtime and
-hashing remain trusted. Proving a weak validator correct would not establish
-that a statement contains all relevant section assumptions; that requirement
-must be part of the input contract and checked against pinned elaborated output.
+Use schema version 1 with the following required fields:
 
-## Fixtures and acceptance
+| Field | Contract |
+| --- | --- |
+| `schema_version` | Accept only the supported integer version. |
+| `environment` | Bind the toolchain, dependency lock, module/import closure, extractor revision and extraction settings. |
+| `artifact_digest` | Identify the immutable upstream elaborated artifact. |
+| `declarations` | Supply a finite list of declaration records, including an explicit empty list when valid. |
+| `identity` | Preserve environment identity and fully qualified declaration name; retain package and module provenance. |
+| `kind` | Distinguish definitions, theorems, axioms and generated declarations; reject unsupported kinds explicitly. |
+| `type_expression` | Supply the upstream elaborated type, including implicit parameters and section assumptions. |
+| `rendered_type` | Preserve a deterministic rendering with its pretty-printing options and environment binding. |
+| `source_reference` | Retain the upstream artifact reference and any source span without treating the span as semantic completeness. |
+| `context_evidence` | Bind completeness to the upstream extraction procedure and artifact, not to an unchecked Boolean alone. |
 
-Use invented records for schema and identity tests. Differential extraction
-fixtures stay outside the repository and bind to a pinned toolchain, dependency
-lock and extractor revision.
+Define identity within an environment by fully qualified name. Reject duplicate identities, conflicting metadata, unsupported versions and missing required fields. Keep aliases explicit and require each alias to resolve to a canonical record in the same environment. Do not silently merge records from different environments.
 
-Cover namespace qualification, section variables, implicit arguments, overloaded
-notation, Unicode, generated declarations and anonymous instances. Check source
-spans against complete module context. Malformed envelopes, duplicate names,
-missing context and unsupported versions must fail visibly.
+Return either a structured error or the entire normalized record list. Avoid partial success that silently drops declarations. Preserve the input mathematical text exactly; keep whitespace normalization or display formatting in a separate, versioned rendering step.
 
-Before implementation, review the specification against at least one observed
-extraction failure. A proof attempt starts only after the input subset and
-trusted boundary are settled.
+## State the proof obligations
 
-## Cache identities
+Define a total normalization function over the decoded envelope type. Prove that successful normalization preserves identity, elaborated type and recorded context; produces unique identities; preserves record count and order; and neither invents nor silently drops records. Prove that aliases resolve to accepted canonical identities.
 
-A build/extraction cache key includes toolchain, dependency lock, module input,
-extractor revision and settings. An unchanged source file can change meaning
-when its imported environment changes.
+Separate these properties from semantic correctness of the upstream extractor. Keep byte decoding, JSON decoding, file IO, serialization, hashing, the Lean compiler/runtime and upstream elaboration in the trusted boundary. Do not describe field-preservation proofs as proofs of arbitrary Lean parsing or semantic completeness.
 
-A normalization key includes artifact hash, schema and transformation revision.
-An informalization key includes the exact semantic input, docstring, selected
-context hashes, model and prompt revisions, and generation settings.
-An embedding key includes the rendered text, model/tokenizer revisions,
-normalization and truncation. An index manifest records corpus membership,
-record/vector hashes and index parameters.
+Reject unsupported input visibly. Do not count admitted obligations or an unchecked completeness flag as verified results. Review the contract against the section-context failure before implementing the proof target.
 
-Keep incompatible semantic environments separate. Test rename, deletion,
-dependency-only changes and a no-change rerun before relying on incremental
-updates. The next implementation should address the smallest demonstrated
-failure within this boundary.
+## Specify differential fixtures
+
+Prepare external fixtures bound to a toolchain, dependency lock and extractor revision. Include namespace qualification, section variables, implicit typeclass arguments, overloaded notation, Unicode spans, generated declarations, aliases, anonymous instances and mutual declarations.
+
+Compare the exported type and context with pinned elaborated output. Include malformed envelopes, duplicate identities, dangling aliases, unsupported versions and missing context as rejection fixtures. Keep invented schema fixtures in the repository and real extraction artifacts outside it.
+
+## Define cache keys and invalidation
+
+| Layer | Key inputs | Invalidate when |
+| --- | --- | --- |
+| Build/extraction | Toolchain, dependency lock, imported environment, module input, extractor and settings | Any input or transitive imported semantic dependency changes. |
+| Normalization | Upstream artifact digest, envelope schema and transformation revision | Artifact, schema or normalization behavior changes. |
+| Informalization | Exact semantic input, docstring, selected context, model, prompt and generation settings | Any effective generation input changes. |
+| Embedding | Rendered input, model/tokenizer revision, normalization, truncation and numerical settings | Effective text or embedding configuration changes. |
+| Index | Corpus membership, canonical record/vector hashes and index parameters | Membership, vectors or index configuration changes. |
+
+Keep incompatible environments separate. Share identical content-addressed artifacts without merging their provenance. Track module imports for invalidation and treat declaration-level dependency cycles explicitly.
+
+Require these acceptance fixtures before relying on incremental updates:
+
+- Reuse all artifacts on a no-change rerun.
+- Invalidate affected consumers after an imported declaration changes, even if the consuming source is unchanged.
+- Remove stale identities after deletion and preserve explicit rename/alias history.
+- Reject a cache hit after model, tokenizer, prompt, extraction or toolchain changes.
+- Publish a new complete index manifest atomically; retain the previous snapshot until the replacement is ready.
+
+Use the next implementation phase for one bounded normalization component. Keep general Lean parsing, production integration and a completed formal proof outside the current specification milestone.

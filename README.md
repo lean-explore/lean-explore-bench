@@ -30,6 +30,15 @@ Benchmark inputs, source records, annotations, hashes of inputs and measured
 outputs belong outside the repository. See the [preparation and review
 workflow](tools/offline/docs/benchmark-workflow.md).
 
+## Benchmark specifications
+
+- [Methods and reporting](docs/benchmark-methods.md)
+- [Calibration decisions](docs/benchmark-review-questions-2026-11-06.md)
+- [Calibration review guide](docs/calibration-review-guide.md)
+- [Evaluation protocol](docs/evaluation-protocol.md)
+- [Reranker training specification](docs/reranker-training-specification.md)
+- [Extraction and cache contract](docs/extraction-boundary.md)
+
 ## Query log analysis
 
 `lean_explore_bench.querylog` loads LeanExplore's de-identified search log,

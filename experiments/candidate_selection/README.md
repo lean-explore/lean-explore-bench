@@ -58,3 +58,50 @@ patched engine and its local dependencies, without downloading model weights.
 
 Engine-derived code and fixtures retain their Apache-2.0 attribution in
 `LICENSE.LeanExplore`.
+
+## Reproduce development diagnostics
+
+Use `diagnostic_replay.py` with external cases in the offline workflow format.
+Require every case to have `split: development` and match the database digest.
+Supply a local model manifest with entries for the embedding and reranker model,
+including `path` and `revision`. Use the prepared engine environment described
+above; do not install model weights into this repository.
+
+```sh
+python experiments/candidate_selection/diagnostic_replay.py \
+  --cases /external/cases.json --data /external/corpus \
+  --models /external/models.json --out /external/diagnostic-run
+```
+
+Retain `replay.json` and `executed_runner.py`. Inspect `scheduled_ids`, per-request
+status, stage IDs, exact-name lookup, the input audit and fixed-pool scores.
+Resolve stage IDs using the pinned database. Compare lexical, semantic, fusion
+and selection prefixes at the same depth. Keep the final dependency ablation
+separate from removing the dependency boost before candidate selection.
+
+Use `current_mixture`, `without_final_dependency` and `neural_only` on identical
+candidate names. Do not infer relevance improvement from a changed order.
+Record the model snapshots and their weight/tokenizer inventories alongside the
+run; the runner records source and corpus/index file hashes, but does not certify
+missing upstream build provenance.
+
+Treat an interrupted checkpoint as incomplete. Account for scheduled IDs without
+records as missing requests. Start a new output directory for another attempt.
+Use tracing timings only for diagnostic cost accounting.
+
+## Check controlled input representations
+
+Run the small invented controls with an explicit local Lean executable:
+
+```sh
+python experiments/candidate_selection/representation_probe.py \
+  --models /external/models.json --lean /path/to/lean \
+  --out /external/representation-probe
+```
+
+Verify four true statements and two counterexamples before scoring the fixed
+pairs under description-only, formal-only and combined inputs. Retain the Lean
+source, verifier output, runner source, input hashes, token counts and raw scores.
+Do not interpret the deliberately false candidate statements as indexed
+library declarations. Treat the results as a formal-consistency diagnostic,
+not human relevance judgments or evidence of corpus-wide retrieval quality.
