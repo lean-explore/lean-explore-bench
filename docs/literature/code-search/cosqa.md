@@ -36,7 +36,6 @@
 
 ## Relevance to lean-explore-bench
 
-- **Query source:** real search logs are the gold standard for realism. The closest Lean analogue is Zulip "is there a lemma that..." threads. Filtering for search intent is needed there too.
 - **Multi-positive labels are essential in Mathlib.** It has many near-duplicate or equivalent lemmas (`_left`/`_right`, `'`-variants, deprecated aliases, `simp` normal forms). Use MAP@k, Recall@k or nDCG over graded sets, not single-gold MRR.
 - **"Test-driven" labelling transfers unusually well to Lean.** An LLM can propose a candidate lemma, and `exact?`/`apply`/`rw` in a real Lean environment can mechanically check whether it closes the target goal. That is a stronger oracle than CoSQA+ had, but it only works for goal-shaped queries.
 - **Pool from many diverse engines,** not one model, to avoid CoSQA's candidate-selection bias.

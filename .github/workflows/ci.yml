@@ -24,6 +24,19 @@ jobs:
         run: |
           .venv/bin/ruff check .
           .venv/bin/ruff format --check .
+      - name: Offline lint and types
+        working-directory: tools/offline
+        run: |
+          ../../.venv/bin/ruff check .
+          ../../.venv/bin/ruff format --check .
+          ../../.venv/bin/mypy
+      - name: Metadata and cache checks
+        working-directory: experiments/declaration_metadata
+        run: |
+          ../../.venv/bin/ruff check .
+          ../../.venv/bin/ruff format --check .
+          ../../.venv/bin/mypy --strict incremental_cache.py
+          ../../.venv/bin/python -m pytest -q
       - name: Types
         run: .venv/bin/mypy
       - name: Test

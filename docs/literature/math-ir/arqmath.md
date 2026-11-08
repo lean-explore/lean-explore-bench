@@ -102,7 +102,6 @@ This section describes the evaluation protocol, not the systems.
 - *Keep training and test topics separate.* Progress-test sets are contaminated once released.
 
 **What it gets wrong or leaves out:**
-- Topics are sampled only from questions that already have a moderator-flagged duplicate. That biases toward easier, more common questions, and the organizers acknowledge it [ARQMath-3 §4.1]. The analogue for us: sampling queries only from Mathlib declarations that already have docstrings, or that appear in Zulip threads, would bias toward well-documented API.
 - The duplicate-link oracle is a weak relevance signal. It scored nDCG′ 0.106 on ARQMath-3. Silver labels from community links should not replace pooled judgments.
 - MIRB's reuse of ARQMath rescores only within each topic's judged pool (a "dynamic corpus" of annotated documents) [MIRB §3.2](https://arxiv.org/abs/2505.15585). That turns full retrieval into reranking and inflates scores relative to the original task.
 
