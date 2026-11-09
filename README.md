@@ -6,23 +6,45 @@ Benchmarks for Lean 4 search engines.
 > unstable: interfaces, categories, data formats and numbers will change
 > without notice. Do not rely on it yet.
 
-The goal of this repository is to measure how well search engines — such as
-[LeanExplore](https://github.com/lean-explore/lean-explore) — help find the
-declarations needed to write Lean 4 code, and to compare them on a fair,
-reproducible footing.
+Use this repository to evaluate Lean declaration search, compare retrieval
+stages and reranker configurations, and preserve reproducible evaluation
+contracts. Inspect [assisted-v2 results](docs/benchmark-assisted-v2.md), the
+[dataset card](docs/dataset-card.md) and the [manuscript](docs/preprint.md).
+Treat the reported labels as AI-assisted; independent human validation remains
+pending.
 
 The literature review behind the benchmark design is in
 [`docs/literature/`](docs/literature/README.md).
+
+See [benchmark status](docs/benchmark-status.md) for what is ready, what has
+been checked and what remains before a validated benchmark release.
 
 ## Workflows
 
 - [Offline reports and retrieval evaluation](tools/offline/README.md): Python-only
   report building, local annotation, ranking metrics and paired comparisons.
 - [Candidate selection experiments](experiments/candidate_selection/README.md):
-  reproducible ablations and the initial 12-query public pilot.
+  runners and invented fixtures for retrieval ablations.
 - [Consolidation and publication scope](docs/benchmark-consolidation.md): source
-  inventory, preserved interfaces and the distinction between private log
-  analysis and public benchmark artifacts.
+  provenance, preserved interfaces and external benchmark storage.
+
+Benchmark inputs, source records, annotations, hashes of inputs and measured
+outputs belong outside the repository. See the [preparation and review
+workflow](tools/offline/docs/benchmark-workflow.md).
+
+## Benchmark specifications
+
+- [Assisted-v2 results](docs/benchmark-assisted-v2.md)
+- [Dataset card](docs/dataset-card.md)
+- [Manuscript](docs/preprint.md)
+- [Assisted-v1 results](docs/benchmark-assisted-v1.md)
+- [Post-benchmark human review](docs/assisted-human-review.md)
+- [Methods and reporting](docs/benchmark-methods.md)
+- [Calibration decisions](docs/benchmark-review-questions-2026-11-06.md)
+- [Calibration review guide](docs/calibration-review-guide.md)
+- [Evaluation protocol](docs/evaluation-protocol.md)
+- [Reranker training specification](docs/reranker-training-specification.md)
+- [Extraction and cache contract](docs/extraction-boundary.md)
 
 ## Query log analysis
 
@@ -36,7 +58,7 @@ number of categories that all reproduce on subsamples) and builds summary
 statistics and charts.
 Categories describe how people search, never what they search for.
 
-Real queries are private: our Privacy Policy allows publishing only synthetic
+Keep real usage queries private. The Privacy Policy permits publishing only synthetic
 queries and aggregate statistics. So the code is public, but it runs on the
 server that holds the log, decrypts in memory, and writes nothing that could
 reproduce a query:

@@ -14,8 +14,6 @@ Collecting real known-item queries with verified answers is expensive and skewed
 
 For Lean this is the obvious route. Sample a Mathlib declaration, generate a vague "I know there's a lemma that…" query, and score retrieval of that declaration.
 
-## How it works
-
 ### Classic term-sampling simulation (Azzopardi et al. 2007)
 
 - **Generative model** [§3]. For each query:
@@ -109,32 +107,6 @@ For general (non-ToT) LLM query generation and synthetic test collections, see t
 The numbers are the validation results above. There is no system leaderboard in these papers.
 
 ## Relevance to lean-explore-bench
-
-**How to build a Lean ToT query simulator, following this recipe:**
-1. **Target sampling.**
-   - Sample Mathlib declarations with a *popularity prior*: for example, the number of uses in Mathlib or in downstream projects, which plays the role of inlinks or page views.
-   - Stratify into popularity buckets. Azzopardi found that uniform sampling produces unrealistically hard topics, and He et al. use 20 popularity buckets.
-   - Exclude auto-generated and private declarations.
-2. **Generator input.**
-   - Give the LLM the declaration's statement, docstring and an informal summary: the equivalent of the Wikipedia summary, which was the single biggest improvement.
-   - Do *not* give the name.
-3. **Role-play prompt with MUST/COULD rules.**
-   - MUST: never state the name or distinctive name fragments; describe the mathematical content, not the Lean syntax; hedge.
-   - COULD:
-     - mention the context ("I was proving X and needed…");
-     - include one plausibly wrong detail, such as a wrong typeclass, `≤` instead of `<`, or swapped argument order;
-     - mention a failed prior search ("`exact?` didn't find it");
-     - compare to a similar lemma.
-4. **Leak check.**
-   - Reject queries containing the declaration name or its last component.
-   - For Lean this should also reject queries that contain the full formal statement, since that reduces the task to `exact?` or Loogle.
-5. **Validate before use.**
-   - Collect about 100–150 *real* ToT-style Lean questions with known answers, for example Zulip "is there a lemma…" threads with an accepted answer (README "real human queries"; `../lean-benchmarks/lean-finder-eval.md` notes that Lean Finder's 693 real questions were not released).
-   - Run the real and synthetic queries *for the same target declarations* through a deliberately diverse pool of engines. The pool should include BM25 on names and docstrings, several embedding models, LeanSearch, Lean Finder, LeanExplore, Moogle-style engines, and deliberately degraded variants to spread the scores.
-   - Tune the prompt to maximise Kendall's τ between the two system orderings. Report τ on NDCG and on MRR. Also report a top-weighted or significance-aware agreement measure (see `../statistics/metric-scales-and-correlation.md`).
-6. **Optional: linguistic-code check.**
-   - Define a small Lean-specific code set: statement content, typeclass/context, proof context, previous search, hedging, relative comparison ("like `mul_le_mul` but for…").
-   - Compare the code distributions of real and synthetic queries by EMD, as He et al. did with Arguello's codes.
 
 **Human elicitation for Lean.**
 - Show an expert a *rendered informal statement*, not the Lean name, and ask whether they believe Mathlib has it and whether they can name it. If they can't, have them write the query, then reveal the declaration to confirm.

@@ -46,7 +46,6 @@ MathlibQR is an expert-written query set for single-declaration Mathlib search. 
 **Other reported MathlibQR results:**
 - **Legendre leaderboard:** 894 of 946 queries against a pinned v4.28.0-rc1 corpus. LeanSearch v2 API: nDCG@10 0.571 and R@10 74.4%. Lean Finder v1: 0.591 and 72.6%. LeanExplore: 0.385 and 56.5%. See `legendre-leaderboard.md`. This is not the same subset as Table 1, so the numbers are not directly comparable.
 - **TheoremGraph (arXiv 2606.25363), fair-810 subset:** their best configuration, without a reranker, reaches R@10 0.775 with 95% CI [0.746, 0.802] and nDCG@10 0.548. Configuration F reaches nDCG@10 0.558.
-- **Axiomatic "Octo Search":** a Lean Zulip post (21 Aug 2026) claims 0.765 nDCG@10 and 0.914 R@10 "on the same subset" versus LeanSearch v2's 0.623 / 0.780. There is no report or code yet, so this is **(unverified)**.
 
 ## Relevance to lean-explore-bench
 
@@ -78,4 +77,3 @@ MathlibQR is an expert-written query set for single-declaration Mathlib search. 
 - `MathlibQR.json`: https://raw.githubusercontent.com/frenzymath/LeanSearch-v2/main/benchmark/MathlibQR.json. The kind, difficulty and 946-query counts are my own tally of this file.
 - Legendre results: https://www.legendre-leaderboard.com/ and https://www.legendre-leaderboard.com/methodology
 - TheoremGraph MathlibQR results (§ on concept retrieval, Table 6): https://arxiv.org/abs/2606.25363
-- Octo Search claim: Lean Zulip, #general › "Discussion thread for Octo Search", message by Austin Letson, 2026-08-21 (https://leanprover.zulipchat.com/#narrow/channel/113488-general/topic/Discussion.20thread.20for.20Octo.20Search/near/617871976) **(unverified; no report released)**

@@ -2,20 +2,13 @@
 
 - **Kind:** search engine (plus two benchmark datasets)
 - **Links:** live service https://leansearch.net ; API docs https://leansearch.net/docs (OpenAPI at https://leansearch.net/openapi.json) ; v1 paper [arXiv:2403.13310](https://arxiv.org/abs/2403.13310) (EMNLP 2024 Findings) ; v2 paper [arXiv:2605.13137](https://arxiv.org/abs/2605.13137) ; code [frenzymath/LeanSearch](https://github.com/frenzymath/LeanSearch) (v1) and [frenzymath/LeanSearch-v2](https://github.com/frenzymath/LeanSearch-v2) ; prebuilt v2 corpus [cuVS](https://huggingface.co/datasets/FrenzyMath/lsv2-mathlib-v4.28.0-rc1-cuvs) / [JSONL](https://huggingface.co/datasets/FrenzyMath/lsv2-mathlib-v4.28.0-rc1-jsonl)
-- **Authors / org, date:** Guoxiong Gao, Haocheng Ju, Jiedong Jiang, Zihan Qin, Bin Dong et al., AI4Math team at BICMR, Peking University. v1 preprint March 2024, public launch 2024-07-30 ([Zulip announcement](https://leanprover.zulipchat.com/#narrow/near/455071791)); v2 paper May 2026 ([Zulip "LeanSearch update"](https://leanprover.zulipchat.com/#narrow/near/596070778)).
 - **Status:** Live (HTTP 200 and a working `POST /search` on 2026-09-28, checked by us). Both repos are Apache-2.0 ([v1](https://github.com/frenzymath/LeanSearch), [v2](https://github.com/frenzymath/LeanSearch-v2)). It is the default natural-language backend of Mathlib's `#search`/`#leansearch` commands ([LeanSearchClient](https://github.com/leanprover-community/LeanSearchClient)) and of lean-lsp-mcp's `lean_leansearch` tool ([source](https://github.com/oOo0oOo/lean-lsp-mcp/blob/main/src/lean_lsp_mcp/tools/search.py)). `/stats` reported 18.4M cumulative searches on 2026-09-28 ([stats](https://leansearch.net/stats)).
-
-## What it is
-
-LeanSearch is the most widely used natural-language search engine for Mathlib. The live service has run the "v2 standard mode" pipeline since roughly March 2026, and the maintainers call it a "major update" ([Zulip](https://leanprover.zulipchat.com/#narrow/near/596070778)). A separate "reasoning mode" retrieves the set of premises a whole theorem needs, but it is research-only and has no public API ([Zulip](https://leanprover.zulipchat.com/#narrow/near/596070778)).
 
 ## How it works (brief)
 
 - **v1:** An LLM (GPT-3.5) turns each Mathlib theorem into an informal name and statement, using hyperlinked definitions as context. The formal and informal text is embedded together with E5-mistral-7b. At query time, an optional GPT-4 step rewrites the query into a formal plus informal statement before the embedding search ([v1 paper §3](https://arxiv.org/abs/2403.13310)).
 - **v2 standard mode:** Jixia extracts every declaration kind from Mathlib v4.28.0-rc1. Qwen3-32B informalizes them bottom-up along the dependency DAG. Qwen3-Embedding-8B does dense retrieval, and Qwen3-Reranker-8B reranks the top 50 using a kind-aware prompt. No model is fine-tuned ([v2 paper, "Standard mode"](https://arxiv.org/abs/2605.13137)). The public API uses a 4B reranker variant ([v2 README](https://github.com/frenzymath/LeanSearch-v2)).
 - **Query styles:** natural language, LaTeX, theorem names or nicknames, and Lean terms. Lean-lsp-mcp's documented examples include `bijective map from injective`, `Cauchy Schwarz`, `List.sum`, and `{f : A → B} (hf : Injective f) : ∃ h, Bijective h` ([lean-lsp-mcp README](https://github.com/oOo0oOo/lean-lsp-mcp)).
-
-## Evaluation
 
 ### v1: "Mathlib4 Semantic Search Benchmark" ([arXiv:2403.13310 §4–5](https://arxiv.org/abs/2403.13310))
 - **Queries:** 50 queries in 18 intent groups. They fall into four forms: natural description (18), LaTeX formula (15), theorem name (7), and Lean 4 term (10). The corpus was Mathlib at commit `db04a978…`, theorems only.
@@ -46,8 +39,6 @@ LeanSearch is the most widely used natural-language search engine for Mathlib. T
 ## Programmatic access (for a harness)
 
 - **API:** `POST https://leansearch.net/search` with body `{"query": [str, ...], "num_results": int ≤ 150}`. It accepts a batch of queries. Each result includes `name`, `module_name`, `kind`, `signature`, `type`, `value`, `docstring`, `informal_name`, `informal_description`, and a `distance` score. Other endpoints are `POST /augment` (LLM query augmentation), `POST /fetch`, `GET /stats`, and `POST /feedback` ([OpenAPI](https://leansearch.net/openapi.json), checked 2026-09-28).
-- **Rate limits:** Capacity is about 40 req/s with a per-IP limit of 120 req/min (as of 2026-05-19), adjusted dynamically. IPs are now logged ([Zulip](https://leanprover.zulipchat.com/#narrow/near/596070778)). The upstream lean-lsp-mcp throttles itself to 90 requests per 30 s ([config.py](https://github.com/oOo0oOo/lean-lsp-mcp/blob/main/src/lean_lsp_mcp/config.py)).
-- **Index snapshot:** Mathlib v4.28.0-rc1 as of May 2026, with an update pending that needs a Jixia upgrade ([Zulip](https://leanprover.zulipchat.com/#narrow/near/596070778)). Whether it has been updated since is unverified. The API does not expose which snapshot it serves, so a harness should record the response date and check whether gold declarations exist through `/fetch`.
 - **Self-hosting:** `scripts/serve.sh` runs standard mode on 2 GPUs ([README](https://github.com/frenzymath/LeanSearch-v2)). This makes a frozen, reproducible copy possible.
 - **MCP:** LeanSearch has no first-party MCP server. It is reached through lean-lsp-mcp (see [../lean-tools/lean-lsp-mcp.md](../lean-tools/lean-lsp-mcp.md)).
 
@@ -71,7 +62,5 @@ LeanSearch is the most widely used natural-language search engine for Mathlib. T
 - v2 code and benchmarks: https://github.com/frenzymath/LeanSearch-v2
 - v1 code: https://github.com/frenzymath/LeanSearch
 - OpenAPI schema (fetched 2026-09-28): https://leansearch.net/openapi.json ; stats: https://leansearch.net/stats
-- Zulip launch (2024-07-30): https://leanprover.zulipchat.com/#narrow/near/455071791 ; API and all-kinds update (2024-09-08): https://leanprover.zulipchat.com/#narrow/near/468640723
-- Zulip v2 / service update (2026-05-19): https://leanprover.zulipchat.com/#narrow/near/596070778
 - lean-lsp-mcp rate limits: https://github.com/oOo0oOo/lean-lsp-mcp/blob/main/src/lean_lsp_mcp/config.py
 - Lean Finder paper (augmentation comparison): https://arxiv.org/abs/2510.15940

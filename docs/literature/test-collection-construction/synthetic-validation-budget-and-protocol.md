@@ -17,8 +17,6 @@ The practical question is how many human-labelled queries are needed before LLM-
 2. **Statistical correction.** PPI and conformal methods use a small human-labelled subset to put valid confidence intervals on LLM-label metrics.
 3. **Judge-calibration budgets.** ARES reports a minimum human validation set below which its rankings stop being meaningful.
 
-## How it works
-
 ### Prediction-powered inference and conformal risk control (Oosterhuis et al., KDD 2024)
 - **PPI** combines LLM labels on all queries with a *rectifier*: the mean LLM-vs-human error on the n human-labelled queries. The result is a confidence interval that stays valid whatever the LLM's errors are ([arXiv:2301.09633](https://arxiv.org/abs/2301.09633), abstract). Oosterhuis et al. apply it to IR metrics. They also propose **CRC** (conformal risk control), which produces per-query and per-document intervals designed for ranking metrics ([arXiv:2407.02464](https://arxiv.org/abs/2407.02464), abstract).
 - **Setup.** Flan-UL2 in scoring mode, no prompt engineering. TREC-DL 2019–2022 (stratified) and Robust04, each split 50:50 into calibration and test. The target is BM25's DCG@10 with 95% intervals over 500 runs (§7).
@@ -52,7 +50,6 @@ This is a proposal built from the evidence above. The numbers are starting point
 
 **1. Human anchor set (build first, freeze, keep private).**
 - Draw ≥ 50 targets by *random* stratified sampling over Mathlib folders and declaration kinds. Random sampling is required for PPI to be valid.
-- Have experts write queries without seeing any engine's output. MathlibQR's six-style scheme is a ready template ([../lean-benchmarks/mathlibqr.md](../lean-benchmarks/mathlibqr.md)). Also include ≥ 30 real questions from Zulip or GitHub as information-need seeds, since Lean Finder's real queries are unreleased.
 - Pool the top 10 from every engine plus the oracle and baseline runs from step 4. Have humans grade the pool on a 3–4 level scale with written criteria, e.g. exact / more general / usable with glue / unrelated.
 - This gives about 50–80 human-judged queries. That clears the ~20–50 queries PPI/CRC needed on TREC and gives a pairwise-label set in the low thousands, above ARES's ~150 datapoint floor.
 
