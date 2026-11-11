@@ -8,10 +8,17 @@ Benchmarks for Lean 4 search engines.
 
 Use this repository to evaluate Lean declaration search, compare retrieval
 stages and reranker configurations, and preserve reproducible evaluation
-contracts. Inspect [assisted-v2 results](docs/benchmark-assisted-v2.md), the
-[dataset card](docs/dataset-card.md) and the [manuscript](docs/preprint.md).
-Treat the reported labels as AI-assisted; independent human validation remains
-pending.
+contracts. Start with the [full-collection preprint](docs/full-collection-preprint.md)
+for the findings, their interpretation and the next experiments. The
+[baseline report](docs/benchmark-full-collection.md) and
+[corrected reranker report](docs/benchmark-reranker-corrected.md) contain the
+detailed source and category tables. They cover all prepared query sources, with
+separate results for upstream targets, proposed reply-link targets and unlabelled
+traffic. Independent relevance review remains pending.
+
+The [assisted-v2 pilot](docs/benchmark-assisted-v2.md), its
+[dataset card](docs/dataset-card.md) and [earlier manuscript](docs/preprint.md)
+retain their original scope and annotation provenance.
 
 The literature review behind the benchmark design is in
 [`docs/literature/`](docs/literature/README.md).
@@ -21,6 +28,8 @@ been checked and what remains before a validated benchmark release.
 
 ## Workflows
 
+- [Full collection replay](experiments/full_collection/README.md): coverage,
+  stage diagnostics and corrected reranker comparisons on every prepared request.
 - [Offline reports and retrieval evaluation](tools/offline/README.md): Python-only
   report building, local annotation, ranking metrics and paired comparisons.
 - [Candidate selection experiments](experiments/candidate_selection/README.md):
@@ -34,6 +43,9 @@ workflow](tools/offline/docs/benchmark-workflow.md).
 
 ## Benchmark specifications
 
+- [Full collection preprint](docs/full-collection-preprint.md)
+- [Full collection results](docs/benchmark-full-collection.md)
+- [Corrected reranker results](docs/benchmark-reranker-corrected.md)
 - [Assisted-v2 results](docs/benchmark-assisted-v2.md)
 - [Dataset card](docs/dataset-card.md)
 - [Manuscript](docs/preprint.md)

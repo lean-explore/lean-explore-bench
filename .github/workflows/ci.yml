@@ -41,6 +41,11 @@ jobs:
         run: .venv/bin/mypy
       - name: Test
         run: .venv/bin/pytest -q
+      - name: Test full collection coverage and scoring
+        run: |
+          .venv/bin/ruff check --isolated --select E,F,UP --ignore E501,E402 experiments/full_collection
+          .venv/bin/ruff format --isolated --check experiments/full_collection
+          .venv/bin/python -m unittest discover -s experiments/full_collection -p test_full_collection.py -v
 
   offline:
     runs-on: ubuntu-latest
