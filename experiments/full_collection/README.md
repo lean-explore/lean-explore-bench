@@ -144,6 +144,28 @@ The current runner emits this corrected trace metadata directly, including for
 empty results and failed baseline requests. That bookkeeping fix was applied after
 the campaign completed; the exact earlier runner remains archived with its journal.
 
+## First-stage depth
+
+`recall_depth.py` replays the labelled requests with BM25 and FAISS depths of 50 to 5,000, using the engine's own retrieval, fusion and selection calls and no reranking. It journals only target ranks, list lengths and stage timings, and adds an exhaustive FAISS search at the largest depth. `--profile N` times full declaration loading for the top-k fused candidates on the first N requests. `fusion_variants.py` compares pools built from the same channel outputs: the engine's fusion, RRF with constant 60, dense-weighted RRF, reserved dense slots and single channels. `recall_depth_report.py` writes the recall curves, the selection loss, a classification of targets still missing at depth 5,000 and the measured costs. It also checks the depth-1,000 ranks against the archived end-to-end run.
+
+```sh
+python recall_depth.py --cases /external/collection/cases.json \
+  --data /external/corpus --models /external/models.json --out /external/depth
+python recall_depth.py --cases /external/collection/cases.json \
+  --data /external/corpus --models /external/models.json --out /external/profile --profile 200
+python fusion_variants.py --cases /external/collection/cases.json \
+  --data /external/corpus --models /external/models.json --out /external/variants \
+  --base /external/run
+python fusion_variants.py --cases /external/collection/cases.json \
+  --data /external/corpus --models /external/models.json --out /external/variants \
+  --base /external/run --summary /external/variants-summary.json
+python recall_depth_report.py --cases /external/collection/cases.json \
+  --run /external/depth --base /external/run --probe /external/names.json \
+  --data /external/corpus --out /external/depth-summary.json
+```
+
+`--probe` takes a JSON list produced against a current Mathlib environment, with each target name's existence, declaration kind, defining module and deprecation links. It separates renamed targets and generated declarations, such as structure projections, from names that no longer exist.
+
 ## Labels and denominators
 
 MathlibQR uses its upstream single target. MathlibMPR preserves each alternative

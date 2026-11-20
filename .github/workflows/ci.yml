@@ -45,7 +45,7 @@ jobs:
         run: |
           .venv/bin/ruff check --isolated --select E,F,UP --ignore E501,E402 experiments/full_collection
           .venv/bin/ruff format --isolated --check experiments/full_collection
-          .venv/bin/python -m unittest discover -s experiments/full_collection -p test_full_collection.py -v
+          .venv/bin/python -m unittest discover -s experiments/full_collection -p 'test_*.py' -v
 
   offline:
     runs-on: ubuntu-latest
