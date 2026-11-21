@@ -166,6 +166,8 @@ python recall_depth_report.py --cases /external/collection/cases.json \
 
 `--probe` takes a JSON list produced against a current Mathlib environment, with each target name's existence, declaration kind, defining module and deprecation links. It separates renamed targets and generated declarations, such as structure projections, from names that no longer exist.
 
+The measured curves, fusion variants and costs are in [benchmark-recall-depth.md](../../docs/benchmark-recall-depth.md).
+
 ## Labels and denominators
 
 MathlibQR uses its upstream single target. MathlibMPR preserves each alternative
