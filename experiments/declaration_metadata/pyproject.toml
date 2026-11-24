@@ -1,0 +1,13 @@
+[tool.pytest.ini_options]
+testpaths = ["."]
+pythonpath = ["."]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 88
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["extract_metadata", "incremental_cache"]

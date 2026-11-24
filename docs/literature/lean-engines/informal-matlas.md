@@ -100,4 +100,3 @@ Matlas is a dense retriever over **mathematical statements** (definitions, theor
 - leansearch.net/thm page, `main.js` and live `/thm/search` call (run by us, 2026-09-28): https://leansearch.net/thm/
 - TheoremSearch vs MATLAS benchmark: https://github.com/uw-math-ai/TheoremSearch/blob/main/experiments/matlas-comparison/README.md
 - AViD Journal: https://arxiv.org/abs/2608.14669
-- Lean Zulip Rethlas+Archon announcement: https://leanprover.zulipchat.com/#narrow/near/583591174

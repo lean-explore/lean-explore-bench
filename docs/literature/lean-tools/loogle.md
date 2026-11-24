@@ -2,7 +2,6 @@
 
 - **Kind:** search engine (name / constant / type-pattern search over Mathlib)
 - **Links:** service and help <https://loogle.lean-lang.org/>; JSON API `https://loogle.lean-lang.org/json?q=…`; code <https://github.com/nomeata/loogle>
-- **Authors / org, date:** Joachim Breitner. Announced on Lean Zulip #general, topic "Loogle!", 2023-08-19 ([msg 386143361](https://leanprover.zulipchat.com/#narrow/channel/113488-general/topic/Loogle!/near/386143361); [public archive](https://leanprover-community.github.io/archive/stream/113488-general/topic/Loogle!.html)). Breitner describes it as "a Mathlib search engine inspired by Haskell's Hoogle" ([blog, 2023-11-01](https://www.joachim-breitner.de/blog/809-Joining_the_Lean_FRO)). Now hosted by the Lean FRO (help page footer).
 - **Status:** Live and answering on 2026-09-28. The help page reported Loogle rev `9f11169` and Mathlib rev `bc5fddb` ([loogle.lean-lang.org](https://loogle.lean-lang.org/)). It "tries to upgrade to the latest Mathlib every 6 hours" ([README](https://github.com/nomeata/loogle)). Apache-2.0 ([README](https://github.com/nomeata/loogle)).
 
 ## What it is
@@ -18,8 +17,6 @@ Query language ([help page](https://loogle.lean-lang.org/)):
 - a subexpression pattern with `_` and named `?a` metavariables, including non-linear ones (`Real.sqrt ?a * Real.sqrt ?a`)
 - a conclusion pattern with `|-` or `⊢` (`|- tsum _ = _ * tsum _`)
 - kind filters (`⊢ (_ : Prop)`)
-
-Comma-separated filters are ANDed. A metavariable is not shared across comma-separated filters ([Zulip "loogle miss"](https://leanprover.zulipchat.com/#narrow/channel/287929-mathlib4/topic/loogle.20miss/near/485125724)).
 
 Implementation, briefly: a constant-mention index plus a suffix trie over names narrow the candidates, which are then matched by reducible `isDefEq` ([Loogle/Find.lean](https://github.com/nomeata/loogle/blob/master/Loogle/Find.lean), per a sub-agent's reading).
 
@@ -38,7 +35,6 @@ Implementation, briefly: a constant-mention index plus a suffix trie over names 
 ## Availability
 
 - **Web and JSON API.** The API has "no stability of the format guaranteed" ([README](https://github.com/nomeata/loogle)). A live response has the fields `count`, `header`, `heartbeats`, and `hits[{name,type,module,doc}]`.
-- **Zulip bot:** `@**loogle** query`.
 - **Editors:** the "Loogle Lean" VS Code extension ([marketplace](https://marketplace.visualstudio.com/items?itemName=ShreyasSrinivas.loogle-lean)), the Lean 4 VS Code extension's command palette, and lean.nvim.
 - **In Lean:** `#loogle` from LeanSearchClient, which is a Mathlib dependency.
 - **MCP:** the `lean_loogle` tool in lean-lsp-mcp, which can also run it locally (see `lean-lsp-mcp.md`).
@@ -71,8 +67,6 @@ Implementation, briefly: a constant-mention index plus a suffix trie over names 
 - Help page and query syntax: <https://loogle.lean-lang.org/>
 - README (API, bot, editors, update cadence, license): <https://github.com/nomeata/loogle>
 - Matcher implementation: <https://github.com/nomeata/loogle/blob/master/Loogle/Find.lean>
-- Zulip announcement: <https://leanprover.zulipchat.com/#narrow/channel/113488-general/topic/Loogle!/near/386143361>
-- Zulip "loogle miss": <https://leanprover.zulipchat.com/#narrow/channel/287929-mathlib4/topic/loogle.20miss/near/485125724>
 - Breitner blog: <https://www.joachim-breitner.de/blog/809-Joining_the_Lean_FRO>
 - VS Code extension: <https://marketplace.visualstudio.com/items?itemName=ShreyasSrinivas.loogle-lean>
 - Community overview "Searching for Theorems in Mathlib" (2025-06-25): <https://leanprover-community.github.io/blog/posts/searching-for-theorems-in-mathlib/>

@@ -119,20 +119,10 @@ Loogle and `exact?` are Lean's members of the formal-relevance school ([../lean-
    - symmetry (`a = b` vs. `b = a`), which is Idris's rule; how Loogle handles it was not checked (unverified);
    - alias/notation unfolding.
 
-   These are exactly the axes Rittri, Runciman & Toyn, Idris, rustdoc, and Aegle each chose different subsets of. Per-stratum recall shows *which* flexibility each Lean engine lacks. Aegle's claim that Loogle covers only a subset makes this a direct test.
-4. **Query sources, in order of realism:**
-   1. **Logs:** real Loogle queries if obtainable, e.g. Zulip `@loogle` bot messages are public. TyGAR's filtering pipeline shows the cost: 3.8M → 1,750 popular → 180 valid → 24 usable.
-   2. **Q&A-derived needs** (Scaps; Zulip "is there a lemma…" threads).
-   3. **Generated patterns** from gold statements by abstracting subterms. This is TypeSearch's self-retrieval protocol, which is easy to scale but only tests exact-form recall. **Perturb** the pattern (reorder, generalise, swap sides) to reach the harder strata.
-5. **Avoid Scaps's two named mistakes:** keep a **held-out split** for any tuning, and do not select queries by "our engine can answer it". Include unanswerable or zero-result queries: TyGAR found many Hoogle queries unrealizable, and a good engine should return nothing or say so.
-6. **Report latency percentiles** (TypeSearch's p50/p90/p99). Type search has heavy tails: TypeSearch's p99 was 20× its median, and unification modulo isomorphism is NP-complete. Loogle's `heartbeats` field is a natural cost column.
-7. **Treat set-returning engines honestly.** Formal engines return unranked sets, so report set size and hit/recall, or impose a documented deterministic order before computing MRR. The same caveat appears in the Loogle note.
-
 ## Open questions
 
 - Do Hoogle's raw query logs remain available to researchers? The Hoogle+ group had 2015–2019 logs, but the access terms are unknown (unverified).
 - Is there any retrieval-quality evaluation of Dowsing, or in the TyDe 2025 Aegle paper? Neither PDF could be read here.
-- Is there a Loogle query log, or can one be reconstructed from Zulip `@loogle` messages?
 
 ## Sources
 

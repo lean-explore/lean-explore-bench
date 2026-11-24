@@ -15,6 +15,7 @@ from leanexplore_benchmark.evaluate import compare, evaluate
 from leanexplore_benchmark.profile import profile
 from leanexplore_benchmark.querylog import load_export
 from leanexplore_benchmark.report import render
+from leanexplore_benchmark.workflow import add_commands, dispatch
 
 
 def _write_json(path: Path, value: object) -> None:
@@ -101,7 +102,10 @@ def main(argv: list[str] | None = None) -> None:
             )
             command.add_argument("--seed", type=int, default=42)
             command.add_argument("--samples", type=int, default=10000)
+    add_commands(commands)
     args = parser.parse_args(argv)
+    if dispatch(args):
+        return
     if args.command == "build":
         from leanexplore_benchmark.build import build
 

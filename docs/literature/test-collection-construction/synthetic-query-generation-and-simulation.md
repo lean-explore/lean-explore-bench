@@ -22,8 +22,6 @@ Three research lines generate queries without users:
 2. **Query simulation** (Azzopardi et al., Breuer et al., Balog & Zhai). Simulated queries are used *for evaluation*, so this line developed validation criteria.
 3. **LLM query variants** (Alaofi et al.). An LLM writes many phrasings of one information need, compared with crowd-sourced variants (UQV100).
 
-## How it works and what each says about evaluation
-
 ### InPars / InPars-v2 (training)
 - **InPars.** GPT-3 was prompted with 3 MS MARCO examples plus a document to write a query. Only the top K = 10,000 of 100,000 pairs, ranked by the generator's mean token log-probability, were kept ([arXiv:2202.05144](https://arxiv.org/abs/2202.05144) §3). Training on all 100k instead of the filtered 10k cost 4 MRR@10 points on MS MARCO. The authors tuned this filter only on MS MARCO "to avoid relying on the test sets" (§6.3).
 - **InPars-v2.** Swapped to open GPT-J-6B, still with 3 MS MARCO examples. Filtering now keeps the top 10k of 100k pairs *by a monoT5-3B reranker score* ([arXiv:2301.01820](https://arxiv.org/abs/2301.01820) §2).
@@ -72,7 +70,6 @@ Three research lines generate queries without users:
 ## Relevance to lean-explore-bench
 
 - **Lean search is mostly known-item search.** A user wants a specific lemma or definition. The known-item simulation line (Azzopardi, Breuer) applies directly. Breuer's result that known-item-seeded queries are an effectiveness **upper bound** matches Rahmani's "synthetic is easier". Queries written by an LLM *looking at the declaration* will leak its vocabulary (names, hypotheses), unless the prompt forbids it and a lexical-overlap filter enforces it (LitSearch-style; see [../embedding-evaluation/domain-benchmarks.md](../embedding-evaluation/domain-benchmarks.md)).
-- **Generate from needs, not only from targets.** Alaofi et al. generate from *backstories*, i.e. information needs, not documents. For Lean that means seeding from real questions (Zulip, GitHub, proof states) as well as from declarations. Lean Finder mined intent clusters from 693 real questions and then generated with GPT-4o ([../lean-benchmarks/lean-finder-eval.md](../lean-benchmarks/lean-finder-eval.md)). The generation idea is good; the same-pipeline test set is the problem.
 - **Diversity has to be measured.** LLM variants cover fewer distinct formulations and produce smaller pools. Report per-target variant count, pairwise query similarity, and pool growth across variants, and compare them with the human anchor (MathlibQR's six expert styles per target are a ready anchor; [../lean-benchmarks/mathlibqr.md](../lean-benchmarks/mathlibqr.md)).
 - **Validation facets to report (Breuer / Kruff):** one IR metric's score distribution vs human queries (RMSE or KS); Kendall's τ of engine ordering; SERP overlap (RBO) between human and synthetic queries for the same target; query similarity. More IR metrics add little.
 - **Do not borrow a training filter for test data.** Round-trip or reranker-score filters (Promptagator, InPars-v2) select queries that some retriever already solves, which biases the test set toward that retriever family. Filter test queries with human review or retriever-independent checks: answerability by the target, no leakage of the target's name, well-formedness.

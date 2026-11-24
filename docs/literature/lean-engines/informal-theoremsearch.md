@@ -27,8 +27,6 @@ TheoremSearch retrieves **individual theorem-like statements** rather than paper
 
 **Index snapshot.** The paper's datasheet says "Data was collected over five months, from September 2025 to January 2026." We found no per-deployment snapshot date on the live site.
 
-**Formal side.** The TheoremGraph follow-up added Lean declarations to the same backend ([theoremgraph.md](../premise-selection/theoremgraph.md)). They are *not* reachable through `/search` or the MCP tool: a `sources: ["Lean Community"]` or `["Mathlib"]` filter on `/search` returned zero results in our checks. They are reachable through `GET /graph/embedding?formality=formal`, which returned Mathlib declarations, e.g. `ContinuousOn.exists_isMaxOn'`, with source `"Lean Repo"` and title `"Mathlib_v427"`. `/paper-search?q=Mathlib` lists **three Mathlib snapshots as separate "papers": `Mathlib_v427`, `Mathlib_v428` and `Mathlib_v429`** (checked by us). A Lean Zulip user independently reported the same split: `POST /search` and the MCP "only returns informal arXiv results, not lean declaration". The same user noted that there is no filter restricting `/graph/embedding` to Mathlib only, and no endpoint exposing the judged formal–informal matches ([Zulip, 2026-07-01](https://leanprover.zulipchat.com/#narrow/near/607697173)). Our `formality=formal` parameter did restrict results to formal statements. We did not check whether non-Mathlib Lean projects are also returned.
-
 ## How it works (brief)
 
 - **Representation.** An LLM (DeepSeek V3) writes a "slogan" for each statement. The slogan prompt was given the body plus paper context, and the ablation favoured body plus introduction ([paper §3.3, §4.5](https://arxiv.org/abs/2602.05216)).
@@ -130,5 +128,4 @@ TheoremSearch retrieves **individual theorem-like statements** rather than paper
 - Live queries to `/search`, `/graph/embedding`, `/paper-search` and `/mcp` (run by us, 2026-09-28)
 - HF dataset card and `theorems-test.parquet` (downloaded 2026-09-28): https://huggingface.co/datasets/uw-math-ai/theorem-search-dataset
 - Repo experiments: https://github.com/uw-math-ai/TheoremSearch/blob/main/experiments/user_queries/README.md , https://github.com/uw-math-ai/TheoremSearch/blob/main/experiments/matlas-comparison/README.md
-- Lean Zulip, TheoremGraph announcement thread: https://leanprover.zulipchat.com/#narrow/near/607529041 , https://leanprover.zulipchat.com/#narrow/near/607697173
 - AViD Journal: https://arxiv.org/abs/2608.14669

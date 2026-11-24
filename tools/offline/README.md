@@ -53,6 +53,12 @@ cell are suppressed. Percentages use rounded counts. Missing categories are
 unavailable, not zero. These measures reduce disclosure; they are not a formal
 anonymity guarantee.
 
+## Benchmark preparation
+
+The [benchmark workflow](docs/benchmark-workflow.md) prepares external cases,
+audits split constraints, validates ranked observations and exports blinded
+candidate pools. All generated artifacts stay outside Git checkouts.
+
 ## Annotation and evaluation
 
 The optional installed CLI provides additional commands:
@@ -94,4 +100,4 @@ not check browser layout.
 
 This tool was imported from the personal benchmark repository. See the
 [consolidation note](../../docs/benchmark-consolidation.md) for provenance and
-the public candidate-selection results elsewhere in this repository.
+the candidate-selection tools elsewhere in this repository.

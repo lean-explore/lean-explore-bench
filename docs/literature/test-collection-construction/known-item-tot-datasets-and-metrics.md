@@ -19,8 +19,6 @@ Three strands, each of which shapes a Lean "I know a lemma like this exists" que
 2. **Datasets harvested from community Q&A (CQA) sites**, with the "solved" answer as the single gold item.
 3. **Metrics and statistics for single-answer (known-item) evaluation**, going back to TREC named-page finding.
 
-## How it works
-
 ### 1. Anatomy of ToT requests (Arguello et al. 2021)
 
 - **Definition.** A ToT need is "an item identification task where the searcher has previously experienced or consumed the item but cannot recall a reliable identifier" [§1].
@@ -110,7 +108,6 @@ The numbers are quoted inline above.
 - Measure inter-annotator κ per code as Arguello did. Use the code distribution both to describe the benchmark and to validate synthetic queries (EMD, as in He et al. 2025).
 
 **Harvesting real ToT queries for Lean.**
-- The Lean analogue of CQA "solved" threads is a Zulip `#new members` / `#mathlib4` / `#Is there code for X?` (channel names (unverified)) thread where a reply names a declaration and the asker confirms it.
 - Use the TOMT-KIS approach: a precision-oriented heuristic for the confirmation (asker replies "thanks" or "that's it" to a post containing a backticked declaration name), then manual verification.
 - Expect a low solved rate. TOMT-KIS found answers for only 47%. Unsolved questions are still useful: they show where search fails, and they can seed "no known answer" negatives.
 - Resolve every answer to a declaration at a pinned Mathlib commit, and record renames. This is Mathlib's version of Reddit-TOMT's "exactly one link" filter.
@@ -124,8 +121,6 @@ The numbers are quoted inline above.
 
 ## Open questions
 
-- How often do Lean users arrive with *partial name recall* rather than pure description? Real Zulip data is needed to answer this.
-- Should queries that were solved on Zulip only through discussion (clarifying questions) count as single-shot queries? Arguello and TOMT-KIS take only the initial post. BLUR and DETOUR ([arXiv:2602.00352](https://arxiv.org/abs/2602.00352)) move toward multi-turn evaluation, which fits agentic Lean search.
 - For the most common "does Mathlib have X?" requests, what share of real answers is "no, it doesn't exist"? A pure known-item benchmark cannot score the correct abstention (see `no-answer-qa-rag-abstention.md`).
 
 ## Sources

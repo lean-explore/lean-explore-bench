@@ -43,3 +43,12 @@ models/
 *.bin
 *.index
 benchmark_queries_export*
+
+# External benchmark artifacts
+*.json
+*.csv
+*.tsv
+*.xlsx
+results/
+annotations/
+runs/

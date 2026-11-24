@@ -3,12 +3,6 @@
 > **Name collision:** this is **not** Matlas (matlas.ai, PKU). For that engine see [informal-matlas.md](informal-matlas.md).
 
 - **Kind:** tool (MCP server bundling an informal theorem-search index, a Lean-search proxy and verification tools)
-- **Links:**
-  - code (Apache-2.0): https://github.com/Archerkattri/mathlas
-  - package: https://pypi.org/project/mathlas-mcp/
-  - corpus: https://huggingface.co/datasets/kattri15/mathlas-corpus
-  - results: https://github.com/Archerkattri/mathlas/blob/main/RESULTS.md
-  - announcement: [Lean Zulip, 2026-06-10](https://leanprover.zulipchat.com/#narrow/near/601608319)
 - **Authors / org, date:** Krishi Attri (individual). The repo was created 2026-06-05 (GitHub API).
 - **Status (checked 2026-09-28):**
   - Active. PyPI is at 1.5.0 and the repo was last pushed 2026-09-18, with 12 stars (GitHub and PyPI APIs).
@@ -45,7 +39,6 @@ All numbers below are self-reported in the repo.
   - **Claim.** Theorem Hit@20 of 59.1% (65/110), "beating TheoremSearch".
   - **How it was obtained.** An AI web-searches for each *missing* target, embeds it, and inserts it into the index with `add_finding` before retrieval is scored, using an 82-finding worklist.
   - **Our assessment.** This inserts gold targets into the corpus, so it is **not a retrieval result** and should not be compared with engine scores. The README itself calls it "the loop's value, not a native-corpus claim".
-- **Formal search.** The Zulip post claims Hit@5 of 0.96 on "a 25-query gold set" for `search_formal_math`, with "Loogle 4/4 at rank 1 on type patterns, LeanSearch carrying natural language" ([Zulip](https://leanprover.zulipchat.com/#narrow/near/601608319)). We did not find this table in the README or in RESULTS.md (unverified).
 - **Agent A/B.** The same agent (the README says "Claude Fable 5") scored 18/18 with the tool against 15/18 without it, and 8/8 against 5/8 on the hard subset ([README](https://github.com/Archerkattri/mathlas)). The tasks are mostly numeric and OEIS identification, not theorem search.
 
 ## Relevance to lean-explore-bench
@@ -70,4 +63,3 @@ All numbers below are self-reported in the repo.
 - README and RESULTS.md (fetched 2026-09-28): https://github.com/Archerkattri/mathlas , https://github.com/Archerkattri/mathlas/blob/main/RESULTS.md
 - PyPI JSON (version 1.5.0, fetched 2026-09-28): https://pypi.org/pypi/mathlas-mcp/json
 - HF corpus: https://huggingface.co/datasets/kattri15/mathlas-corpus (from the README; not downloaded)
-- Lean Zulip announcement, #Machine Learning for Theorem Proving > "MCP Tools for LLMs and Agentic Mathematics": https://leanprover.zulipchat.com/#narrow/near/601608319

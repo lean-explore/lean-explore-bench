@@ -9,8 +9,6 @@
 
 This note covers how the IR and software-engineering literature sorts queries by *why* the user is searching, and how those intent mixes were measured. A benchmark is only representative if its intent mix matches real traffic. So the useful parts are the categories themselves and the measurement methods (survey vs. log coding vs. classifier), together with their known biases.
 
-## How it works (the taxonomies)
-
 ### Web search: Broder → Rose & Levinson → Jansen et al.
 
 - **Broder (2002)** defines three classes: *navigational* ("reach a particular site"), *informational* ("acquire some information assumed to be present on one or more web pages") and *transactional* ("perform some web-mediated activity"). He measured the mix two ways on AltaVista ([Broder 2002](https://www.sigir.org/files/forum/F2002/broder.pdf), §4):
@@ -41,7 +39,6 @@ This note covers how the IR and software-engineering literature sorts queries by
   - 18.4% of math query instances are phrased as questions, vs 1.8% reported for general Persian queries.
   - Copy-pasted text is common among the longest queries.
   - The distribution is "essentially headless": under 1% of instances come from frequently repeated queries, and about 90% of unique queries occur once.
-- For Lean specifically, [Lean Finder](../lean-benchmarks/lean-finder-eval.md) mined 5 intent clusters from 693 real Zulip/GitHub questions. It then generated 1,000 synthetic queries from those clusters. The real queries were not released.
 
 ## Evaluation (how intent mixes were measured, and the pitfalls)
 
@@ -67,7 +64,6 @@ Sources: the per-study links above.
   - *Definition / concept lookup* ("what is Mathlib's name for a uniform space?").
   - *Browsing / exploration* (list the API around a structure).
 - **Label intent probabilistically or multi-label.** About 25% of web queries are ambiguous ([Jansen et al. 2008](https://faculty.ist.psu.edu/jjansen/academic/pubs/jansen_user_intent.pdf)). Record annotator disagreement rather than forcing one class.
-- **Do not estimate the intent mix from a survey or from Zulip alone.** Broder's self-selection result shows a survey can distort the mix badly. Zulip questions over-represent hard cases that people ask about publicly. Where possible, estimate the mix from the engine's own logs, and use surveys only to *explain* log queries.
 - **Expect headless, long, question-style queries** if Lean search resembles math web search ([Mansouri et al. 2019](https://www.cs.rit.edu/~rlaz/files/CharacterizingMathSearch-JCDL_Final.pdf)). Frequency-based head/torso/tail strata may then be degenerate, and intent × query-form strata matter more (see [query-logs-characterisation-and-sampling.md](query-logs-characterisation-and-sampling.md)).
 - **AI assistance shifts intent over time.** Example-seeking in code search fell over ten years ([Stolee et al. 2025](https://par.nsf.gov/servlets/purl/10618890)), so re-measure the intent mix periodically. Agent traffic has its own intent mix (see [query-logs-agent-vs-human-queries.md](query-logs-agent-vs-human-queries.md)).
 

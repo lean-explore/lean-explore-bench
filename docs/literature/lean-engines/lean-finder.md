@@ -9,10 +9,6 @@
 
 Lean Finder is a dense retriever fine-tuned to match how real users ask questions rather than informalizations of Mathlib statements. It covers four input kinds: synthetic user questions, informalized statements, proof states with a note on where the proof should go, and noisy formal statements ([paper §3](https://arxiv.org/abs/2510.15940)).
 
-## How it works (brief)
-
-The base model is DeepSeek-Prover-V1.5-RL 7B. It is trained with a contrastive loss on about 1.4M query–code pairs. The synthetic user queries are generated from clusters of intents mined from Zulip and GitHub questions. The model is then aligned with DPO on 1,154 preference triplets, which come from user votes and "Arena" comparisons against LeanSearch in the web UI, plus GPT-4o judgments ([paper §3 "Preference Alignment"](https://arxiv.org/abs/2510.15940); [model card](https://huggingface.co/delta-lab-ai/lean-finder)). The corpus includes Mathlib plus SciLean, some research repositories and their dependencies ([paper, "Data Source Details" appendix](https://arxiv.org/abs/2510.15940)). Results carry the formal statement plus an informal name and description.
-
 ## Evaluation ([arXiv:2510.15940 §4 and "Evaluation Settings" / "Additional Experiments" appendices](https://arxiv.org/abs/2510.15940))
 
 - **Test sets:**
@@ -37,7 +33,6 @@ The base model is DeepSeek-Prover-V1.5-RL 7B. It is trained with a contrastive l
 - **User study:** 5 participants judged 128 queries taken from GitHub, looking at the top 3 results from each system. Top-3 rate / normalized Borda: Lean Finder 81.6% / 0.67, LeanSearch 56.9% / 0.41, GPT-4o 54.1% / 0.40 (user-study table).
 - **Downstream:** Used as RAG for provers on MiniF2F, ProofNet, PutnamBench and FATE-M, it made results "mostly consistent with the non-integrated setting, with modest improvements" (§4, "Compatible with LLM Provers").
 - **Third-party:** On MathlibQR fair (LeanSearch v2 paper), LeanFinder scored nDCG@10 0.533, R@10 0.698, R@100 0.875 (best of all systems at R@100), and LLM-judge rank 2.87 ([arXiv:2605.13137 Table 1](https://arxiv.org/abs/2605.13137)).
-- **Data release:** The five test files (`informalized_statement`, `synthetic_user_query`, `augmented_statement`, `augmented_proof_state` and `raw_proof_state` `.jsonl`) and `eval.py` are in `lean-finder-original/` ([repo tree](https://github.com/delta-lab-ai/lean-finder)). Real Zulip queries are *not* released, for privacy ([paper, "Privacy and Data Release" appendix](https://arxiv.org/abs/2510.15940)).
 - **Caveats for us:** Three of the four test sets are LLM-generated from the gold statement, so they are close to the training distribution. The "fair" filter is defined relative to LeanSearch's database. The numbers describe the paper model, not the model deployed now.
 
 ## Programmatic access (for a harness)
@@ -57,7 +52,6 @@ The base model is DeepSeek-Prover-V1.5-RL 7B. It is trained with a contrastive l
 
 - How does the current `main` model perform? No numbers have been published yet.
 - What is the rate limit or availability guarantee for the HF endpoint and Space?
-- Will real Zulip queries be released in any anonymized form?
 
 ## Sources
 

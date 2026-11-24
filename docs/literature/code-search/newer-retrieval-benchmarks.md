@@ -40,15 +40,7 @@ Each benchmark targets a specific blind spot of CodeSearchNet-era evaluation:
 
 - **ExecRetrieval is the closest analogue of a critical Lean failure mode.** Mathlib has many near-clone lemmas that differ in one hypothesis, argument order or direction (`le` vs `lt`, `add_comm` vs `add_left_comm`, `Nat` vs `Int` versions). Build a "near-clone distractor" stratum. In Lean the correctness oracle is free: does the lemma typecheck against the target goal?
 - **Adopt their statistical protocol:** paired McNemar tests or bootstrap CIs per query, rather than bare averages. Lean benchmarks will be small (hundreds of queries), so significance testing matters.
-- **FreshStack's recipe transfers directly:**
-  - Queries: recent Zulip #mathlib or #new-members "does Mathlib have..." questions.
-  - Nuggets: from the accepted answer, typically the declaration name(s) given.
-  - Result: a fresh, community-sourced, contamination-resistant query set. Nugget-level relevance fits multi-lemma answers.
 - **AlgoSimBench's** "generate a solution attempt, then BM25" corresponds to HyDE-style "draft a Lean statement, then search", which is worth including as a baseline pipeline.
-
-## Open questions
-
-- How many Zulip questions per month yield a clean (question, declaration) pair? This decides whether a rolling "fresh" split is feasible.
 
 ## Sources
 

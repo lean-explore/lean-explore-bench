@@ -43,15 +43,6 @@ Sources for every row are in the linked notes.
 
 ## Relevance to lean-explore-bench (proposed design implications)
 
-- **Query strata, each reported separately:**
-  1. natural-language intent, from real logs or Zulip
-  2. informal statement of a theorem
-  3. exact/partial name
-  4. type/pattern (Loogle-style)
-  5. proof-state/goal
-  6. "no naming hints" (lexical-overlap-controlled)
-  7. near-clone distractor set
-  8. no-gold (abstention)
 - **Labels:** graded (exact / equivalent variant / generalization / specialization / related / irrelevant) with multiple positives. Pool from all engines under test plus BM25 and grep. Where the query is goal-shaped, auto-verify with Lean (`exact`/`apply`/`rw` succeeds). Report inter-annotator agreement.
 - **Metrics:** nDCG@10 (graded), Recall@k and MAP@k (multi-positive), MRR only as a secondary metric, Acc@k-all for multi-premise queries, and bootstrap CIs with paired significance tests. For in-agent mode, add task success, tokens, tool calls and gold-surfaced rate.
 - **Leakage:** pin the Mathlib commit. Keep a post-cutoff split of declarations added after the engines' index and model dates. Record whether any engine trained on Mathlib docstrings or informalizations that overlap with test queries. Keep a hidden test split.

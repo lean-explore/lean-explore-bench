@@ -27,8 +27,6 @@ These tools go one step past Hoogle. The query is a type, or a type plus example
 
 In every case a **type-correct answer is not automatically the right answer**. All of these papers found that type-only queries yield many meaningless or trivial candidates, and they had to add a second, human-grounded relevance judgement.
 
-## Evaluation
-
 ### TyGAR (POPL 2020): benchmark from Hoogle logs
 
 - **Query mining** ([§6](https://arxiv.org/abs/1911.04091)):
@@ -82,14 +80,6 @@ All numbers from [the PDF](https://cseweb.ucsd.edu/~npolikarpova/publications/oo
 - **Perelman et al. (PLDI 2012):** "In an automated experiment on mature C# projects, we show our algorithm can place the intended expression in the **top 10 choices over 80%** of the time" ([MSR abstract](https://www.microsoft.com/en-us/research/publication/type-directed-completion-partial-expressions/)). The same hole-from-real-code protocol; details not read (unverified).
 
 ## Relevance to lean-explore-bench
-
-1. **Hole-from-real-code is the right automated protocol for a goal/type track.** InSynth and Perelman delete an expression from mature code and score the rank of the original. For Lean: take a Mathlib proof step `exact foo …` or `apply foo`, pose its goal (or the Loogle pattern of `foo`'s statement) as the query, and score the rank of `foo`. This is the same as the proof-state track in [../lean-tools/exact-apply.md](../lean-tools/exact-apply.md), and it gives free, unambiguous gold labels at scale.
-   - **Caveat from TyGAR and Hoogle+:** type-correct alternatives exist. Other lemmas may also close the goal, so accept "any verified closer" as a secondary label, which is checkable by `exact`, rather than penalizing them.
-2. **Log-mined queries need heavy filtering, and they skew easy.** TyGAR went 3.8M → 24 usable, and the authors say log queries "tend to be easy" and lack gold answers. A Loogle-log or Zulip-`@loogle` query set will need (a) validity filtering, (b) gold labeling, and (c) supplementation with curated hard queries. Report the funnel.
-3. **Budget for a small human study later, and copy Hoogle+'s design:**
-   - within-subjects, 30 participants, 4 timed tasks (8 min), rotated task groups, experience-balanced;
-   - baseline = the tool people actually use (Loogle + `#check`/`exact?`, analogous to Hoogle + GHCi);
-   - outcomes = completion, time, and query modality.
 
    Its key finding transfers: **users who say they search by type mostly didn't when offered alternatives**, and they struggled to write intermediate types. Pattern queries have a hidden authoring cost that offline recall numbers miss. An "LLM writes the Loogle query" condition would measure this cheaply.
    - *Statistics caveat:* p < 0.1 and n = 30 with 2 tasks per condition is weak. Pre-register tests and report effect sizes (see [../statistics/effect-sizes-power-and-topic-set-size.md](../statistics/effect-sizes-power-and-topic-set-size.md)).

@@ -14,10 +14,6 @@
 
 This note covers the 2025–2026 informal math search services other than the statement-level engines, which have their own notes: [informal-theoremsearch.md](informal-theoremsearch.md), [informal-matlas.md](informal-matlas.md) and [informal-mathlas-mcp.md](informal-mathlas-mcp.md). It also records two recent papers whose *evaluation protocols* for informal theorem retrieval are useful to a Lean benchmark.
 
-**Our search for other statement-level engines.** We searched arXiv, the web and Lean Zulip on 2026-09-28. We found **no other public statement-level informal theorem search engine** from 2025–2026 beyond TheoremSearch, Matlas (including its legacy arXiv engine at leansearch.net/thm) and the community mathlas MCP. We found no engine named "Real Math" or "RealMath" (web search returned nothing relevant). **Of these engines, only TheoremSearch indexes Lean**, and only on its `/graph/*` endpoints (see [informal-theoremsearch.md](informal-theoremsearch.md)). mathlas proxies Loogle and LeanSearch instead of indexing Lean itself.
-
-## Services
-
 ### zbMATH Open (FIZ Karlsruhe): document-level, experimental natural-language front end
 
 - **What is indexed.** Bibliographic records (reviews, keywords, MSC codes and references), not individual statements. The API document schema has `title`, `keywords`, `msc`, `references`, `source`, `year` and similar fields, with no statement field (live API call, 2026-09-28). A 2026 knowledge-graph paper describes 34M entities and 168M RDF triples ([arXiv:2609.00969](https://arxiv.org/abs/2609.00969)).

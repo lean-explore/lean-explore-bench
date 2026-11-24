@@ -14,8 +14,6 @@ When a general benchmark does not predict performance in a domain, groups build 
 2. **How relevance is defined and labeled:** structural pairing, metadata, LLM judge, or experts.
 3. **How trivial lexical matches and false negatives are controlled.**
 
-## How it works
-
 ### CoIR (code retrieval): labels by construction from existing pairs
 
 - **Composition.** 10 datasets, 8 sub-tasks, 4 task families (text-to-code, code-to-text, code-to-code, hybrid), 14 languages. BEIR/MTEB schema. Headline metric nDCG@10, with MAP, recall and precision also available ([CoIR](https://arxiv.org/abs/2407.02883)).
@@ -71,11 +69,6 @@ These are the parts beyond the theorem subsets.
 | Train/test separation | Ships train splits; called zero-shot | No training split | No training split | Explicit in-train vs out-of-train |
 
 ## Relevance to lean-explore-bench
-
-- **Query sources.** Combine three:
-  - real user queries (Zulip, search logs where licensed), the analogue of SciRepEval;
-  - expert-written queries about declarations the writer knows well, the analogue of LitSearch's author questions: ask Mathlib contributors for queries about lemmas they wrote;
-  - LLM-drafted queries from usage context, for example the proof context where a lemma is applied, the analogue of LitSearch's inline citations.
 
   Tag each query with its source and report per source.
 - **Lexical-shortcut filter.** Compute token overlap between each query and the gold declaration's *name and docstring*, after splitting `snake_case`/`CamelCase` and dotted namespaces. Drop or separately bucket high-overlap queries, as LitSearch does with titles. Otherwise name-matching engines (BM25 over names, Loogle-like) win trivially.

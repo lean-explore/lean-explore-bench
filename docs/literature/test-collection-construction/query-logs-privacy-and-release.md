@@ -9,8 +9,6 @@
 
 This note covers what can safely be published from a query log, and how the privacy mechanism changes which queries end up in a benchmark. For a benchmark the question is: if real query logs feed a public query set, which queries can be released, and what bias does the release rule introduce?
 
-## How it works
-
 ### The AOL incident (2006)
 
 - On 4 Aug 2006 AOL Research released about 20M queries from over 650,000 users covering three months. Users were replaced by numeric IDs, but queries contained PII ([Wikipedia](https://en.wikipedia.org/wiki/AOL_search_log_release)).
@@ -40,7 +38,6 @@ This note covers what can safely be published from a query log, and how the priv
 ### Synthetic queries as a privacy route
 
 - **Carranza et al. (NAACL 2024).** They train a DP language model on real queries and generate "private synthetic queries representative of the original data" with query-level DP guarantees. This beats DP-training the retriever directly ([arXiv 2305.05973](https://arxiv.org/abs/2305.05973), abstract). It was evaluated for *training*; its fidelity as an *evaluation* set is not established there.
-- **Lean Finder** did not release its 693 real Zulip/GitHub queries, "for privacy reasons", and published GPT-4o-generated queries from mined intent clusters instead ([lean-finder-eval.md](../lean-benchmarks/lean-finder-eval.md)).
 
 ### Recent practice with agent logs
 
