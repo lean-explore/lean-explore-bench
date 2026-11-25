@@ -1,23 +1,15 @@
 # lean-explore-bench
 
-A benchmark for search engines over Lean 4 declarations.
+A benchmark for search engines that find Lean 4 declarations in Mathlib.
 
-It has 3,200 queries about Mathlib, each with one or more graded answers, in four
-buckets of 800: names and keywords, natural language, formal statements and proof
-states, and questions derived from Lean Zulip threads. The benchmark score is the
-plain mean of the four bucket scores.
-
-This is version 1. The queries and labels were produced with language models and
-have not yet been reviewed by people; see [limits](docs/method.md#limits).
-
-The data is published as a dataset at
-[`lean-explore/lean-explore-bench`](https://huggingface.co/datasets/lean-explore/lean-explore-bench)
-on Hugging Face. This repository holds the code that builds, runs and scores it.
+It has 3,200 queries, each with one or more correct answers, in four equal buckets:
+names and keywords, natural language, formal statements and proof states, and
+questions from Lean Zulip threads. The score is the mean of the four buckets.
 
 ## Results
 
-Success@10 on the 2,560 test queries, with Success@1 in brackets. The three hosted
-engines were queried from 11 to 13 November 2026.
+Share of test queries with a correct answer in the first ten results, and in
+brackets the share where the first result is correct.
 
 | Bucket | Lean Finder | LeanSearch | LeanExplore | BM25 |
 | --- | ---: | ---: | ---: | ---: |
@@ -25,68 +17,42 @@ engines were queried from 11 to 13 November 2026.
 | Natural language | 0.98 (0.88) | 0.98 (0.72) | 0.86 (0.48) | 0.41 (0.13) |
 | Formal | 0.96 (0.89) | 0.95 (0.68) | 0.54 (0.14) | 0.75 (0.30) |
 | Real questions | 0.80 (0.56) | 0.77 (0.45) | 0.50 (0.27) | 0.24 (0.10) |
-| **Benchmark score** | **0.92 (0.77)** | **0.91 (0.62)** | **0.70 (0.35)** | **0.52 (0.20)** |
+| **Score** | **0.92 (0.77)** | **0.91 (0.62)** | **0.70 (0.35)** | **0.52 (0.20)** |
 
-BM25 results were not graded for extra answers, so its scores are lower bounds.
+The three hosted engines were queried from 11 to 13 November 2026.
 
-## Score an engine
+## Use it
 
 ```sh
-pip install -e . huggingface_hub
+pip install git+https://github.com/lean-explore/lean-explore-bench huggingface_hub
 hf download lean-explore/lean-explore-bench --repo-type dataset --local-dir bench
+leb score bench --engine myengine --split test
 ```
 
-Write one line per query to `bench/runs/<name>.jsonl`, with the names of the
-declarations your engine returns, best first:
+The last command scores `bench/runs/myengine.jsonl`, which you write: one line per
+query in `bench/queries/test.jsonl`, with the declarations your engine returns.
 
 ```json
 {"id": "a067a6f76126", "documents": ["dite_prop_iff_or", "dite_eq_ite"]}
 ```
 
-Then score it:
+## Know before comparing
 
-```sh
-leb score bench --engine <name> --split test
-```
+- A correct answer that no engine above returned is not labelled, and counts as a
+  miss. BM25's scores are lower bounds for this reason.
+- Every answer existed in Mathlib before January 2026, so older indexes are not
+  penalized.
+- Queries and labels come from language models and are not yet reviewed by people.
+- No search query from LeanExplore's users is in the benchmark.
 
-Tune only on the development split (640 queries). A new engine can return correct
-answers that are not labelled yet, and they count as misses until they are graded;
-[evaluation](docs/evaluation.md#adding-an-engine) explains how to grade them.
+## Where things are
 
-`leb run bench --engine leanexplore` queries one of the hosted engines that the
-package knows (`leanexplore`, `leansearch`, `leanfinder`). The BM25
-baseline runs locally: `pip install -e ".[bm25]"`, then
-`leb run bench --engine bm25 --corpus lean_explore.db`. To add an engine, add a
-module to `src/lean_explore_bench/engines/`. Scoring needs no dependency beyond
-Python 3.10.
-
-## Layout
-
-| Path | Contents |
+| | |
 | --- | --- |
-| `src/lean_explore_bench/` | Load the dataset, run engines, score them (`leb`) |
-| `src/lean_explore_bench/engines/` | One module per engine: `leanexplore`, `leansearch`, `leanfinder`, `bm25` |
-| `src/lean_explore_bench/builder/` | What made the benchmark (`leb-build`); not needed to use it |
-| `docs/` | [Method](docs/method.md), [evaluation](docs/evaluation.md), [dataset card](docs/dataset-card.md) |
-| `tests/` | Tests, in the same layout as the package |
+| [Method](docs/method.md) | How the queries and answers were made |
+| [Evaluation](docs/evaluation.md) | Grades, metrics, adding an engine |
+| [Dataset card](docs/dataset-card.md) | Files and fields of the dataset |
+| `src/lean_explore_bench/engines/` | One file per engine |
+| `src/lean_explore_bench/builder/` | The code that built the benchmark |
 
-## Privacy
-
-No search query from LeanExplore's users is in the benchmark or in this repository.
-LeanExplore's search log was used only to count how searches divide over query forms
-and how long they are. `leb-build profile --log` computes those counts on the server
-that holds the log and writes shares only, leaving out any count under ten.
-`.gitignore` and `scripts/check_publication.py` keep data files out of Git.
-
-## Development
-
-```sh
-pip install -e ".[dev]"
-ruff check . && ruff format --check . && mypy && pytest -q
-```
-
-Building the benchmark from scratch uses `leb-build` and needs the `build` extra, a
-LeanExplore corpus snapshot and an `OPENROUTER_API_KEY`; the steps are in
-[method](docs/method.md#building).
-
-The code is under the Apache License 2.0.
+Apache 2.0.
