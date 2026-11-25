@@ -48,34 +48,20 @@ def _thread(name: str, blinding: str | None, split: str = "test") -> QueryRecord
     )
 
 
-def test_row_lists_answers_best_first_and_marks_pooled_ones() -> None:
-    row = release.to_row(_record("a"))
-
-    assert row["bucket"] == "natural language"
-    assert row["form"] == "prose"
-    assert row["answers"] == [
-        {"name": "Alpha.beta", "grade": 3, "pooled": False},
-        {"name": "Alpha.gamma", "grade": 2, "pooled": True},
-        {"name": "Alpha.delta", "grade": 1, "pooled": False},
-    ]
-    assert row["rewritten"] is True
-    assert row["writer_saw_answers"] is None
-    assert row["thread_url"] is None
-
-
-@pytest.mark.parametrize(
-    ("blinding", "saw"),
-    [(None, False), ("question_before_answers", False), ("not_blinded", True)],
-)
-def test_thread_row_records_whether_the_writer_saw_answers(
-    blinding: str | None, saw: bool
-) -> None:
-    row = release.to_row(_thread("t", blinding))
-
-    assert row["bucket"] == "real questions"
-    assert row["writer_saw_answers"] is saw
-    assert row["thread_url"] == "https://example.org/thread"
-    assert row["rewritten"] is False
+def test_row_holds_only_what_using_the_benchmark_needs() -> None:
+    assert release.to_row(_record("a")) == {
+        "id": "a",
+        "query": "query for a",
+        "bucket": "natural language",
+        "form": "prose",
+        "split": "test",
+        "answers": [
+            {"name": "Alpha.beta", "grade": 3},
+            {"name": "Alpha.gamma", "grade": 2},
+            {"name": "Alpha.delta", "grade": 1},
+        ],
+    }
+    assert release.to_row(_thread("t", None))["bucket"] == "real questions"
 
 
 def test_row_round_trip_keeps_what_scoring_uses() -> None:
@@ -90,10 +76,8 @@ def test_row_round_trip_keeps_what_scoring_uses() -> None:
         record.query_type,
         record.split,
     )
-    assert restored.provenance["pooled"] == ["Alpha.gamma"]
-    assert (
-        "pooled" not in release.from_row(release.to_row(_thread("t", None))).provenance
-    )
+    assert (restored.source, restored.target) == ("declaration", "Alpha.beta")
+    assert release.from_row(release.to_row(_thread("t", None))).source == "zulip"
 
 
 def _build(tmp_path: Path, records: list[QueryRecord], run_ids: list[str]) -> Path:
@@ -124,14 +108,7 @@ def test_export_writes_splits_and_runs_that_load_back(tmp_path: Path) -> None:
     }
     run = [json.loads(line) for line in (to / "runs" / "engine.jsonl").open()]
     assert [row["id"] for row in run] == ["a", "b", "t"]
-    assert run[0] == {
-        "engine": "engine",
-        "id": "a",
-        "status": "ok",
-        "limit": 10,
-        "documents": ["Alpha.beta"],
-        "latency_ms": None,
-    }
+    assert run[0] == {"id": "a", "documents": ["Alpha.beta"]}
     loaded = release.load_queries(to)
     assert sorted(record.id for record in loaded) == ["a", "b", "t"]
     assert release.load_queries(build) == sorted(records, key=lambda r: r.id)

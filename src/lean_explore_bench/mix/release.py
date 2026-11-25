@@ -1,9 +1,9 @@
 """The published form of the benchmark.
 
 A build directory holds ``queries.jsonl`` with every working field. The
-published dataset holds the same queries in a flat layout that dataset
-viewers can read: ``queries/<split>.jsonl``, one row per query with a list of
-answers, and ``runs/<engine>.jsonl``, the results of each engine.
+published dataset holds only what is needed to use the benchmark:
+``queries/<split>.jsonl``, one row per query with its graded answers, and
+``runs/<engine>.jsonl``, the declarations each engine returned.
 
 :func:`load_queries` reads either layout, so the published dataset can be
 scored directly.
@@ -18,30 +18,11 @@ from lean_explore_bench.mix.assemble import SPLITS
 from lean_explore_bench.mix.record import QueryRecord, read_records
 from lean_explore_bench.mix.spec import BUCKET_OF_FORM, THREAD_BUCKET
 
-_BLIND = {"question_before_answers": False}
-"""Recorded blinding values that mean the writer had not seen the answers."""
-
-
-def _saw_answers(record: QueryRecord) -> bool | None:
-    """Whether the writer of a thread query had seen the thread's answers."""
-    if record.source != "zulip":
-        return None
-    blinding = record.provenance.get("blinding")
-    if blinding is None:
-        return False
-    return _BLIND.get(blinding, True)
-
 
 def to_row(record: QueryRecord) -> dict[str, Any]:
-    """Return the published row of one query.
-
-    Answers are listed best grade first. ``pooled`` marks an answer that was
-    found by grading engine results, not proposed when the query was made.
-    """
-    provenance = record.provenance
-    pooled = set(provenance.get("pooled") or ())
+    """Return the published row of one query, with its answers best first."""
     answers = [
-        {"name": name, "grade": grade, "pooled": name in pooled}
+        {"name": name, "grade": grade}
         for name, grade in sorted(
             record.judgments.items(), key=lambda item: (-item[1], item[0])
         )
@@ -51,51 +32,29 @@ def to_row(record: QueryRecord) -> dict[str, Any]:
         "query": record.query,
         "bucket": BUCKET_OF_FORM.get(record.query_type, THREAD_BUCKET),
         "form": record.query_type,
-        "variant": record.variant,
         "split": record.split,
-        "source": record.source,
-        "area": record.area,
-        "target": record.target,
         "answers": answers,
-        "group_id": record.group_id,
-        "method": provenance.get("method", ""),
-        "writer_model": provenance.get("writer_model"),
-        "rewritten": "revised_from" in provenance,
-        "judge_model": provenance.get("judge_model"),
-        "pool_judge": provenance.get("pool_judge"),
-        "thread_url": provenance.get("url"),
-        "writer_saw_answers": _saw_answers(record),
     }
 
 
 def from_row(row: dict[str, Any]) -> QueryRecord:
-    """Build the working record of a published row."""
-    provenance = {
-        key: row[source]
-        for key, source in (
-            ("method", "method"),
-            ("writer_model", "writer_model"),
-            ("judge_model", "judge_model"),
-            ("pool_judge", "pool_judge"),
-            ("url", "thread_url"),
-        )
-        if row.get(source)
-    }
-    pooled = [answer["name"] for answer in row["answers"] if answer["pooled"]]
-    if pooled:
-        provenance["pooled"] = pooled
+    """Build the working record of a published row.
+
+    The published row holds only what scoring needs, so the fields it lacks
+    are filled in: the first answer is the target and every query is its own
+    group.
+    """
     return QueryRecord(
         id=row["id"],
         query=row["query"],
         query_type=row["form"],
-        variant=row["variant"],
-        source=row["source"],
+        variant="",
+        source="zulip" if row["bucket"] == THREAD_BUCKET else "declaration",
         library="mathlib",
-        area=row["area"],
-        target=row["target"],
+        area="",
+        target=row["answers"][0]["name"],
         judgments={answer["name"]: answer["grade"] for answer in row["answers"]},
-        group_id=row["group_id"],
-        provenance=provenance,
+        group_id=row["id"],
         split=row["split"],
     )
 
@@ -155,15 +114,7 @@ def export(build: Path, to: Path, engines: Iterable[str]) -> dict[str, int]:
         if missing:
             raise ValueError(f"{engine} has no result for {len(missing)} queries")
         rows = [
-            {
-                "engine": engine,
-                "id": key,
-                "status": results[key]["status"],
-                "limit": results[key]["limit"],
-                "documents": results[key]["documents"],
-                "latency_ms": results[key].get("latency_ms"),
-            }
-            for key in sorted(ids)
+            {"id": key, "documents": results[key]["documents"]} for key in sorted(ids)
         ]
         _write_rows(to / "runs" / f"{engine}.jsonl", rows)
         counts[f"runs/{engine}.jsonl"] = len(rows)

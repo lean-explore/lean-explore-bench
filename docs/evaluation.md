@@ -44,8 +44,8 @@ nDCG@10 is not: results after the first hit may be unlabelled.
 ## Splits
 
 A fifth of each bucket is the development split (640 queries) and the rest is the
-test split (2,560). Queries that share a `group_id` (two queries from one thread, or
-a query and its rewrite) are always in the same split.
+test split (2,560). Two queries from one thread, and a query and its rewrite, are
+always in the same split.
 
 Tune only on the development split. Report test scores with the version of the
 benchmark.
@@ -57,8 +57,8 @@ graded. Before its score is compared with the published ones, its results up to 
 first labelled answer should be graded and added.
 
 1. Write the engine's results to `runs/<name>.jsonl`, one line per query:
-   `{"id": ..., "status": "ok", "limit": 10, "documents": [names, best first]}`.
-   Set `status` to anything else for a failed request. To have `leb-mix run` do
+   `{"id": ..., "documents": [names, best first]}`. A query with no line counts
+   as a failed request. To have `leb-mix run` do
    this, add a class to `lean_explore_bench.mix.engines`.
 2. Score it with `leb-mix score --out DIR --engine <name> --split test`.
 3. To grade its unlabelled results, export the candidates with
@@ -74,5 +74,4 @@ describes a service on the dates it was queried.
 ## Comparing two runs
 
 `lean_explore_bench.evaluate.compare` gives a paired difference between two runs
-with a bootstrap interval and a randomization test, both over groups of queries
-that share a `group_id`.
+with a bootstrap interval and a randomization test.

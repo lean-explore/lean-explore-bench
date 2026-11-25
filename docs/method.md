@@ -93,7 +93,7 @@ twice.
 
 **Name queries** (160) are made by a program: the exact name, the name without its
 leading namespaces, the name with spaces for dots and underscores, the name with one
-typing error, or the name in lower case. The `variant` field records which.
+typing error, or the name in lower case.
 
 **The other seven forms** are written by a language model that sees the target, the
 form, and a style drawn from the real searches of that form: a word count, a number
@@ -115,8 +115,7 @@ target is dropped and a reserve target takes its place.
 
 **Writers.** Claude Opus wrote 1,294 of the queries. Claude Sonnet 5.5 wrote 946;
 Claude Opus reviewed them, kept 624 and rewrote 322, and a rewrite replaced a query
-only when the judge accepted it. The `writer_model` and `rewritten` fields record
-this for every query.
+only when the judge accepted it.
 
 ## Real questions
 
@@ -129,14 +128,14 @@ for a result and a reply names a declaration.
   answers.
 - **590 queries** were contributed by Pietro Pellegrino from an earlier collection of
   discussion-derived queries, made the same way. For 38 of them the writer had seen
-  the replies; `writer_saw_answers` records this.
+  the replies.
 
 A thread query is kept when the judge grades at least one proposed answer 2 or 3.
 Of the 1,807 contributed queries, 767 were accepted, and 177 of those are left out
 because their answers lie outside Mathlib or are not established.
 
-The benchmark holds no author name and no post: only the rewritten query, its graded
-answers and, where recorded, a link to the thread are stored. A thread query should
+The benchmark holds no author name and no post: only the rewritten query and its
+graded answers are stored. A thread query should
 not repeat more than five consecutive words of a post. The 210 queries of the first
 kind were rejected when they did. The 571 contributed queries that carry a message
 identifier were checked against their whole thread afterwards: 556 are within the
@@ -155,7 +154,7 @@ and candidates outside Mathlib or not established were removed.
 
 Claude Opus graded the 20,141 remaining candidates of 2,669 queries, seeing them in
 name order with no engine and no rank. Candidates graded 2 or 3 were added as
-labels: 1,551 answers on 984 queries. They are marked `pooled` in the data.
+labels: 1,551 answers on 984 queries.
 
 Pooling raised the benchmark score of the three semantic engines by 5 to 8 points
 and changed no ranking.

@@ -380,7 +380,9 @@ def _score(args: argparse.Namespace) -> None:
     )
     for engine in args.engine:
         results = engines.read_results(args.out / "runs" / f"{engine}.jsonl")
-        limit = min((result["limit"] for result in results.values()), default=10)
+        limit = min(
+            (result.get("limit", 10) for result in results.values()), default=10
+        )
         report = score.score(
             records, results, engine, split=args.split, limit=limit, weights=weights
         )

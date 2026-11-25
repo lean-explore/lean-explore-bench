@@ -83,7 +83,7 @@ def score(
         "max_k": limit,
         "results": {
             record.id: {
-                "status": results[record.id]["status"],
+                "status": results[record.id].get("status", "ok"),
                 "documents": results[record.id]["documents"][:limit],
                 "latency_ms": results[record.id].get("latency_ms"),
             }

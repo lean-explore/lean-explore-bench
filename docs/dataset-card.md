@@ -82,31 +82,18 @@ GitHub repository.
 | `query` | The text sent to a search engine. |
 | `bucket` | One of the four buckets. |
 | `form` | `name`, `names`, `names+keywords`, `keywords`, `prose`, `prose+names`, `formal`, `goal`, or `question` for a thread query. |
-| `variant` | How the query was made within its form, for example `typo` for a name query or `goal-only` for a proof state. |
 | `split` | `test` or `development`. |
-| `source` | `declaration` for a query written from a Mathlib declaration, `zulip` for one derived from a thread. |
-| `area` | Area of Mathlib of the target, for example `Topology`. |
-| `target` | The declaration the query was written for, or the best proposed answer of a thread. |
-| `answers` | List of `{name, grade, pooled}`, best grade first. `pooled` marks an answer found by grading engine results. |
-| `group_id` | Queries that share a group are not independent and are in the same split. |
-| `method` | `language-model`, `programmatic` (name queries), `zulip-thread` or `contributed`. |
-| `writer_model` | The model that wrote the query, when recorded. |
-| `rewritten` | Whether the query is a reviewed rewrite of an earlier one. |
-| `judge_model` | The model that accepted the query. |
-| `pool_judge` | The model that graded the pooled answers, when there are any. |
-| `thread_url` | Link to the Zulip thread, when recorded. |
-| `writer_saw_answers` | For thread queries, whether the writer had seen the replies. |
+| `answers` | List of `{name, grade}`, best grade first. `name` is a Mathlib declaration. |
 
 Grades: 3 answers the query directly, 2 is usable after a clear adaptation, 1 is
 related but not enough. Grades 2 and 3 count as hits.
 
 ## Fields of `runs`
 
-One row per query and engine: `engine`, `id`, `status` (`ok` when the request
-succeeded), `limit` (results requested), `documents` (declaration names, best
-first) and `latency_ms`. LeanExplore, LeanSearch, Lean Finder and Loogle are the
-hosted services, queried from 11 to 13 November 2026. BM25 is a baseline over the
-name, documentation and source of every Mathlib declaration.
+One file per engine and one row per query: `id` and `documents`, the names of the
+ten declarations the engine returned, best first. LeanExplore, LeanSearch, Lean
+Finder and Loogle are the hosted services, queried from 11 to 13 November 2026. BM25
+is a baseline over the name, documentation and source of every Mathlib declaration.
 
 ## Results
 
@@ -148,8 +135,7 @@ Thread queries are rewrites of requests made in public Lean Zulip threads. The
 dataset holds no author name and no post. Of the 781 thread queries that could be
 checked against their thread, 766 share at most five consecutive words with any
 post; the other 15 share a run of six to ten words, in every case a formula or a
-standard mathematical phrase. 210 queries carry a link to the public thread they
-came from.
+standard mathematical phrase.
 
 ## Limits
 

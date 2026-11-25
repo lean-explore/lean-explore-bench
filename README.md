@@ -42,7 +42,7 @@ Write one line per query to `bench/runs/<name>.jsonl`, with the names of the
 declarations your engine returns, best first:
 
 ```json
-{"id": "prose-mathlib-010af69aea", "status": "ok", "limit": 10, "documents": ["dite_prop_iff_or", "dite_eq_ite"]}
+{"id": "prose-mathlib-010af69aea", "documents": ["dite_prop_iff_or", "dite_eq_ite"]}
 ```
 
 Then score it:
