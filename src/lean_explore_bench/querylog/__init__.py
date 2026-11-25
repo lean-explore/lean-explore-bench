@@ -1,1 +1,1 @@
-"""Loading, cleaning and classifying the LeanExplore query log."""
+"""Loading the LeanExplore query log and measuring topic-free query features."""

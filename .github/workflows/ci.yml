@@ -19,66 +19,14 @@ jobs:
       - name: Install
         run: |
           uv venv
-          uv pip install -e ".[dev]" -e tools/offline
+          uv pip install -e ".[dev]"
       - name: Lint
         run: |
           .venv/bin/ruff check .
           .venv/bin/ruff format --check .
-      - name: Offline lint and types
-        working-directory: tools/offline
-        run: |
-          ../../.venv/bin/ruff check .
-          ../../.venv/bin/ruff format --check .
-          ../../.venv/bin/mypy
-      - name: Metadata and cache checks
-        working-directory: experiments/declaration_metadata
-        run: |
-          ../../.venv/bin/ruff check .
-          ../../.venv/bin/ruff format --check .
-          ../../.venv/bin/mypy --strict incremental_cache.py
-          ../../.venv/bin/python -m pytest -q
       - name: Types
         run: .venv/bin/mypy
       - name: Test
         run: .venv/bin/pytest -q
-      - name: Test full collection coverage and scoring
-        run: |
-          .venv/bin/ruff check --isolated --select E,F,UP --ignore E501,E402 experiments/full_collection
-          .venv/bin/ruff format --isolated --check experiments/full_collection
-          .venv/bin/python -m unittest discover -s experiments/full_collection -p 'test_*.py' -v
-
-  offline:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v6
-        with:
-          python-version: "3.12"
-          enable-cache: false
-      - name: Test standalone offline tools
-        run: python tools/offline/scripts/check.py
-      - name: Check publication scope
-        run: |
-          python scripts/check_publication.py
-          python tools/offline/scripts/check_publication.py
-
-  candidate-selection:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v6
-        with:
-          python-version: "3.12"
-      - name: Prepare pinned engine
-        run: |
-          git clone https://github.com/lean-explore/lean-explore.git "$RUNNER_TEMP/lean-explore"
-          git -C "$RUNNER_TEMP/lean-explore" checkout 17b9d6c87a2bf0dc4ea27de05da8a1c9965391b7
-          python experiments/candidate_selection/prepare_engine.py --checkout "$RUNNER_TEMP/lean-explore"
-      - name: Install synthetic test dependencies
-        run: |
-          uv venv
-          uv pip install "torch==2.9.1+cpu" --index-url https://download.pytorch.org/whl/cpu
-          uv pip install -e "$RUNNER_TEMP/lean-explore[local]" pytest pytest-asyncio
-      - name: Test candidate selection
-        working-directory: experiments/candidate_selection
-        run: ../../.venv/bin/python -m pytest -q
+      - name: Check that no data file is committed
+        run: python scripts/check_publication.py

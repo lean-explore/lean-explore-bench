@@ -10,7 +10,6 @@ from collections.abc import Iterable
 from typing import Any
 
 from lean_explore_bench.evaluate import evaluate
-
 from lean_explore_bench.mix.assemble import to_collection
 from lean_explore_bench.mix.forms import classify
 from lean_explore_bench.mix.record import QueryRecord

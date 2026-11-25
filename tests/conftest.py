@@ -10,7 +10,6 @@ import pandas as pd
 import pytest
 from cryptography.fernet import Fernet
 
-from lean_explore_bench.analysis.stats import PreparedLog, prepare
 from lean_explore_bench.mix.corpus import Corpus, load_corpus
 from lean_explore_bench.querylog.schema import QUERY_LOG_COLUMNS, TABLE_NAME
 
@@ -92,16 +91,6 @@ def shaped_log() -> pd.DataFrame:
     rows = [(q, "api", DAY, 8) for q in queries]
     rows += [(q, "mcp", DAY + datetime.timedelta(days=1), 3) for q in queries[:30]]
     return _make_log(rows)
-
-
-@pytest.fixture(scope="session")
-def prepared(shaped_log: pd.DataFrame) -> PreparedLog:
-    """The shaped log, prepared.
-
-    Placeholders such as ``term1`` and ``term11`` are near-duplicates by
-    construction, so only exact duplicates are merged.
-    """
-    return prepare(shaped_log, threshold=1.0)
 
 
 @pytest.fixture
