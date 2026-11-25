@@ -25,10 +25,6 @@ bm25 = [
     "numpy>=1.26",
     "scipy>=1.11",
 ]
-# The figures of the paper.
-paper = [
-    "matplotlib>=3.8",
-]
 dev = [
     "lean-explore-bench[build,bm25]",
     "mypy>=1.11",

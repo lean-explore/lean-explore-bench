@@ -68,7 +68,6 @@ Python 3.10.
 | `src/lean_explore_bench/engines/` | One module per engine: `leanexplore`, `leansearch`, `leanfinder`, `bm25` |
 | `src/lean_explore_bench/builder/` | What made the benchmark (`leb-build`); not needed to use it |
 | `docs/` | [Method](docs/method.md), [evaluation](docs/evaluation.md), [dataset card](docs/dataset-card.md) |
-| `paper/` | Draft of the paper |
 | `tests/` | Tests, in the same layout as the package |
 
 ## Privacy
