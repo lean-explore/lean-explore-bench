@@ -62,13 +62,6 @@ def test_leansearch_posts_the_query_and_joins_name_parts() -> None:
     assert engines.LeanSearch(fetch=Recorder([])).search("q", 5) == []
 
 
-def test_loogle_returns_nothing_for_unparsable_input() -> None:
-    fetch = Recorder({"hits": [{"name": "Nat.add_comm"}, {"name": "X"}]})
-    assert engines.Loogle(fetch=fetch).search("Nat.add_comm", 1) == ["Nat.add_comm"]
-    assert "q=Nat.add_comm" in fetch.requests[0].full_url
-    assert engines.Loogle(fetch=Recorder({"error": "parse"})).search("a b", 5) == []
-
-
 def test_leanfinder_extracts_names_from_documentation_links() -> None:
     base = "https://leanprover-community.github.io/mathlib4_docs/find/?pattern="
     fetch = Recorder(
@@ -87,7 +80,7 @@ def test_leanfinder_extracts_names_from_documentation_links() -> None:
 
 
 def test_registry_and_base_engine() -> None:
-    assert set(engines.ENGINES) == {"leanexplore", "leansearch", "loogle", "leanfinder"}
+    assert set(engines.ENGINES) == {"leanexplore", "leansearch", "leanfinder"}
     assert all(make().name == name for name, make in engines.ENGINES.items())
     with pytest.raises(NotImplementedError):
         engines.Engine().search("q", 1)

@@ -59,7 +59,7 @@ keywords, natural language, formal statements and proof states, and questions
 derived from Lean Zulip threads. Every answer is a declaration that all
 current engines index, and answers were completed by grading the results of
 four engines blind. We compare it with existing benchmarks and report scores
-for four hosted engines and a BM25 baseline. This is version 1, and we expect
+for three hosted engines and a BM25 baseline. This is version 1, and we expect
 the benchmark to change. Queries, labels, engine results, and code are at
 \url{https://github.com/lean-explore/lean-explore-bench}.
 \end{abstract}
@@ -239,7 +239,8 @@ words with any post. The other 15 share a run of six to ten words, in each
 case a formula or a standard mathematical phrase.
 
 \paragraph{Pooled answers.} A written query starts with one answer. To find
-the others we pooled the first ten results of four engines for each
+the others we pooled the first ten results of four engines (the three compared
+in Section~\ref{sec:results} and Loogle) for each
 query~\cite{sparckjones1975pooling,voorhees2005trec}, cut each list at its
 first labelled answer, and removed candidates that the rule above excludes.
 Claude Opus graded the remaining 20,141 candidates without seeing which engine
@@ -267,7 +268,7 @@ each step.
 \section{Results}
 \label{sec:results}
 
-We ran the hosted services of LeanExplore, LeanSearch, Lean Finder, and Loogle
+We ran the hosted services of LeanExplore, LeanSearch, and Lean Finder
 from 11 to 13 November 2026. We also ran BM25 over the name, documentation, and
 source of every Mathlib declaration, with default parameters.
 Table~\ref{tab:results} gives the scores, and Figure~\ref{fig:forms} divides
@@ -280,19 +281,19 @@ has 640 test queries. For the first three engines, 95\% bootstrap intervals for
 the benchmark score are within 0.02 of the value. BM25 results were not pooled,
 so its scores are lower bounds.}
 \label{tab:results}
-\begin{tabular}{@{}lrrrrr@{}}
+\begin{tabular}{@{}lrrrr@{}}
 \toprule
-\thead{Bucket} & \thead{Lean Finder} & \thead{LeanSearch} & \thead{LeanExplore} & \thead{BM25} & \thead{Loogle} \\
+\thead{Bucket} & \thead{Lean Finder} & \thead{LeanSearch} & \thead{LeanExplore} & \thead{BM25} \\
 \midrule
-Names and keywords & 0.94 (0.75) & 0.93 (0.62) & 0.91 (0.52) & 0.66 (0.29) & 0.07 (0.07) \\
+Names and keywords & 0.94 (0.75) & 0.93 (0.62) & 0.91 (0.52) & 0.66 (0.29) \\
 \rowrule
-Natural language & 0.98 (0.88) & 0.98 (0.72) & 0.86 (0.48) & 0.41 (0.13) & 0.00 (0.00) \\
+Natural language & 0.98 (0.88) & 0.98 (0.72) & 0.86 (0.48) & 0.41 (0.13) \\
 \rowrule
-Formal & 0.96 (0.89) & 0.95 (0.68) & 0.54 (0.14) & 0.75 (0.30) & 0.10 (0.10) \\
+Formal & 0.96 (0.89) & 0.95 (0.68) & 0.54 (0.14) & 0.75 (0.30) \\
 \rowrule
-Real questions & 0.80 (0.56) & 0.77 (0.45) & 0.50 (0.27) & 0.24 (0.10) & 0.00 (0.00) \\
+Real questions & 0.80 (0.56) & 0.77 (0.45) & 0.50 (0.27) & 0.24 (0.10) \\
 \midrule
-\textbf{Benchmark score} & \textbf{0.92 (0.77)} & \textbf{0.91 (0.62)} & \textbf{0.70 (0.35)} & \textbf{0.52 (0.20)} & \textbf{0.04 (0.04)} \\
+\textbf{Benchmark score} & \textbf{0.92 (0.77)} & \textbf{0.91 (0.62)} & \textbf{0.70 (0.35)} & \textbf{0.52 (0.20)} \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -301,20 +302,20 @@ Lean Finder and LeanSearch are level at ten results, and Lean Finder puts an
 answer first more often. LeanExplore is close to them on names and keywords
 and behind elsewhere, most of all on formal queries, where BM25 does better.
 We have not yet established why. Loogle searches by name and pattern and
-suits only bare names and some formal statements.
+not by meaning, so we do not compare it.
 
 Real questions are the hardest bucket for every engine. For 86 of its 640
 test queries no semantic engine returns an answer, against 19 of the 1,920
 written ones.
 
-Before pooling, the benchmark scores of the four hosted engines at ten results
-were 0.87, 0.85, 0.63, and 0.04. Pooling changed no ranking.
+Before pooling, the benchmark scores of the three hosted engines at ten
+results were 0.87, 0.85, and 0.63. Pooling changed no ranking.
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=\linewidth]{figures/forms.pdf}
 \caption{Scores by form on the test split. \code{question} is the real
-questions bucket. Table~\ref{tab:byform} adds BM25 and Loogle.}
+questions bucket. Table~\ref{tab:byform} adds BM25.}
 \label{fig:forms}
 \end{figure}
 
@@ -368,27 +369,27 @@ LeanExplore, and we invite others to run their engines on it.
 \caption{Success@10 on the test split by form, with Success@1 in brackets.
 BM25 scores are lower bounds.}
 \label{tab:byform}
-\begin{tabular}{@{}lrrrrrr@{}}
+\begin{tabular}{@{}lrrrrr@{}}
 \toprule
-\thead{Form} & \thead{Queries} & \thead{Lean Finder} & \thead{LeanSearch} & \thead{LeanExplore} & \thead{BM25} & \thead{Loogle} \\
+\thead{Form} & \thead{Queries} & \thead{Lean Finder} & \thead{LeanSearch} & \thead{LeanExplore} & \thead{BM25} \\
 \midrule
-\code{name} & 128 & 0.80 (0.59) & 0.85 (0.72) & 0.89 (0.65) & 0.88 (0.69) & 0.31 (0.31) \\
+\code{name} & 128 & 0.80 (0.59) & 0.85 (0.72) & 0.89 (0.65) & 0.88 (0.69) \\
 \rowrule
-\code{names} & 64 & 0.94 (0.56) & 0.95 (0.42) & 0.88 (0.31) & 0.88 (0.14) & 0.11 (0.05) \\
+\code{names} & 64 & 0.94 (0.56) & 0.95 (0.42) & 0.88 (0.31) & 0.88 (0.14) \\
 \rowrule
-\code{names+keywords} & 192 & 0.97 (0.82) & 0.94 (0.61) & 0.92 (0.45) & 0.72 (0.22) & 0.00 (0.00) \\
+\code{names+keywords} & 192 & 0.97 (0.82) & 0.94 (0.61) & 0.92 (0.45) & 0.72 (0.22) \\
 \rowrule
-\code{keywords} & 256 & 0.99 (0.82) & 0.96 (0.63) & 0.93 (0.56) & 0.46 (0.18) & 0.00 (0.00) \\
+\code{keywords} & 256 & 0.99 (0.82) & 0.96 (0.63) & 0.93 (0.56) & 0.46 (0.18) \\
 \rowrule
-\code{prose} & 384 & 0.99 (0.86) & 0.98 (0.68) & 0.86 (0.50) & 0.32 (0.12) & 0.00 (0.00) \\
+\code{prose} & 384 & 0.99 (0.86) & 0.98 (0.68) & 0.86 (0.50) & 0.32 (0.12) \\
 \rowrule
-\code{prose+names} & 256 & 0.98 (0.91) & 0.97 (0.77) & 0.87 (0.45) & 0.54 (0.14) & 0.00 (0.00) \\
+\code{prose+names} & 256 & 0.98 (0.91) & 0.97 (0.77) & 0.87 (0.45) & 0.54 (0.14) \\
 \rowrule
-\code{formal} & 384 & 0.97 (0.88) & 0.95 (0.70) & 0.59 (0.20) & 0.80 (0.34) & 0.16 (0.16) \\
+\code{formal} & 384 & 0.97 (0.88) & 0.95 (0.70) & 0.59 (0.20) & 0.80 (0.34) \\
 \rowrule
-\code{goal} & 256 & 0.96 (0.90) & 0.95 (0.65) & 0.46 (0.06) & 0.69 (0.23) & 0.00 (0.00) \\
+\code{goal} & 256 & 0.96 (0.90) & 0.95 (0.65) & 0.46 (0.06) & 0.69 (0.23) \\
 \rowrule
-\code{question} & 640 & 0.80 (0.56) & 0.77 (0.45) & 0.50 (0.27) & 0.24 (0.10) & 0.00 (0.00) \\
+\code{question} & 640 & 0.80 (0.56) & 0.77 (0.45) & 0.50 (0.27) & 0.24 (0.10) \\
 \bottomrule
 \end{tabular}
 \end{table}

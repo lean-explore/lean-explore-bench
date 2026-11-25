@@ -24,7 +24,6 @@ ENGINES = {
     "leanexplore": ("LeanExplore", "#BB480B"),
     "leansearch": ("LeanSearch", "#2a78d6"),
     "leanfinder": ("Lean Finder", "#1baf7a"),
-    "loogle": ("Loogle", "#a3a39e"),
 }
 FORMS = [
     "name",
@@ -96,7 +95,7 @@ def compute(mix: Path) -> dict:
 
 def draw(scores: dict) -> None:
     """Draw the scores by form for the three semantic engines."""
-    shown = [engine for engine in ENGINES if engine != "loogle"]
+    shown = list(ENGINES)
     figure, axes = plt.subplots(1, 2, figsize=(7.2, 2.9), sharey=True)
     for axis, index, title in zip(
         axes, (1, 0), ("Answer in the first ten", "Answer first")

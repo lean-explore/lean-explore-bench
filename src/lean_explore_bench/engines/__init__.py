@@ -1,8 +1,8 @@
 """The search engines the benchmark can run, one module per engine.
 
-Four are hosted services: LeanExplore, LeanSearch, Lean Finder and Loogle.
-They index their own snapshots of Mathlib, which are not pinned and change
-over time. The fifth, BM25 in :mod:`lean_explore_bench.engines.bm25`, is a
+Three are hosted services: LeanExplore, LeanSearch and Lean Finder. They
+index their own snapshots of Mathlib, which are not pinned and change
+over time. The fourth, BM25 in :mod:`lean_explore_bench.engines.bm25`, is a
 local baseline with no learned component; it needs a corpus snapshot and the
 ``bm25`` extra, so it is imported only when used.
 
@@ -22,13 +22,11 @@ from lean_explore_bench.engines.base import (
 from lean_explore_bench.engines.leanexplore import LeanExplore
 from lean_explore_bench.engines.leanfinder import LeanFinder
 from lean_explore_bench.engines.leansearch import LeanSearch
-from lean_explore_bench.engines.loogle import Loogle
 from lean_explore_bench.engines.runner import read_results, run
 
 ENGINES: dict[str, Callable[[], Engine]] = {
     "leanexplore": LeanExplore,
     "leansearch": LeanSearch,
-    "loogle": Loogle,
     "leanfinder": LeanFinder,
 }
 """The hosted engines, by name."""
@@ -46,7 +44,6 @@ __all__ = [
     "LeanExplore",
     "LeanFinder",
     "LeanSearch",
-    "Loogle",
     "http_fetch",
     "read_results",
     "run",
