@@ -11,12 +11,14 @@ Typical order::
     leb-mix compare  --reference log-profile.json --candidate mix-profile.json
     leb-mix run      --engine leanexplore --out data/mix
     leb-mix score    --engine leanexplore --out data/mix --weights log-profile.json
+    leb-mix export   --out data/mix --to release --engine leanexplore
 """
 
 import argparse
 import asyncio
 import json
 import random
+import shutil
 from pathlib import Path
 from typing import Any
 
@@ -28,6 +30,7 @@ from lean_explore_bench.mix import (
     names,
     pool,
     profile,
+    release,
     score,
     zulip,
 )
@@ -353,7 +356,7 @@ def _pool(args: argparse.Namespace) -> None:
 def _run(args: argparse.Namespace) -> None:
     records = [
         record
-        for record in read_records(args.out / "queries.jsonl")
+        for record in release.load_queries(args.out)
         if args.split == "all" or record.split == args.split
     ]
     engine = engines.ENGINES[args.engine]()
@@ -366,7 +369,7 @@ def _run(args: argparse.Namespace) -> None:
 def _score(args: argparse.Namespace) -> None:
     records = [
         record
-        for record in read_records(args.out / "queries.jsonl")
+        for record in release.load_queries(args.out)
         if args.library is None or record.library == args.library
     ]
     reference = _read_profile(args.weights, args.group)
@@ -384,6 +387,14 @@ def _score(args: argparse.Namespace) -> None:
         name = ".".join(filter(None, [engine, args.split, args.library]))
         _write_json(args.out / "scores" / f"{name}.json", report)
         print(score.render(report))
+
+
+def _export(args: argparse.Namespace) -> None:
+    counts = release.export(args.out, args.to, args.engine)
+    if args.card is not None:
+        shutil.copyfile(args.card, args.to / "README.md")
+    for name, rows in counts.items():
+        print(f"{name}: {rows} rows")
 
 
 def _log_profiles() -> dict[str, Any]:
@@ -528,6 +539,10 @@ def _parser() -> argparse.ArgumentParser:
     command.add_argument("--weights", type=Path, help="profile of real searches")
     command.add_argument("--library", help="score only targets in this library")
     add_group(command)
+    command = add("export", "write the published dataset from a build directory")
+    command.add_argument("--to", type=Path, required=True, help="directory to write")
+    command.add_argument("--engine", nargs="*", default=[], help="runs to publish")
+    command.add_argument("--card", type=Path, help="dataset card, copied as README.md")
     command = commands.add_parser("profile", help="profile queries by form and style")
     source = command.add_mutually_exclusive_group(required=True)
     source.add_argument("--log", action="store_true", help="profile the search log")
@@ -561,6 +576,8 @@ def main(argv: list[str] | None = None) -> None:
         _run(args)
     elif args.command == "score":
         _score(args)
+    elif args.command == "export":
+        _export(args)
     elif args.command == "profile":
         _profile(args)
     else:
