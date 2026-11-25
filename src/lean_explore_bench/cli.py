@@ -1,201 +1,104 @@
-"""``leb-querylog``: analyse the LeanExplore query log.
+"""Command line for running and scoring search engines on the benchmark.
 
-Subcommands:
+``DIR`` is a directory that holds the benchmark: the published dataset, or a
+build directory. Engine results are read from and written to ``DIR/runs``.
 
-- ``report --out DIR`` writes aggregate charts and CSV tables that passed the
-  release gate. Safe to copy off the server.
-- ``explore`` serves a page with individual queries on ``127.0.0.1`` from
-  memory, writing nothing to disk. View it through an SSH tunnel, e.g.
-  ``ssh -L 8050:localhost:8050 xtx``.
-
-Both read the query log (see :mod:`lean_explore_bench.querylog.load` for
-paths and the key).
+    leb run   DIR --engine leanexplore
+    leb score DIR --engine leanexplore --split test
 """
 
 import argparse
-import datetime
-import http.server
-import sys
+import json
 from pathlib import Path
+from typing import Any
 
-import pandas as pd
-
-from lean_explore_bench.analysis.release import MIN_CELL_COUNT
-from lean_explore_bench.analysis.stats import PreparedLog, prepare
-from lean_explore_bench.analysis.views import (
-    explore_sections,
-    release_sections,
-    render_page,
-)
-from lean_explore_bench.querylog.load import load_query_log
+from lean_explore_bench import dataset, engines, score
+from lean_explore_bench.record import SPLITS
 
 
-def _load(args: argparse.Namespace) -> pd.DataFrame:
-    """Load the log, exiting with a message if there is nothing to analyse."""
-    frame, report = load_query_log(args.db, since=args.since)
-    print(
-        f"Read {report.rows_read:,} rows; decrypted {report.rows_loaded:,}; "
-        f"{report.rows_undecryptable:,} could not be decrypted.",
-        file=sys.stderr,
+def write_json(path: Path, value: Any) -> None:
+    """Write ``value`` as indented JSON, creating the directory."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
     )
-    if frame.empty:
-        raise SystemExit("No queries to analyse (check --db and --since).")
-    return frame
 
 
-def _report(args: argparse.Namespace) -> None:
-    prepared = prepare(_load(args), threshold=args.threshold, seed=args.seed)
-    sections = release_sections(prepared, min_count=args.min_count, seed=args.seed)
-    args.out.mkdir(parents=True, exist_ok=True)
-    for section in sections:
-        if section.table is not None and section.table_name:
-            section.table.to_csv(args.out / f"{section.table_name}.csv", index=False)
-    page = render_page(sections, "LeanExplore query log: aggregate report")
-    (args.out / "index.html").write_text(page, encoding="utf-8")
-    print(f"Wrote {args.out / 'index.html'}", file=sys.stderr)
-
-
-def _points(prepared: PreparedLog, args: argparse.Namespace) -> pd.DataFrame | None:
-    if not args.embed:
+def read_profile(path: Path | None, group: str) -> dict[str, Any] | None:
+    """Read one group of a profile file; a bare profile has no groups."""
+    if path is None:
         return None
-    from lean_explore_bench.analysis.embed import (
-        cluster_hdbscan,
-        embed_queries,
-        project_2d,
-        reduce_for_clustering,
+    value: dict[str, Any] = json.loads(path.read_text(encoding="utf-8"))
+    if "profiles" in value:
+        selected: dict[str, Any] = value["profiles"][group]
+        return selected
+    return value
+
+
+def _run(args: argparse.Namespace) -> None:
+    records = [
+        record
+        for record in dataset.load_queries(args.directory)
+        if args.split == "all" or record.split == args.split
+    ]
+    engine = engines.ENGINES[args.engine]()
+    path = args.directory / "runs" / f"{args.engine}.jsonl"
+    results = engines.run(engine, records, path, limit=args.limit)
+    failed = sum(results[record.id]["status"] != "ok" for record in records)
+    print(f"{args.engine}: {len(records)} queries, {failed} failed; journal {path}")
+
+
+def _score(args: argparse.Namespace) -> None:
+    records = [
+        record
+        for record in dataset.load_queries(args.directory)
+        if args.library is None or record.library == args.library
+    ]
+    reference = read_profile(args.weights, args.group)
+    weights = (
+        {form: entry["share_of_searches"] for form, entry in reference["forms"].items()}
+        if reference is not None
+        else None
     )
-
-    distinct = prepared.distinct
-    print(f"Embedding {len(distinct):,} distinct queries…", file=sys.stderr)
-    embeddings = embed_queries(distinct["query"].tolist(), device=args.device)
-    xy = project_2d(embeddings, method=args.projection, seed=args.seed)
-    return distinct.assign(
-        x=xy[:, 0],
-        y=xy[:, 1],
-        cluster=cluster_hdbscan(
-            reduce_for_clustering(embeddings, seed=args.seed),
-            min_cluster_size=args.min_cluster_size,
-        ),
-    )
+    for engine in args.engine:
+        results = engines.read_results(args.directory / "runs" / f"{engine}.jsonl")
+        limit = min(
+            (result.get("limit", 10) for result in results.values()), default=10
+        )
+        report = score.score(
+            records, results, engine, split=args.split, limit=limit, weights=weights
+        )
+        name = ".".join(filter(None, [engine, args.split, args.library]))
+        write_json(args.directory / "scores" / f"{name}.json", report)
+        print(score.render(report))
 
 
-def explore_page(args: argparse.Namespace) -> bytes:
-    """Build the server-only explorer page in memory.
-
-    Args:
-        args: Parsed ``explore`` arguments.
-
-    Returns:
-        The page as UTF-8 bytes.
-    """
-    prepared = prepare(_load(args), threshold=args.threshold, seed=args.seed)
-    sections = explore_sections(prepared, _points(prepared, args), seed=args.seed)
-    title = "LeanExplore query log: explorer (server only)"
-    return render_page(sections, title).encode("utf-8")
-
-
-def page_server(page: bytes, port: int) -> http.server.ThreadingHTTPServer:
-    """Create a server for one in-memory page on 127.0.0.1.
-
-    Only ``/`` and ``/index.html`` are served, with ``Cache-Control:
-    no-store``; every other path is a 404. Nothing is written to disk.
-
-    Args:
-        page: The page to serve.
-        port: Port to listen on; ``0`` picks a free one.
-
-    Returns:
-        The server, not yet serving.
-    """
-
-    class Handler(http.server.BaseHTTPRequestHandler):
-        def do_GET(self) -> None:  # noqa: N802 (http.server API)
-            if self.path not in ("/", "/index.html"):
-                self.send_error(404)
-                return
-            self.send_response(200)
-            self.send_header("Content-Type", "text/html; charset=utf-8")
-            self.send_header("Cache-Control", "no-store")
-            self.send_header("Content-Length", str(len(page)))
-            self.end_headers()
-            self.wfile.write(page)
-
-        def log_message(self, format: str, *args: object) -> None:  # noqa: A002
-            return
-
-    return http.server.ThreadingHTTPServer(("127.0.0.1", port), Handler)
-
-
-def _explore(args: argparse.Namespace) -> None:
-    server = page_server(explore_page(args), args.port)
-    port = server.server_address[1]
-    print(
-        f"Serving on http://127.0.0.1:{port} (Ctrl-C to stop). "
-        f"From your laptop: ssh -L {port}:localhost:{port} <server>",
-        file=sys.stderr,
-    )
-    try:
-        server.serve_forever()
-    except KeyboardInterrupt:
-        pass
-    finally:
-        server.server_close()
-
-
-def build_parser() -> argparse.ArgumentParser:
-    """Build the command-line parser.
-
-    Returns:
-        The parser.
-    """
-    common = argparse.ArgumentParser(add_help=False)
-    common.add_argument("--db", type=Path, help="query log SQLite database")
-    common.add_argument(
-        "--since",
-        type=datetime.date.fromisoformat,
-        help="only rows collected on or after this UTC day (YYYY-MM-DD)",
-    )
-    common.add_argument(
-        "--threshold",
-        type=float,
-        default=0.8,
-        help="near-duplicate Jaccard threshold within a source and day",
-    )
-    common.add_argument("--seed", type=int, default=0)
-
-    parser = argparse.ArgumentParser(prog="leb-querylog", description=__doc__)
+def _parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(prog="leb", description=__doc__.split("\n")[0])
     commands = parser.add_subparsers(dest="command", required=True)
-
-    report = commands.add_parser(
-        "report", parents=[common], help="write gated aggregate charts and tables"
+    splits = [*SPLITS, "all"]
+    command = commands.add_parser("run", help="send every query to a search engine")
+    command.add_argument("directory", type=Path, help="directory of the benchmark")
+    command.add_argument("--engine", choices=sorted(engines.ENGINES), required=True)
+    command.add_argument("--limit", type=int, default=10, help="results per query")
+    command.add_argument("--split", choices=splits, default="all")
+    command = commands.add_parser("score", help="score engine runs by bucket")
+    command.add_argument("directory", type=Path, help="directory of the benchmark")
+    command.add_argument("--engine", nargs="+", required=True)
+    command.add_argument("--split", choices=splits, default="all")
+    command.add_argument("--weights", type=Path, help="profile of real searches")
+    command.add_argument("--library", help="score only targets in this library")
+    command.add_argument(
+        "--group", default="all", help="group of the profile file to use"
     )
-    report.add_argument("--out", type=Path, required=True)
-    report.add_argument("--min-count", type=int, default=MIN_CELL_COUNT)
-    report.set_defaults(handler=_report)
-
-    explore = commands.add_parser(
-        "explore", parents=[common], help="serve a server-only page from memory"
-    )
-    explore.add_argument("--port", type=int, default=8050)
-    explore.add_argument(
-        "--embed", action="store_true", help="add a query map (needs the embed extra)"
-    )
-    explore.add_argument("--projection", choices=["umap", "pca"], default="umap")
-    explore.add_argument("--device", help="torch device for embedding, e.g. cuda:7")
-    explore.add_argument("--min-cluster-size", type=int, default=15)
-    explore.set_defaults(handler=_explore)
     return parser
 
 
 def main(argv: list[str] | None = None) -> None:
-    """Run the command line.
-
-    Args:
-        argv: Arguments; defaults to ``sys.argv[1:]``.
-    """
-    args = build_parser().parse_args(argv)
-    args.handler(args)
-
-
-if __name__ == "__main__":
-    main()
+    """Run the ``leb`` command line."""
+    args = _parser().parse_args(argv)
+    if args.command == "run":
+        _run(args)
+    else:
+        _score(args)

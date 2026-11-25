@@ -1,124 +1,92 @@
 # lean-explore-bench
 
-Benchmarks for Lean 4 search engines.
+A benchmark for search engines over Lean 4 declarations.
 
-> **Early development.** This project is in its first beta and highly
-> unstable: interfaces, categories, data formats and numbers will change
-> without notice. Do not rely on it yet.
+It has 3,200 queries about Mathlib, each with one or more graded answers, in four
+buckets of 800: names and keywords, natural language, formal statements and proof
+states, and questions derived from Lean Zulip threads. The benchmark score is the
+plain mean of the four bucket scores.
 
-Use this repository to evaluate Lean declaration search, compare retrieval
-stages and reranker configurations, and preserve reproducible evaluation
-contracts. Start with the [full-collection preprint](docs/full-collection-preprint.md)
-for the findings, their interpretation and the next experiments. The
-[baseline report](docs/benchmark-full-collection.md) and
-[corrected reranker report](docs/benchmark-reranker-corrected.md) contain the
-detailed source and category tables. They cover all prepared query sources, with
-separate results for upstream targets, proposed reply-link targets and unlabelled
-traffic. Independent relevance review remains pending.
+This is version 1. The queries and labels were produced with language models and
+have not yet been reviewed by people; see [limits](docs/method.md#limits).
 
-The [assisted-v2 pilot](docs/benchmark-assisted-v2.md), its
-[dataset card](docs/dataset-card.md) and [earlier manuscript](docs/preprint.md)
-retain their original scope and annotation provenance.
+The data is published as a dataset at
+[`lean-explore/lean-explore-bench`](https://huggingface.co/datasets/lean-explore/lean-explore-bench)
+on Hugging Face. This repository holds the code that builds, runs and scores it.
 
-The literature review behind the benchmark design is in
-[`docs/literature/`](docs/literature/README.md).
+## Results
 
-See [benchmark status](docs/benchmark-status.md) for what is ready, what has
-been checked and what remains before a validated benchmark release.
+Success@10 on the 2,560 test queries, with Success@1 in brackets. The four hosted
+engines were queried from 11 to 13 November 2026.
 
-## Workflows
+| Bucket | Lean Finder | LeanSearch | LeanExplore | BM25 | Loogle |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Names and keywords | 0.94 (0.75) | 0.93 (0.62) | 0.91 (0.52) | 0.66 (0.29) | 0.07 (0.07) |
+| Natural language | 0.98 (0.88) | 0.98 (0.72) | 0.86 (0.48) | 0.41 (0.13) | 0.00 (0.00) |
+| Formal | 0.96 (0.89) | 0.95 (0.68) | 0.54 (0.14) | 0.75 (0.30) | 0.10 (0.10) |
+| Real questions | 0.80 (0.56) | 0.77 (0.45) | 0.50 (0.27) | 0.24 (0.10) | 0.00 (0.00) |
+| **Benchmark score** | **0.92 (0.77)** | **0.91 (0.62)** | **0.70 (0.35)** | **0.52 (0.20)** | **0.04 (0.04)** |
 
-- [Full collection replay](experiments/full_collection/README.md): coverage,
-  stage diagnostics and corrected reranker comparisons on every prepared request.
-- [Offline reports and retrieval evaluation](tools/offline/README.md): Python-only
-  report building, local annotation, ranking metrics and paired comparisons.
-- [Candidate selection experiments](experiments/candidate_selection/README.md):
-  runners and invented fixtures for retrieval ablations.
-- [Consolidation and publication scope](docs/benchmark-consolidation.md): source
-  provenance, preserved interfaces and external benchmark storage.
+BM25 results were not graded for extra answers, so its scores are lower bounds.
+Loogle searches by name and pattern, so only bare names and some formal statements
+suit it.
 
-Benchmark inputs, source records, annotations, hashes of inputs and measured
-outputs belong outside the repository. See the [preparation and review
-workflow](tools/offline/docs/benchmark-workflow.md).
-
-## Benchmark specifications
-
-- [Full collection preprint](docs/full-collection-preprint.md)
-- [Full collection results](docs/benchmark-full-collection.md)
-- [Corrected reranker results](docs/benchmark-reranker-corrected.md)
-- [Assisted-v2 results](docs/benchmark-assisted-v2.md)
-- [Dataset card](docs/dataset-card.md)
-- [Manuscript](docs/preprint.md)
-- [Assisted-v1 results](docs/benchmark-assisted-v1.md)
-- [Post-benchmark human review](docs/assisted-human-review.md)
-- [Methods and reporting](docs/benchmark-methods.md)
-- [Calibration decisions](docs/benchmark-review-questions-2026-11-06.md)
-- [Calibration review guide](docs/calibration-review-guide.md)
-- [Evaluation protocol](docs/evaluation-protocol.md)
-- [Reranker training specification](docs/reranker-training-specification.md)
-- [Extraction and cache contract](docs/extraction-boundary.md)
-
-## Query log analysis
-
-`lean_explore_bench.querylog` loads LeanExplore's de-identified search log,
-removes duplicate and near-duplicate queries (automated bursts), and measures
-each query's topic-free surface features: length, share of Lean identifiers,
-share of prose, symbols, and a *skeleton* that keeps its structure but drops
-its content. `lean_explore_bench.analysis` finds query categories
-statistically from those features (Gaussian mixtures, keeping the largest
-number of categories that all reproduce on subsamples) and builds summary
-statistics and charts.
-Categories describe how people search, never what they search for.
-
-Keep real usage queries private. The Privacy Policy permits publishing only synthetic
-queries and aggregate statistics. So the code is public, but it runs on the
-server that holds the log, decrypts in memory, and writes nothing that could
-reproduce a query:
+## Score an engine
 
 ```sh
-pip install -e ".[dev]"            # add ",embed" for the query map (GPU)
-
-# Aggregate charts and CSV tables. Groups under 10 are suppressed.
-leb-querylog report --out reports/2026-09-29
-
-# Server-only page with individual queries, served from memory on 127.0.0.1.
-leb-querylog explore --embed --device cuda:7
-ssh -L 8050:localhost:8050 xtx     # then open http://localhost:8050
+pip install -e . huggingface_hub
+hf download lean-explore/lean-explore-bench --repo-type dataset --local-dir bench
 ```
 
-By default the log is read from `~/lean-explore-app/data/website_user_data.db`
-and the key from `~/lean-explore-app/.env`; override them with
-`LEB_QUERY_LOG_DB`, `LEB_QUERY_LOG_ENV_FILE` or `SEARCH_HISTORY_ENCRYPTION_KEY`.
-`.gitignore` keeps data files, notebooks and `.env` files out of git. CI runs
-ruff, strict mypy and the tests.
+Write one line per query to `bench/runs/<name>.jsonl`, with the names of the
+declarations your engine returns, best first:
 
-The categories found in the first day of the log are in
-[`docs/search-categories.md`](docs/search-categories.md), and the plan for
-generating synthetic benchmark queries is in
-[`docs/generation-design.md`](docs/generation-design.md).
-
-## Shared infrastructure
-
-`lean_explore_bench.infra` holds code shared across the project. It currently
-has an async OpenRouter client (`OpenRouterClient`) with retries on
-transient errors, a cap on requests in flight, JSON output validated against
-a schema, and running token and cost totals. By default it only routes to
-providers that do not store or train on prompts (`data_collection: "deny"`).
-
-```python
-import asyncio
-from lean_explore_bench.infra import OpenRouterClient, OpenRouterSettings
-
-async def main() -> None:
-    settings = OpenRouterSettings.from_env()  # reads OPENROUTER_API_KEY
-    async with OpenRouterClient(settings) as client:
-        reply = await client.complete(
-            [{"role": "user", "content": "Hello"}], model="anthropic/claude-sonnet-5.5"
-        )
-        print(reply.text, client.usage.cost)
-
-asyncio.run(main())
+```json
+{"id": "a067a6f76126", "documents": ["dite_prop_iff_or", "dite_eq_ite"]}
 ```
 
-Set `OPENROUTER_API_KEY`, and optionally `OPENROUTER_MODEL` (the default
-model) and `OPENROUTER_MAX_CONCURRENCY`.
+Then score it:
+
+```sh
+leb score bench --engine <name> --split test
+```
+
+Tune only on the development split (640 queries). A new engine can return correct
+answers that are not labelled yet, and they count as misses until they are graded;
+[evaluation](docs/evaluation.md#adding-an-engine) explains how to grade them.
+
+`leb run bench --engine leanexplore` queries one of the engines that the package
+knows (`leanexplore`, `leansearch`, `leanfinder`, `loogle`). Scoring needs no
+dependency beyond Python 3.10.
+
+## Layout
+
+| Path | Contents |
+| --- | --- |
+| `src/lean_explore_bench/` | Load the dataset, run engines, score them (`leb`) |
+| `src/lean_explore_bench/builder/` | What made the benchmark (`leb-build`); not needed to use it |
+| `baselines/` | The BM25 baseline |
+| `docs/` | [Method](docs/method.md), [evaluation](docs/evaluation.md), [dataset card](docs/dataset-card.md) |
+| `paper/` | Draft of the paper |
+| `tests/` | Tests, in the same layout as the package |
+
+## Privacy
+
+No search query from LeanExplore's users is in the benchmark or in this repository.
+LeanExplore's search log was used only to count how searches divide over query forms
+and how long they are. `leb-build profile --log` computes those counts on the server
+that holds the log and writes shares only, leaving out any count under ten.
+`.gitignore` and `scripts/check_publication.py` keep data files out of Git.
+
+## Development
+
+```sh
+pip install -e ".[dev]"
+ruff check . && ruff format --check . && mypy && pytest -q
+```
+
+Building the benchmark from scratch uses `leb-build` and needs the `build` extra, a
+LeanExplore corpus snapshot and an `OPENROUTER_API_KEY`; the steps are in
+[method](docs/method.md#building).
+
+The code is under the Apache License 2.0.
