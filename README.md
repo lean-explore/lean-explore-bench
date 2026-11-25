@@ -48,31 +48,33 @@ declarations your engine returns, best first:
 Then score it:
 
 ```sh
-leb-mix score --out bench --engine <name> --split test
+leb score bench --engine <name> --split test
 ```
 
 Tune only on the development split (640 queries). A new engine can return correct
 answers that are not labelled yet, and they count as misses until they are graded;
 [evaluation](docs/evaluation.md#adding-an-engine) explains how to grade them.
 
-`leb-mix run --engine leanexplore --out bench` queries one of the engines that the
-package knows (`leanexplore`, `leansearch`, `leanfinder`, `loogle`).
+`leb run bench --engine leanexplore` queries one of the engines that the package
+knows (`leanexplore`, `leansearch`, `leanfinder`, `loogle`). Scoring needs no
+dependency beyond Python 3.10.
 
-## Documentation
+## Layout
 
-| Document | Contents |
+| Path | Contents |
 | --- | --- |
-| [Method](docs/method.md) | Query forms, how queries and answers were made, limits |
-| [Evaluation](docs/evaluation.md) | Relevance grades, metrics, splits, adding an engine |
-| [Dataset card](docs/dataset-card.md) | Files and fields of the published dataset |
-| [BM25 baseline](experiments/bm25_baseline/run.py) | The baseline with no learned component |
-| [Paper](paper/README.md) | Draft of the paper |
+| `src/lean_explore_bench/` | Load the dataset, run engines, score them (`leb`) |
+| `src/lean_explore_bench/builder/` | What made the benchmark (`leb-build`); not needed to use it |
+| `baselines/` | The BM25 baseline |
+| `docs/` | [Method](docs/method.md), [evaluation](docs/evaluation.md), [dataset card](docs/dataset-card.md) |
+| `paper/` | Draft of the paper |
+| `tests/` | Tests, in the same layout as the package |
 
 ## Privacy
 
 No search query from LeanExplore's users is in the benchmark or in this repository.
 LeanExplore's search log was used only to count how searches divide over query forms
-and how long they are. `leb-mix profile --log` computes those counts on the server
+and how long they are. `leb-build profile --log` computes those counts on the server
 that holds the log and writes shares only, leaving out any count under ten.
 `.gitignore` and `scripts/check_publication.py` keep data files out of Git.
 
@@ -83,8 +85,8 @@ pip install -e ".[dev]"
 ruff check . && ruff format --check . && mypy && pytest -q
 ```
 
-Building the benchmark from scratch (`leb-mix generate`, `zulip`, `contribute`,
-`build`, `pool`) needs a LeanExplore corpus snapshot and an `OPENROUTER_API_KEY`;
-the steps are in [method](docs/method.md#building).
+Building the benchmark from scratch uses `leb-build` and needs the `build` extra, a
+LeanExplore corpus snapshot and an `OPENROUTER_API_KEY`; the steps are in
+[method](docs/method.md#building).
 
 The code is under the Apache License 2.0.

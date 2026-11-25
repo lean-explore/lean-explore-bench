@@ -9,16 +9,18 @@ description = "Benchmarks for Lean 4 search engines."
 readme = "README.md"
 license = "Apache-2.0"
 requires-python = ">=3.10"
-dependencies = [
+dependencies = []
+
+[project.optional-dependencies]
+# Building the benchmark: writing and judging queries, reading the search log.
+build = [
     "cryptography>=42",
     "jsonschema>=4.21",
     "openai>=3.0",
     "pandas>=2.2",
     "tenacity>=8.2",
 ]
-
-[project.optional-dependencies]
-# The BM25 baseline in experiments/bm25_baseline.
+# The BM25 baseline in baselines/.
 baselines = [
     "numpy>=1.26",
     "scipy>=1.11",
@@ -28,6 +30,7 @@ paper = [
     "matplotlib>=3.8",
 ]
 dev = [
+    "lean-explore-bench[build]",
     "mypy>=1.11",
     "pandas-stubs>=2.2",
     "pytest-cov>=5.0",
@@ -37,7 +40,8 @@ dev = [
 ]
 
 [project.scripts]
-leb-mix = "lean_explore_bench.mix.cli:main"
+leb = "lean_explore_bench.cli:main"
+leb-build = "lean_explore_bench.builder.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

@@ -18,5 +18,5 @@ python3 paper/figures.py data/mix-v6
 cd paper && latexmk -pdf lean-search-bench.tex
 ```
 
-The BM25 column comes from `experiments/bm25_baseline/run.py`. The numbers in the tables of the paper are typed in by hand from `leb-mix score` and
+The BM25 column comes from `baselines/bm25.py`. The numbers in the tables of the paper are typed in by hand from `leb score` and
 `scores.json`; update them when the benchmark changes.

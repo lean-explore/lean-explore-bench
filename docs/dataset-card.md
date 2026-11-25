@@ -71,7 +71,7 @@ queries = load_dataset("lean-explore/lean-explore-bench", "queries", split="test
 runs = load_dataset("lean-explore/lean-explore-bench", "runs", split="leanexplore")
 ```
 
-To score an engine, download the files and use the `leb-mix score` command of the
+To score an engine, download the files and use the `leb score` command of the
 GitHub repository.
 
 ## Fields of `queries`

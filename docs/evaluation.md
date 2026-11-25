@@ -58,13 +58,13 @@ first labelled answer should be graded and added.
 
 1. Write the engine's results to `runs/<name>.jsonl`, one line per query:
    `{"id": ..., "documents": [names, best first]}`. A query with no line counts
-   as a failed request. To have `leb-mix run` do
-   this, add a class to `lean_explore_bench.mix.engines`.
-2. Score it with `leb-mix score --out DIR --engine <name> --split test`.
+   as a failed request. To have `leb run` do
+   this, add a class to `lean_explore_bench.engines`.
+2. Score it with `leb score DIR --engine <name> --split test`.
 3. To grade its unlabelled results, export the candidates with
-   `leb-mix pool --out DIR --corpus lean_explore.db --shape balanced --established january.db --engine <name> --until-answer --to tasks.jsonl`,
+   `leb-build pool --out DIR --corpus lean_explore.db --shape balanced --established january.db --engine <name> --until-answer --to tasks.jsonl`,
    grade each candidate from 0 to 3 without looking at which engine returned it, and
-   add the grades with `leb-mix pool --out DIR --corpus lean_explore.db --grades grades.jsonl --judge NAME`.
+   add the grades with `leb-build pool --out DIR --corpus lean_explore.db --grades grades.jsonl --judge NAME`.
    This step needs a build directory, the corpus snapshot and the January 2026
    snapshot that defines which declarations can be answers.
 

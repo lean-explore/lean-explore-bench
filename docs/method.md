@@ -8,7 +8,7 @@ queries and answers were produced, and what the benchmark does not yet do.
 Every written query has one of eight forms. A form is decided by the surface of the
 query alone (which tokens look like Lean names, how many function words such as "of"
 or "the" it has, how much Lean syntax), never by its subject. The rules are in
-`lean_explore_bench.mix.forms`.
+`lean_explore_bench.forms`.
 
 | Form | Definition | Example |
 | --- | --- | --- |
@@ -185,21 +185,21 @@ snapshot, an `OPENROUTER_API_KEY`, and for `zulip` a `~/.zuliprc`. `generate`,
 stopped.
 
 ```sh
-leb-mix profile    --log --to log-profile.json           # on the server that holds the log
-leb-mix zulip      --corpus lean_explore.db --out data/mix
-leb-mix contribute --corpus lean_explore.db --out data/mix --queries contributed.jsonl
-leb-mix generate   --corpus lean_explore.db --out data/mix --style log-profile.json \
+leb-build profile    --log --to log-profile.json           # on the server that holds the log
+leb-build zulip      --corpus lean_explore.db --out data/v1
+leb-build contribute --corpus lean_explore.db --out data/v1 --queries contributed.jsonl
+leb-build generate   --corpus lean_explore.db --out data/v1 --style log-profile.json \
                    --shape balanced --established january.db
-leb-mix build      --corpus lean_explore.db --out data/mix --shape balanced --established january.db
-leb-mix run        --engine leanexplore --out data/mix
-leb-mix pool       --corpus lean_explore.db --out data/mix --shape balanced --established january.db \
+leb-build build      --corpus lean_explore.db --out data/v1 --shape balanced --established january.db
+leb run data/v1 --engine leanexplore
+leb-build pool       --corpus lean_explore.db --out data/v1 --shape balanced --established january.db \
                    --until-answer --to tasks.jsonl
-leb-mix pool       --corpus lean_explore.db --out data/mix --grades grades.jsonl --judge NAME
-leb-mix score      --engine leanexplore --out data/mix --split test
-leb-mix export     --out data/mix --to release --card docs/dataset-card.md \
+leb-build pool       --corpus lean_explore.db --out data/v1 --grades grades.jsonl --judge NAME
+leb score data/v1 --engine leanexplore --split test
+leb-build export     --out data/v1 --to release --card docs/dataset-card.md \
                    --engine leanexplore leansearch leanfinder loogle bm25
 ```
 
-`leb-mix tasks` and `leb-mix submit` export writing tasks for an agent and take its
-queries back through the same checks. `leb-mix profile --queries` and
-`leb-mix compare` measure how far any set of queries is from the real searches.
+`leb-build tasks` and `leb-build submit` export writing tasks for an agent and take its
+queries back through the same checks. `leb-build profile --queries` and
+`leb-build compare` measure how far any set of queries is from the real searches.
