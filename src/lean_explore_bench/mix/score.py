@@ -1,9 +1,7 @@
 """Score an engine run on the query mix, by bucket and by library.
 
-Scoring is done by the offline evaluator in ``tools/offline``
-(``leanexplore_benchmark.evaluate``), so the metric definitions are the ones
-in ``docs/evaluation-protocol.md``. This module only groups its per-query
-scores: one row per query type and one per library.
+Scoring is done by ``lean_explore_bench.evaluate``. This module only groups
+its per-query scores: one row per query type and one per library.
 """
 
 import statistics
@@ -11,7 +9,7 @@ from collections import defaultdict
 from collections.abc import Iterable
 from typing import Any
 
-from leanexplore_benchmark.evaluate import evaluate
+from lean_explore_bench.evaluate import evaluate
 
 from lean_explore_bench.mix.assemble import to_collection
 from lean_explore_bench.mix.forms import classify

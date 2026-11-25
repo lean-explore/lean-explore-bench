@@ -2,7 +2,7 @@
 
 The export has two forms. ``queries.jsonl`` holds every record with its
 provenance. ``collection.<split>.json`` holds the same queries in the format
-that the offline evaluator (``tools/offline``) scores.
+that ``lean_explore_bench.evaluate`` scores.
 """
 
 import hashlib
@@ -156,7 +156,7 @@ def assign_splits(records: Iterable[QueryRecord], spec: MixSpec) -> list[QueryRe
 def to_collection(
     records: Iterable[QueryRecord], corpus_revision: str, split: str
 ) -> dict[str, Any]:
-    """Export one split in the offline evaluator's collection format."""
+    """Export one split in the evaluator's collection format."""
     queries = [
         {
             "id": record.id,

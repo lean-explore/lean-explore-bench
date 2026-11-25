@@ -154,7 +154,7 @@ def test_splits_keep_groups_together_and_follow_the_share() -> None:
     assert [record.split for record in again] == [record.split for record in assigned]
 
 
-def test_collection_matches_the_offline_evaluator_format() -> None:
+def test_collection_matches_the_evaluator_format() -> None:
     assigned = assemble.assign_splits(_records(20, 20), MixSpec())
     collection = assemble.to_collection(assigned, "rev-1", "test")
     assert collection["corpus_revision"] == "rev-1"
