@@ -59,7 +59,7 @@ first labelled answer should be graded and added.
 1. Write the engine's results to `runs/<name>.jsonl`, one line per query:
    `{"id": ..., "documents": [names, best first]}`. A query with no line counts
    as a failed request. To have `leb run` do
-   this, add a class to `lean_explore_bench.engines`.
+   this, add a module to `lean_explore_bench/engines/`.
 2. Score it with `leb score DIR --engine <name> --split test`.
 3. To grade its unlabelled results, export the candidates with
    `leb-build pool --out DIR --corpus lean_explore.db --shape balanced --established january.db --engine <name> --until-answer --to tasks.jsonl`,

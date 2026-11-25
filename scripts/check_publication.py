@@ -23,7 +23,6 @@ DATA_DIRECTORIES = {
 }
 SUFFIXES = {
     "docs": {".md"},
-    "baselines": {".py"},
     "paper": {".bib", ".gitignore", ".md", ".pdf", ".py", ".sty", ".tex"},
     "scripts": {".py"},
     "src": {".py"},

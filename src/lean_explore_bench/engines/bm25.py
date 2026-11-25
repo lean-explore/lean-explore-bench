@@ -1,4 +1,4 @@
-"""A BM25 baseline for the benchmark, with no learned component.
+"""A BM25 baseline with no learned component.
 
 Every Mathlib declaration of a corpus snapshot is one document: its name, its
 docstring and the start of its source. Names are also split into their parts
@@ -6,22 +6,23 @@ docstring and the start of its source. Names are also split into their parts
 words can match a name. The parameters are the usual defaults and were not
 tuned on the benchmark.
 
-    python baselines/bm25.py --corpus lean_explore.db --out data/v1
+Needs the ``bm25`` extra (NumPy and SciPy) and a LeanExplore corpus snapshot::
 
-writes ``runs/bm25.jsonl`` in the format of ``leb run``, so that
-``leb score DIR --engine bm25`` scores it.
+    leb run DIR --engine bm25 --corpus lean_explore.db
 """
 
-import argparse
-import json
-import math
 import re
 import sqlite3
 from collections import Counter
+from dataclasses import dataclass
+from functools import cached_property
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 from scipy import sparse
+
+from lean_explore_bench.engines.base import Engine
 
 K1, B = 1.2, 0.75
 NAME_WEIGHT = 3
@@ -59,7 +60,7 @@ def read_documents(corpus: Path) -> tuple[list[str], list[Counter[str]]]:
     return names, bags
 
 
-def build(bags: list[Counter[str]]) -> tuple[dict[str, int], sparse.csr_matrix]:
+def build(bags: list[Counter[str]]) -> tuple[dict[str, int], Any]:
     """Return the vocabulary and the term-by-document matrix of BM25 weights."""
     vocabulary: dict[str, int] = {}
     rows, columns, counts = [], [], []
@@ -84,46 +85,43 @@ def build(bags: list[Counter[str]]) -> tuple[dict[str, int], sparse.csr_matrix]:
     return vocabulary, weighted.tocsr()
 
 
-def search(
-    query: str, vocabulary: dict[str, int], weights: sparse.csr_matrix, limit: int
-) -> np.ndarray:
+def best_documents(
+    query: str, vocabulary: dict[str, int], weights: Any, limit: int
+) -> list[int]:
     """Indices of the ``limit`` best documents for ``query``, best first."""
     wanted = {*tokens(query), *(part.lower() for part in query.split())}
     rows = sorted({vocabulary[token] for token in wanted if token in vocabulary})
     if not rows:
-        return np.array([], dtype=int)
+        return []
     scores = np.asarray(weights[rows].sum(axis=0)).ravel()
-    best = np.argpartition(-scores, limit)[:limit]
+    if limit < len(scores):
+        best = np.argpartition(-scores, limit)[:limit]
+    else:
+        best = np.arange(len(scores))
     best = best[np.argsort(-scores[best], kind="stable")]
-    return best[scores[best] > 0]
+    return [int(index) for index in best[scores[best] > 0]]
 
 
-def main() -> None:
-    """Run BM25 on every query of a build and write the run file."""
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--corpus", type=Path, required=True)
-    parser.add_argument("--out", type=Path, required=True, help="build directory")
-    parser.add_argument("--limit", type=int, default=10)
-    args = parser.parse_args()
-    names, bags = read_documents(args.corpus)
-    vocabulary, weights = build(bags)
-    print(f"{len(names)} documents, {len(vocabulary)} terms")
-    lines = (args.out / "queries.jsonl").read_text(encoding="utf-8").splitlines()
-    path = args.out / "runs" / "bm25.jsonl"
-    with path.open("w", encoding="utf-8") as file:
-        for line in filter(str.strip, lines):
-            record = json.loads(line)
-            found = search(record["query"], vocabulary, weights, args.limit)
-            row = {
-                "id": record["id"],
-                "limit": args.limit,
-                "status": "ok",
-                "documents": [names[index] for index in found],
-            }
-            file.write(json.dumps(row, ensure_ascii=False) + "\n")
-    print(f"Wrote {path}")
-    assert math.isfinite(weights.sum())
+@dataclass(frozen=True)
+class BM25(Engine):
+    """BM25 over the declarations of a corpus snapshot.
 
+    Attributes:
+        corpus: Path of the snapshot's ``lean_explore.db``.
+    """
 
-if __name__ == "__main__":
-    main()
+    name: str = "bm25"
+    interval_seconds: float = 0.0
+    corpus: Path = Path("lean_explore.db")
+
+    @cached_property
+    def _index(self) -> tuple[list[str], dict[str, int], Any]:
+        names, bags = read_documents(self.corpus)
+        vocabulary, weights = build(bags)
+        return names, vocabulary, weights
+
+    def search(self, query: str, limit: int) -> list[str]:
+        """Search the snapshot."""
+        names, vocabulary, weights = self._index
+        found = best_documents(query, vocabulary, weights, limit)
+        return [names[index] for index in found]

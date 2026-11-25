@@ -20,8 +20,8 @@ build = [
     "pandas>=2.2",
     "tenacity>=8.2",
 ]
-# The BM25 baseline in baselines/.
-baselines = [
+# The BM25 baseline (lean_explore_bench.engines.bm25).
+bm25 = [
     "numpy>=1.26",
     "scipy>=1.11",
 ]
@@ -30,7 +30,7 @@ paper = [
     "matplotlib>=3.8",
 ]
 dev = [
-    "lean-explore-bench[build]",
+    "lean-explore-bench[build,bm25]",
     "mypy>=1.11",
     "pandas-stubs>=2.2",
     "pytest-cov>=5.0",
@@ -67,6 +67,10 @@ convention = "google"
 strict = true
 python_version = "3.12"
 files = ["src", "tests"]
+
+[[tool.mypy.overrides]]
+module = ["scipy.*"]
+ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

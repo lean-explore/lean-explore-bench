@@ -153,3 +153,69 @@ def test_run_journals_resumes_and_retries_failures(tmp_path: Path) -> None:
     assert len(pauses) == 3
     assert len(journal.read_text().splitlines()) == 3
     assert engines.read_results(journal) == results
+
+
+def _corpus(path: Path) -> Path:
+    import sqlite3
+
+    rows = [
+        ("Finset.sum_comm", "Mathlib.Algebra.BigOperators", "Swap two sums.", "x"),
+        ("Nat.add_comm", "Mathlib.Init", "Addition commutes.", "theorem add_comm"),
+        ("Real.sqrt_nonneg", "Mathlib.Analysis", None, "theorem sqrt_nonneg"),
+        ("Other.sum_comm", "Elsewhere.Module", "Swap two sums.", "x"),
+    ]
+    connection = sqlite3.connect(path)
+    connection.execute(
+        "CREATE TABLE declarations (name TEXT, module TEXT, docstring TEXT, "
+        "source_text TEXT)"
+    )
+    connection.executemany("INSERT INTO declarations VALUES (?, ?, ?, ?)", rows)
+    connection.commit()
+    connection.close()
+    return path
+
+
+def test_bm25_ranks_mathlib_declarations_by_name_parts_and_words(
+    tmp_path: Path,
+) -> None:
+    from lean_explore_bench.engines.bm25 import BM25
+
+    engine = BM25(corpus=_corpus(tmp_path / "lean_explore.db"))
+
+    assert engine.name == "bm25" and engine.interval_seconds == 0.0
+    assert engine.search("Nat.add_comm", 2)[0] == "Nat.add_comm"
+    assert engine.search("swap two sums", 1) == ["Finset.sum_comm"]
+    assert engine.search("sqrt", 3) == ["Real.sqrt_nonneg"]
+    assert engine.search("zzz unknown", 3) == []
+    assert "Other.sum_comm" not in engine.search("sum comm", 3)
+
+
+def test_run_command_builds_bm25_from_a_corpus(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    from lean_explore_bench import cli
+    from lean_explore_bench.record import write_records
+
+    record = QueryRecord(
+        id="q1",
+        query="addition commutes",
+        query_type="prose",
+        variant="prose",
+        source="declaration",
+        library="mathlib",
+        area="Init",
+        target="Nat.add_comm",
+        judgments={"Nat.add_comm": 3},
+        group_id="q1",
+        split="test",
+    )
+    write_records(tmp_path / "queries.jsonl", [record])
+    corpus = _corpus(tmp_path / "lean_explore.db")
+
+    with pytest.raises(SystemExit, match="pass --corpus"):
+        cli.main(["run", str(tmp_path), "--engine", "bm25"])
+    cli.main(["run", str(tmp_path), "--engine", "bm25", "--corpus", str(corpus)])
+
+    assert "bm25: 1 queries, 0 failed" in capsys.readouterr().out
+    results = engines.read_results(tmp_path / "runs" / "bm25.jsonl")
+    assert results["q1"]["documents"][0] == "Nat.add_comm"

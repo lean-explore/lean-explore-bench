@@ -191,7 +191,8 @@ leb-build contribute --corpus lean_explore.db --out data/v1 --queries contribute
 leb-build generate   --corpus lean_explore.db --out data/v1 --style log-profile.json \
                    --shape balanced --established january.db
 leb-build build      --corpus lean_explore.db --out data/v1 --shape balanced --established january.db
-leb run data/v1 --engine leanexplore
+leb run data/v1 --engine leanexplore                      # and the other hosted engines
+leb run data/v1 --engine bm25 --corpus lean_explore.db
 leb-build pool       --corpus lean_explore.db --out data/v1 --shape balanced --established january.db \
                    --until-answer --to tasks.jsonl
 leb-build pool       --corpus lean_explore.db --out data/v1 --grades grades.jsonl --judge NAME

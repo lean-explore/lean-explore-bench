@@ -55,17 +55,20 @@ Tune only on the development split (640 queries). A new engine can return correc
 answers that are not labelled yet, and they count as misses until they are graded;
 [evaluation](docs/evaluation.md#adding-an-engine) explains how to grade them.
 
-`leb run bench --engine leanexplore` queries one of the engines that the package
-knows (`leanexplore`, `leansearch`, `leanfinder`, `loogle`). Scoring needs no
-dependency beyond Python 3.10.
+`leb run bench --engine leanexplore` queries one of the hosted engines that the
+package knows (`leanexplore`, `leansearch`, `leanfinder`, `loogle`). The BM25
+baseline runs locally: `pip install -e ".[bm25]"`, then
+`leb run bench --engine bm25 --corpus lean_explore.db`. To add an engine, add a
+module to `src/lean_explore_bench/engines/`. Scoring needs no dependency beyond
+Python 3.10.
 
 ## Layout
 
 | Path | Contents |
 | --- | --- |
 | `src/lean_explore_bench/` | Load the dataset, run engines, score them (`leb`) |
+| `src/lean_explore_bench/engines/` | One module per engine: `leanexplore`, `leansearch`, `leanfinder`, `loogle`, `bm25` |
 | `src/lean_explore_bench/builder/` | What made the benchmark (`leb-build`); not needed to use it |
-| `baselines/` | The BM25 baseline |
 | `docs/` | [Method](docs/method.md), [evaluation](docs/evaluation.md), [dataset card](docs/dataset-card.md) |
 | `paper/` | Draft of the paper |
 | `tests/` | Tests, in the same layout as the package |
