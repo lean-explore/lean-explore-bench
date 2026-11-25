@@ -9,6 +9,7 @@ published dataset holds only what is needed to use the benchmark:
 scored directly.
 """
 
+import hashlib
 import json
 from collections.abc import Iterable
 from pathlib import Path
@@ -17,6 +18,16 @@ from typing import Any
 from lean_explore_bench.mix.assemble import SPLITS
 from lean_explore_bench.mix.record import QueryRecord, read_records
 from lean_explore_bench.mix.spec import BUCKET_OF_FORM, THREAD_BUCKET
+
+
+def public_id(working_id: str) -> str:
+    """Return the published identifier of a query.
+
+    Working identifiers say how a query was made and, for thread queries,
+    which message it came from. The published one is a hash of it: stable
+    across exports and carrying no meaning.
+    """
+    return hashlib.sha256(working_id.encode()).hexdigest()[:12]
 
 
 def to_row(record: QueryRecord) -> dict[str, Any]:
@@ -28,7 +39,7 @@ def to_row(record: QueryRecord) -> dict[str, Any]:
         )
     ]
     return {
-        "id": record.id,
+        "id": public_id(record.id),
         "query": record.query,
         "bucket": BUCKET_OF_FORM.get(record.query_type, THREAD_BUCKET),
         "form": record.query_type,
@@ -95,9 +106,14 @@ def export(build: Path, to: Path, engines: Iterable[str]) -> dict[str, int]:
         The number of rows written to each file, by path relative to ``to``.
 
     Raises:
-        ValueError: If a query has no split, or a run lacks a query.
+        ValueError: If a query has no split, a run lacks a query, or two
+            queries get the same published identifier.
     """
-    records = sorted(read_records(build / "queries.jsonl"), key=lambda r: r.id)
+    records = sorted(
+        read_records(build / "queries.jsonl"), key=lambda r: public_id(r.id)
+    )
+    if len({public_id(record.id) for record in records}) < len(records):
+        raise ValueError("Two queries have the same published identifier")
     unsplit = [record.id for record in records if record.split not in SPLITS]
     if unsplit:
         raise ValueError(f"{len(unsplit)} queries have no split, e.g. {unsplit[0]}")
@@ -113,9 +129,13 @@ def export(build: Path, to: Path, engines: Iterable[str]) -> dict[str, int]:
         missing = ids - set(results)
         if missing:
             raise ValueError(f"{engine} has no result for {len(missing)} queries")
-        rows = [
-            {"id": key, "documents": results[key]["documents"]} for key in sorted(ids)
-        ]
+        rows = sorted(
+            (
+                {"id": public_id(key), "documents": results[key]["documents"]}
+                for key in ids
+            ),
+            key=lambda row: row["id"],
+        )
         _write_rows(to / "runs" / f"{engine}.jsonl", rows)
         counts[f"runs/{engine}.jsonl"] = len(rows)
     return counts

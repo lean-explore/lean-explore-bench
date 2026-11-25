@@ -50,7 +50,7 @@ def _thread(name: str, blinding: str | None, split: str = "test") -> QueryRecord
 
 def test_row_holds_only_what_using_the_benchmark_needs() -> None:
     assert release.to_row(_record("a")) == {
-        "id": "a",
+        "id": release.public_id("a"),
         "query": "query for a",
         "bucket": "natural language",
         "form": "prose",
@@ -71,13 +71,34 @@ def test_row_round_trip_keeps_what_scoring_uses() -> None:
 
     assert restored.judgments == record.judgments
     assert (restored.id, restored.query, restored.query_type, restored.split) == (
-        record.id,
+        release.public_id(record.id),
         record.query,
         record.query_type,
         record.split,
     )
     assert (restored.source, restored.target) == ("declaration", "Alpha.beta")
     assert release.from_row(release.to_row(_thread("t", None))).source == "zulip"
+
+
+def test_published_identifier_is_stable_and_opaque() -> None:
+    identifier = release.public_id("rewrite-zulip-123456")
+
+    assert identifier == release.public_id("rewrite-zulip-123456")
+    assert (
+        len(identifier) == 12
+        and "zulip" not in identifier
+        and "123456" not in identifier
+    )
+
+
+def test_export_refuses_colliding_identifiers(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    build = _build(tmp_path, [_record("a"), _record("b")], ["a", "b"])
+    monkeypatch.setattr(release, "public_id", lambda working_id: "same")
+
+    with pytest.raises(ValueError, match="same published identifier"):
+        release.export(build, tmp_path / "out", [])
 
 
 def _build(tmp_path: Path, records: list[QueryRecord], run_ids: list[str]) -> Path:
@@ -107,10 +128,11 @@ def test_export_writes_splits_and_runs_that_load_back(tmp_path: Path) -> None:
         "runs/engine.jsonl": 3,
     }
     run = [json.loads(line) for line in (to / "runs" / "engine.jsonl").open()]
-    assert [row["id"] for row in run] == ["a", "b", "t"]
-    assert run[0] == {"id": "a", "documents": ["Alpha.beta"]}
+    public = sorted(release.public_id(name) for name in "abt")
+    assert [row["id"] for row in run] == public
+    assert run[0] == {"id": public[0], "documents": ["Alpha.beta"]}
     loaded = release.load_queries(to)
-    assert sorted(record.id for record in loaded) == ["a", "b", "t"]
+    assert sorted(record.id for record in loaded) == public
     assert release.load_queries(build) == sorted(records, key=lambda r: r.id)
     assert release.load_queries(tmp_path / "nowhere") == []
 
