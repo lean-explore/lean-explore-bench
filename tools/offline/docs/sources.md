@@ -1,8 +1,8 @@
 # Research sources
 
 References for the method. No source datasets or experimental results are
-included in this tool directory. Consult each source's publication date before
-using it to choose an experiment.
+included in this tool directory. Each source's publication date matters when it
+is used to choose an experiment.
 
 | Source | Contribution |
 |---|---|

@@ -2,58 +2,72 @@
 
 Prepared on 31 October 2026 from research conducted on 30 October 2026.
 
-LeanExplore can collect more useful evidence about search quality without building a history of each user's activity. Start with engine versions, ranked results, timings for each search stage and optional relevance feedback.
-
-This is a preliminary assessment for planning, not a legal opinion or approval to activate collection. Confirm the controller, applicable jurisdictions and implementation with legal counsel before launch. These proposals do not authorise new uses of previously collected data.
-
-This document contains policy analysis and proposed fields only. It contains no query records, export-derived statistics, examples from user searches or input fingerprints. Private inputs and all derived outputs must remain outside this repository.
+This note proposes which additional data LeanExplore could collect to measure search quality
+without building a history of each user's activity, and which legal questions must be settled
+first. It is a preliminary assessment for planning, not a legal opinion, and it approves no
+collection and no new use of existing data.
 
 ## Current commitments
 
-The privacy policy source reviewed in the LeanExplore web repository excludes accounts, IP addresses, session identifiers and precise timestamps from its de-identified query dataset. It retains the UTC day. It describes retention of up to 24 months for those queries, seven days for operational logs and normally 24 hours for IP addresses used for rate limiting.
+The privacy policy in the LeanExplore web repository
+(`app/frontend/src/views/legal/PrivacyPolicyView.vue`, snapshot of 30 October 2026) describes
+a de-identified query dataset without accounts, IP addresses, session identifiers or precise
+timestamps; only the UTC day is kept. It states retention of up to 24 months for those
+queries, seven days for operational logs and normally 24 hours for IP addresses used for rate
+limiting. Whether this version is deployed was not verified.
 
-These observations concern `app/frontend/src/views/legal/PrivacyPolicyView.vue` in the web repository snapshot reviewed on 30 October 2026. They do not verify which policy version is deployed. Check the deployed policy before making changes.
+Session tracking or links to personal history would need a new design and notice. A policy
+update alone does not establish a lawful basis, and privacy promises also matter under US law
+([FTC guidance](https://www.ftc.gov/business-guidance/privacy-security)).
 
-Adding session tracking or links to personal history requires reviewing the collection design and notice before launch. A policy update alone does not establish a lawful basis. Privacy promises also matter under US law, subject to the relevant regulator's jurisdiction. [FTC guidance](https://www.ftc.gov/business-guidance/privacy-security)
+## Proposed data
 
-## Proposed metadata
+| Data | Question | Collection |
+|---|---|---|
+| Engine, model, index and corpus versions | Which configuration produced the result? | Server-side, no user identifier |
+| Stage timings, error categories, cache hits | Where is the service slow or failing? | Aggregate counters, no query text |
+| Candidate and returned counts, filters, limit | Do stages remove useful candidates? | Aggregated by day and version |
+| Public declaration identifiers, positions, scores | What ranks highly? | No account link, short retention |
+| Query length bands, flags for Lean syntax | Which query forms need work? | Computed server-side, no text kept |
+| Optional feedback, selected result and its rank | Did the result help? | Short-lived token scoped to one search |
+| Reformulations and task outcome | Why did the first search fail? | Voluntary study with consent |
 
-These are design recommendations, not automatic legal exemptions. Treat individual events as potentially personal until their context and re-identification risk have been assessed.
+The proposed first step is versions, ranked public results, stage timings and optional
+feedback. Clicks are weak relevance signals; explicit judgments are more useful for scoring.
 
-| Data | What it would help answer | Suggested collection method |
-| --- | --- | --- |
-| Engine, model, index and corpus versions | Which configuration produced the result? | Generate on the server without a user identifier. |
-| Retrieval, reranking and response times; error categories; cache hits | Where is the service slow or failing? | Aggregate counters and distributions. Exclude query text and sensitive error details. |
-| Candidate count, returned count, filters and requested result limit | Are filters or retrieval stages removing useful candidates? | Minimise event detail and aggregate by day and version. |
-| Public declaration identifiers, result positions and scores | What does the engine rank highly, and how does that change? | Do not link to accounts. Limit retention of detailed events. |
-| Query length bands and flags for Lean syntax or identifier lookup | Which forms of request need better handling? | Compute on the server without retaining text extracts for these metrics. |
-| Optional useful/not-useful feedback, selected result and its rank | Did the returned result help? | Use a short-lived token scoped to one search if correlation is needed. |
-| Reformulations and task outcome | Why did the initial search fail? | Run a voluntary study with informed consent, temporary identifiers and a stated duration. |
+Removing names and IP addresses does not make data anonymous. Query text can contain
+identifying details, local paths or confidential code, and hashing does not anonymise records
+([CNIL guidance](https://www.cnil.fr/fr/identifier-les-donnees-personnelles)).
 
-Clicks are weak relevance signals: a user may click an unsuitable result. Explicit relevance judgments are more useful for benchmark scoring. A temporary token reduces linkability but does not by itself make an event anonymous.
+## Legal basis
 
-Removing names and IP addresses is insufficient to establish anonymity. Query text can contain identifying details, local paths or confidential code. Hashing, encryption and random identifiers do not automatically anonymise records. Combinations of metadata can also identify someone. Assess singling out, linkability and inference risks before calling a dataset anonymous. [CNIL guidance](https://www.cnil.fr/fr/identifier-les-donnees-personnelles)
+- Where the GDPR applies, minimised technical metrics may rest on documented legitimate
+  interests. Serving a search and keeping it for model training are separate purposes
+  ([European Commission](https://commission.europa.eu/law/law-topic/data-protection/information-business-and-organisations/legal-grounds-processing-data_en)).
+- Cookies, local storage and similar mechanisms may require prior consent whatever the GDPR
+  basis; Italian guidance exempts some analytics
+  ([Garante](https://www.garanteprivacy.it/home/docweb/-/docweb-display/docweb/9677876)).
+  Behavioural studies are therefore proposed as opt-in.
+- Additional full queries or proof states would come from voluntary donation with a preview.
+  The donor's consent does not cover third-party data ([GDPR Articles 5-7](https://www.cnil.fr/fr/reglement-europeen-protection-donnees/chapitre2)).
 
-## Legal basis and consent
+## Design requirements
 
-- Minimised technical metrics may be candidates for legitimate interests where the GDPR applies. Document the purpose, necessity and balance against users' rights. Possible future usefulness is not enough. Serving a search and keeping it for model training require separate purpose analysis. [European Commission guidance](https://commission.europa.eu/law/law-topic/data-protection/information-business-and-organisations/legal-grounds-processing-data_en)
-- Browser tracking has additional rules. Cookies, local storage and other tracking mechanisms may require prior consent independently of the GDPR basis for subsequent processing. Italian guidance allows limited analytics exemptions under specific conditions. Do not assume they cover individual session histories or apply identically in other countries. For behavioural studies, an optional opt-in programme is the proposed starting point; this is not a claim that every click event always requires consent. [Italian Garante guidance](https://www.garanteprivacy.it/home/docweb/-/docweb-display/docweb/9677876)
-- For additional full queries or proof states, offer a voluntary donation flow with a preview. Explain intended uses, including diagnosis, benchmarking, training and any publication. Consent from the submitting user does not automatically resolve third-party personal data or confidentiality issues. Purpose limitation and minimisation still apply. [GDPR Articles 5-7](https://www.cnil.fr/fr/reglement-europeen-protection-donnees/chapitre2)
+1. Each field has a stated purpose, lawful basis and deletion deadline, and is collected
+   only if aggregates cannot answer the question.
+2. Account IDs, IP addresses and tokens stay out of evaluation data, which is kept apart
+   from security logs and personal search history.
+3. The notice is updated before collection starts. Anonymous, API and MCP users can also
+   object or withdraw consent
+   ([GDPR Articles 13 and 21](https://www.cnil.fr/fr/reglement-europeen-protection-donnees/chapitre3)).
+4. Detailed events are kept briefly; 30 days is a proposal, not a statutory figure.
+5. International transfers need a mechanism: the EU-US Data Privacy Framework for
+   participating organisations, otherwise for example standard contractual clauses
+   ([European Commission](https://commission.europa.eu/law/law-topic/data-protection/international-dimension-data-protection/eu-us-data-transfers_en)).
 
-## Collection design
+## Open questions
 
-1. Define the question each field answers, its purpose, lawful basis, access permissions and deletion deadline. Check whether aggregation can answer the same question without storing individual events.
-2. Separate search-quality statistics, security logs and personal search history. Keep account IDs, IP addresses and authentication tokens out of evaluation data. Prevent accidental copies in proxy logs, error reporting and analytics providers.
-3. Update the notice before new collection. Provide controls for anonymous users, API clients and MCP clients as well as signed-in users. Acknowledging a policy is not specific consent. Where legitimate interests apply, support the right to object; where consent applies, support withdrawal. [GDPR Articles 13 and 21](https://www.cnil.fr/fr/reglement-europeen-protection-donnees/chapitre3)
-4. Start with a short retention period for detailed events, such as 30 days, subject to a documented need. This is a proposal, not a statutory deadline. Keep longer-lived aggregates only after checking disclosure risks. Small groups and unusual combinations can remain identifiable. Enforce deletion and account for backups and downstream copies.
-5. Check provider roles, access agreements and international transfers. For transfers subject to GDPR transfer rules, the EU-US Data Privacy Framework covers participating organisations. Other cases need an appropriate mechanism, such as standard contractual clauses with the required assessment. A general statement that using the service means accepting US processing is not a substitute for that analysis. [European Commission guidance](https://commission.europa.eu/law/law-topic/data-protection/international-dimension-data-protection/eu-us-data-transfers_en)
-
-## Questions to resolve before launch
-
-- Who determines the purposes and means of the new collection: the current operator, Numina, or both? The reviewed policy describes a US operator and US servers; the future arrangement has not been confirmed.
-- Which jurisdictions apply? GDPR can apply to an operator outside the EU, but website accessibility from Europe alone is insufficient. Establishment, offering services and monitoring behaviour need assessment. [EDPB territorial-scope guidelines](https://www.edpb.europa.eu/sites/default/files/files/file1/edpb_guidelines_3_2018_territorial_scope_after_public_consultation_en_0.pdf)
-- Does the operator meet the CCPA's applicability criteria? It has specific conditions and thresholds. Being outside its scope does not establish that all other privacy obligations are inapplicable. [California Privacy Protection Agency FAQ](https://www.cppa.ca.gov/faq.html)
-- Which proposed events require consent or another basis in the applicable jurisdictions? What information and practical controls will each client expose?
-- Can the same evaluation be done with less detail, and can deletion and separation from identity be verified?
-
-The first implementation should focus on engine versions, ranked public results, stage timings and optional relevance feedback. Add session-level studies only after settling their purpose, controls and legal basis. Keep production data and all export-derived artifacts outside this repository.
+- Who controls the new collection: the current operator, Numina, or both?
+- Does the GDPR apply? Accessibility from Europe alone is insufficient
+  ([EDPB guidelines](https://www.edpb.europa.eu/sites/default/files/files/file1/edpb_guidelines_3_2018_territorial_scope_after_public_consultation_en_0.pdf)).
+- Does the operator meet the CCPA thresholds ([CPPA FAQ](https://www.cppa.ca.gov/faq.html))?

@@ -11,6 +11,7 @@ import pytest
 from cryptography.fernet import Fernet
 
 from lean_explore_bench.analysis.stats import PreparedLog, prepare
+from lean_explore_bench.mix.corpus import Corpus, load_corpus
 from lean_explore_bench.querylog.schema import QUERY_LOG_COLUMNS, TABLE_NAME
 
 DAY = datetime.date(2026, 9, 1)
@@ -113,3 +114,96 @@ def encrypted_log(
     _write_encrypted_log(shaped_log, database, key)
     monkeypatch.setenv("SEARCH_HISTORY_ENCRYPTION_KEY", key)
     return database
+
+
+Row = tuple[str, str, str | None, str, str | None]
+
+
+def _theorem_row(name: str, module: str) -> Row:
+    short = name.rsplit(".", 1)[-1]
+    source = (
+        f"/-- Addition commutes ({short}). -/\n"
+        f"theorem {short} (a b : Nat) : a + b = b + a := by\n  omega\n"
+    )
+    return (name, module, f"Addition commutes ({short}).", source, f"About {short}.")
+
+
+def _corpus_rows() -> list[Row]:
+    rows: list[Row] = []
+    for area in ("Algebra", "Topology"):
+        rows += [
+            _theorem_row(f"Demo.{area}.add_comm_{i}", f"Mathlib.{area}.Basic")
+            for i in range(12)
+        ]
+    rows += [
+        _theorem_row(f"Cslib.Demo.step_comm_{i}", "Cslib.Foundations.Basic")
+        for i in range(8)
+    ]
+    rows += [
+        (
+            "Demo.Algebra.double",
+            "Mathlib.Algebra.Basic",
+            None,
+            "def double (n : Nat) : Nat := n + n -- doubles a natural number\n",
+            None,
+        ),
+        (
+            "Demo.Algebra.Pair",
+            "Mathlib.Algebra.Basic",
+            None,
+            "structure Pair where\n  left : Nat\n  right : Nat\n  deriving Repr\n",
+            None,
+        ),
+        # Generated: the source is the parent structure.
+        (
+            "Demo.Algebra.Pair.left",
+            "Mathlib.Algebra.Basic",
+            None,
+            "structure Pair where\n  left : Nat\n  right : Nat\n  deriving Repr\n",
+            None,
+        ),
+        _theorem_row("Demo.Tactic.helper_lemma", "Mathlib.Tactic.Helper"),
+        _theorem_row("Lean.Meta.internal_lemma", "Lean.Meta.Basic"),
+        (
+            "Demo.Algebra.old_lemma",
+            "Mathlib.Algebra.Basic",
+            None,
+            '@[deprecated (since := "2026-01-01")]\n'
+            "theorem old_lemma (a : Nat) : a + 0 = a := by simp\n",
+            None,
+        ),
+        ("Demo.Algebra.tiny", "Mathlib.Algebra.Basic", None, "def tiny := 1\n", None),
+        (
+            "Demo.Algebra.instAdd",
+            "Mathlib.Algebra.Basic",
+            None,
+            "instance : Add Pair := ⟨fun a b => ⟨a.left + b.left, a.right⟩⟩\n",
+            None,
+        ),
+    ]
+    return rows
+
+
+def _write_corpus(path: Path, rows: list[Row]) -> Path:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    connection = sqlite3.connect(path)
+    connection.execute(
+        "CREATE TABLE declarations (name TEXT, module TEXT, docstring TEXT, "
+        "source_text TEXT, informalization TEXT)"
+    )
+    connection.executemany("INSERT INTO declarations VALUES (?, ?, ?, ?, ?)", rows)
+    connection.commit()
+    connection.close()
+    return path
+
+
+@pytest.fixture
+def corpus_path(tmp_path: Path) -> Path:
+    """A tiny LeanExplore corpus snapshot: 40 declarations, 34 eligible."""
+    return _write_corpus(tmp_path / "snapshot-1" / "lean_explore.db", _corpus_rows())
+
+
+@pytest.fixture
+def corpus(corpus_path: Path) -> Corpus:
+    """The tiny corpus, loaded."""
+    return load_corpus(corpus_path)

@@ -1,22 +1,17 @@
-# Input and output contracts
+# Input and output formats
 
-All files use UTF-8 JSON. The query export and evaluator collections are different
-formats: private search requests do not become relevance judgments automatically.
+This page defines the UTF-8 JSON files that the offline tool reads and writes.
 
 ## Query export
 
-Root keys are any subset of `web`, `web_account`, `api`, `mcp`. Each maps to a list
-of objects with `query` (string), `package_filters` (list of nonempty strings),
-`result_count` (nonnegative integer or null), and `collected_on` (YYYY-MM-DD).
-Unknown sources and invalid records cause failure with position-only errors.
-Empty queries and null result counts remain observable. Dates are inclusive under
-`--since`; all records are validated even when the filter excludes them.
+The root object has any of the keys `web`, `web_account`, `api` and `mcp`. Each maps to a list
+of records with `query` (string), `package_filters` (list of nonempty strings), `result_count`
+(nonnegative integer or null) and `collected_on` (`YYYY-MM-DD`). An unknown key or an invalid
+record stops the import with an error that names only the record's position.
+`leq-bench audit --since` keeps records from that day on. Positions are indices into the
+export, not user or session identifiers.
 
-The importer assigns positions local to the source-ordered export. They do not
-represent user IDs, database IDs, chronological order, or sessions. Annotation
-files are bound to the export SHA256 and sampling configuration.
-
-## Collection for evaluation
+## Collection
 
 ```json
 {
@@ -31,23 +26,19 @@ files are bound to the export SHA256 and sampling configuration.
 }
 ```
 
-The example illustrates structure only. Supply an actual corpus hash for a real
-run. `group_id` is an independent target/task family: keep all paraphrases in the
-same group. `track` is `human`, `agent`, or `unknown`, based on task provenance,
-not inferred from source. `answerability` is `answerable`, `unanswerable`, or
-`unknown`. An answerable query requires at least one grade >= 2; unanswerable
-queries cannot have such a judgment. Grades are integers 0..3.
+`group_id` names an independent task; all paraphrases of one task share it. `track` is
+`human`, `agent` or `unknown`. `answerability` is `answerable`, `unanswerable` or `unknown`.
+Grades are integers 0 to 3. An answerable query has at least one grade of 2 or more; an
+unanswerable query has none.
 
-Optional `premise_routes` is a list of routes, each a list of groups, each a list
-of interchangeable relevant document IDs:
+Optional `premise_routes` lists alternative proof routes. Each route is a list of groups, and
+each group a list of interchangeable documents with grade 2 or more:
 
 ```json
 {"premise_routes": [[["lemmaA", "equivalentA"], ["lemmaB"]], [["lemmaC"]]]}
 ```
 
-Here either A (or its equivalent) plus B, or C alone, completes an annotated route.
-Every referenced premise must have a relevant judgment. This representation is
-not an automatic interpretation of upstream MathlibMPR groups.
+Here A (or its equivalent) with B completes one route, and C alone another.
 
 ## Ranked run
 
@@ -68,40 +59,28 @@ not an automatic interpretation of upstream MathlibMPR groups.
 }
 ```
 
-Document order is rank order. IDs must resolve to the declared corpus. Corpus
-membership is a collection-building responsibility; the scorer verifies revision
-equality, not an external index. `max_k` is the engine's requested/retrievable
-depth, not the longest successful response. Cutoffs beyond it are unavailable.
+`documents` is in rank order. `max_k` is the depth requested from the engine; cutoffs beyond
+it are not scored. `status` is `ok`, `error` or `timeout`, and a failed request has no
+documents. A query absent from `results` is scored as a `missing` failure. `abstained: true`
+requires status `ok` and no documents. `latency_ms` and `cost_usd` are optional, finite and
+nonnegative.
 
-Status is `ok`, `error`, or `timeout`. Failed requests have no documents.
-Omitted query IDs become `missing` failures, not exclusions. Explicit abstention
-requires a successful response with no documents; an empty response alone is not
-an abstention. Optional latency/cost must be finite and nonnegative. Missing
-measurements stay missing, not zero. Record end-to-end latency including retries
-consistently; the scorer reports measurement counts alongside quantiles.
+The scorer checks that both files name the same `corpus_revision`. It does not check that
+document IDs exist in a corpus.
 
-## Evaluation output
+## Evaluation and comparison output
 
-The output contains per-query scores, group and track metadata, status, supplied
-cost/latency, and separate all/human/agent/unknown summaries. Each metric carries
-its own denominator. A collection hash prevents comparing different judgments
-under the same corpus revision. The overall mean is a descriptive query mean;
-it is not traffic-weighted or population-weighted.
+`evaluate` writes per-query scores and summaries for all queries and for each track. Every
+metric carries its own count `n`. Means are over queries, without traffic weighting.
 
-The comparison output reports candidate-minus-baseline difference, a 95% cluster
-bootstrap interval, a two-sided paired group-randomization p-value, sample size,
-seed, query count, and independent-group count. It refuses mismatched collections,
-unequal metric coverage, or fewer than two independent groups. Two groups permit
-calculation but do not provide a persuasive experiment; the demo is not evidence.
+`compare` writes the candidate-minus-baseline difference, a 95% cluster bootstrap interval, a
+two-sided paired group randomization p-value, and the numbers of queries and groups. It refuses
+runs with different collections, different metric coverage or fewer than two groups. It applies
+no multiple-comparison correction; `evaluate.py` provides `holm`.
 
-No automatic multiple-comparison correction is applied by `compare`. Use the
-provided `holm` function on the planned comparison family. No annotation-agreement,
-power analysis, traffic weighting, or Lean verification is implied by these files.
+## Review output
 
-## Local annotations
-
-The review output stores metadata and an object keyed by export position. Labels
-cover intent, actor, certainty, evidence, language, and expected output, plus
-channel and stratum population/sample counts. It stores no query text. These
-positions still link to private data: keep annotations private. Two reviewers
-must use different files. The original label files are retained for adjudication.
+`leq-bench review` writes metadata (export SHA-256, reviewer, seed, sample size) and one entry
+per export position with `intent`, `actor`, `certainty`, `evidence`, `language`,
+`expected_output`, the channel and the stratum population and sample size. The file contains
+no query text, but its positions point into private data. Each reviewer needs a separate file.

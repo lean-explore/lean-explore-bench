@@ -19,7 +19,7 @@ jobs:
       - name: Install
         run: |
           uv venv
-          uv pip install -e ".[dev]"
+          uv pip install -e ".[dev]" -e tools/offline
       - name: Lint
         run: |
           .venv/bin/ruff check .

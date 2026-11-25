@@ -1,0 +1,582 @@
+% Compile with: latexmk -pdf lean-search-bench.tex   (pdfLaTeX + BibTeX)
+% Format follows the Lean Census and Fuse papers.
+% figures/forms.pdf and scores.json are produced by figures.py.
+\documentclass{article}
+\PassOptionsToPackage{numbers,compress}{natbib}
+\usepackage[preprint]{neurips_2025}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{microtype}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{colortbl}
+\usepackage{graphicx}
+\usepackage{float}
+
+% Numina palette (shared with the Fuse and Lean Census papers).
+\definecolor{nAccent}{HTML}{BB480B}
+\definecolor{nInk}{HTML}{222222}
+\definecolor{nMuted}{HTML}{6B5B4A}
+\definecolor{nBorder}{HTML}{D6CFC0}
+\definecolor{nBorderLight}{HTML}{EDE6DA}
+
+\usepackage[font=small,labelfont={bf,color=nAccent},labelsep=period]{caption}
+\captionsetup[table]{skip=8pt}
+\usepackage[colorlinks=true,linkcolor=nAccent,citecolor=nAccent,urlcolor=nAccent]{hyperref}
+\arrayrulecolor{nBorder}
+
+\newcommand{\thead}[1]{\textbf{#1}}
+\newcommand{\rowrule}{\arrayrulecolor{nBorderLight}\specialrule{0.4pt}{3pt}{3pt}\arrayrulecolor{nBorder}}
+\renewcommand{\bottomfraction}{0.6}
+\renewcommand{\textfraction}{0.1}
+\renewcommand{\topfraction}{0.9}
+\renewcommand{\floatpagefraction}{0.8}
+\setlist{itemsep=2pt,topsep=3pt}
+\raggedbottom
+\newcommand{\code}[1]{\texttt{\small #1}}
+\newcommand{\todo}[1]{\textcolor{red}{[TODO: #1]}}
+
+\title{A Balanced Benchmark for Lean 4 Declaration Search}
+\author{%
+  Justin Asher$^{1}$\hspace{1.4em}Pietro Pellegrino$^{1,2}$ \\[1.2ex]
+  \small\normalfont $^{1}$Project Numina \\[0.3ex]
+  \small\normalfont $^{2}$University of Naples Federico II \\[0.8ex]
+  \small\normalfont \texttt{justin@projectnumina.ai}\hspace{1.4em}\texttt{pietro@projectnumina.ai}
+}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Search engines for Lean 4 declarations are evaluated on query sets built by
+the authors of the engine under test, in the styles that engine handles. We
+present a benchmark of 3,200 queries for search over Mathlib, in four buckets
+of 800 that are weighted equally: names and keywords, natural language, formal
+statements and proof states, and questions derived from Lean Zulip threads.
+The forms and lengths of the queries follow aggregate statistics of real
+searches. Every answer is a Mathlib declaration that all engines index, so the
+score measures search and not coverage. Answers are completed by pooling the
+results of four engines and grading them blind. On the test split, Lean Finder
+and LeanSearch find an answer in the first ten results for 92\% and 91\% of
+queries, and LeanExplore, our own engine, for 70\%. We release the queries,
+labels, engine results, and code at
+\url{https://github.com/lean-explore/lean-explore-bench}.
+\end{abstract}
+
+%=====================================================================
+\section{Introduction}
+
+A person or an AI agent writing Lean~\cite{moura2021lean4} spends much of the
+time looking for declarations that already exist. Mathlib~\cite{mathlib2019}
+has several hundred thousand of them, and several engines now search it:
+Loogle~\cite{breitner2023loogle} by name and pattern, and
+LeanSearch~\cite{gao2024leansearch,gao2026leansearchv2},
+LeanExplore~\cite{asher2025leanexplore}, and Lean
+Finder~\cite{lu2025leanfinder} by meaning. LeanExplore alone received about
+50,000 searches in six weeks of autumn 2026, three quarters of them from
+programs and not from people at a keyboard.
+
+There is no shared way to compare the engines. Each was evaluated by its
+authors on a query set of their own design, in the styles of query that the
+engine was built for. A benchmark for this task must settle three questions,
+and each has an answer that favours some engine.
+
+\paragraph{Which queries.} Real searches take many forms, from a bare
+declaration name to a pasted proof state. An engine may be excellent on one
+form and poor on another, so the mix of forms decides the ranking. Weighting
+the forms by the traffic of one engine favours that engine, because people
+learn what an engine handles and send it that.
+
+\paragraph{Which declarations.} The engines index different libraries at
+different dates. An engine that does not index a declaration cannot return it,
+and a benchmark that asks for it measures coverage. Coverage is a fact about a
+deployment that can be read from its index. How well an engine searches cannot.
+
+\paragraph{Which answers.} A query written from one declaration is usually
+labelled with that declaration alone, although Mathlib often has several that
+answer it. An engine that returns one of the others is marked wrong.
+
+We make one choice for each. The benchmark has four buckets, each a kind of
+search that exists apart from any engine, and its score is the plain mean of
+the four. Every answer is a Mathlib declaration that was already present in
+January 2026, which all engines index. Answers are completed by pooling: the
+results that four engines returned were graded without knowledge of engine or
+rank, and those that answer the query were added as labels.
+
+On this benchmark Lean Finder and LeanSearch are close to each other and well
+ahead of LeanExplore, which we develop. LeanExplore is nearly level with them
+on names and keywords and far behind on formal queries and on questions from
+real discussions. We report this as we found it. A benchmark is credible
+only if the engine of its authors can lose on it.
+
+%=====================================================================
+\section{What people search for}
+\label{sec:searches}
+
+We sorted searches into eight forms by surface features alone: which tokens
+look like Lean names, how many function words such as ``of'' or ``the'' a
+query has, and how much Lean syntax. The subject of a query plays no part.
+Table~\ref{tab:forms} defines the forms.
+
+\begin{table}[b]
+\centering\small
+\caption{The eight forms of a query, with an example from the benchmark and
+the share of LeanExplore searches of each form from 29 September to 11
+November 2026.}
+\label{tab:forms}
+\begin{tabularx}{\linewidth}{@{}llXr@{}}
+\toprule
+\thead{Form} & \thead{Definition} & \thead{Example} & \thead{Searches} \\
+\midrule
+\code{name} & One Lean name & \code{Polynomial.Separable.of\_mul\_right} & 5.5\% \\
+\rowrule
+\code{names} & Several Lean names & \code{IsOpen Set.singleton pure\_le\_nhds} & 1.5\% \\
+\rowrule
+\code{names+keywords} & Names and other words & \code{Finsupp.prod} embedding domain support & 22.7\% \\
+\rowrule
+\code{keywords} & Words, no function words & combine family affine maps into product space & 26.2\% \\
+\rowrule
+\code{prose} & Natural language & tail of interleaving two infinite streams & 23.9\% \\
+\rowrule
+\code{prose+names} & Natural language with names & prenex conversion of a \code{BoundedFormula} is prenex & 17.0\% \\
+\rowrule
+\code{formal} & A Lean statement or pattern & \code{ManyOneEquiv u v $\to$ (ManyOneEquiv u w $\leftrightarrow$ ManyOneEquiv v w)} & 2.8\% \\
+\rowrule
+\code{goal} & A proof state & \code{$\vdash$ WithBot.succ x = $\bot$ $\leftrightarrow$ x = $\bot$} & 0.4\% \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\paragraph{How the search log was used.} We applied the same rules to
+LeanExplore's search log, about 50,000 searches of which 42,000 are distinct.
+The log was used only to count: how searches divide over the forms, how long
+they are, how many Lean names they hold, and how often they are lower case or
+phrased as questions. No logged search is in the benchmark, and none was shown
+to a language model. The analysis ran on the server that holds the log and
+returned shares only, with counts under ten left out. Search logs identify
+people more easily than they appear to~\cite{barbaro2006aol}, and the counts
+are all the benchmark needs.
+
+\paragraph{What the counts show.} Half of all searches are names and keywords
+with no sentence structure, and four in ten are natural language. Lean
+statements and proof states are 3\%. Searches are short, with a median of one
+word for a name, five or six for keyword forms, and ten to twelve for the
+rest. The source matters. The programmatic interface accounts for 77\% of
+searches and leans towards names with keywords (26\% against 10\% on the
+website), while the website leans towards prose (46\% against 18\%).
+
+These shares describe one engine. LeanExplore searches over names and
+natural-language descriptions and is weak on formal input, as
+Section~\ref{sec:results} shows, so its users have little reason to paste a
+proof state into it. The 3\% is a fact about LeanExplore's traffic and not
+about how often people want to search by statement. This is why the benchmark
+does not use the shares as weights.
+
+%=====================================================================
+\section{Design}
+\label{sec:design}
+
+\paragraph{Four buckets with equal weight.} The benchmark groups the forms
+by what the searcher is doing (Table~\ref{tab:buckets}). Someone who types
+names and keywords half-knows the declaration. Someone who writes a sentence
+knows the mathematics and not the name. Someone who pastes a statement or a
+goal wants the lemma that proves it. The fourth bucket holds questions that
+people asked each other. Each bucket has 800 queries, and \textbf{the
+benchmark score is the plain mean of the four bucket scores}. Within a bucket
+the forms are in the proportions of Table~\ref{tab:buckets}, which follow the
+real shares loosely and in round numbers. A fifth of each bucket is a
+development split of 640 queries, and the remaining 2,560 are the test split.
+
+\begin{table}[t]
+\centering\small
+\caption{The four buckets. Median words and answers per query are over all
+3,200 queries. An answer is a declaration graded 2 or 3.}
+\label{tab:buckets}
+\begin{tabular}{@{}lrlrr@{}}
+\toprule
+\thead{Bucket} & \thead{Queries} & \thead{Forms} & \thead{Median words} & \thead{Answers} \\
+\midrule
+Names and keywords & 800 & 160 \code{name}, 80 \code{names}, & 1 to 7 & 1.2 to 1.7 \\
+ & & 240 \code{names+keywords}, 320 \code{keywords} & & \\
+\rowrule
+Natural language & 800 & 480 \code{prose}, 320 \code{prose+names} & 12 to 14 & 1.3 to 1.5 \\
+\rowrule
+Formal & 800 & 480 \code{formal}, 320 \code{goal} & 14 to 19 & 1.1 to 1.2 \\
+\rowrule
+Real questions & 800 & from Lean Zulip threads & 15 & 2.2 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Mathlib only, and only established declarations.} Every engine
+indexes Mathlib, and no other library is indexed by all of them, so every
+answer is a Mathlib declaration. The engines also index Mathlib at different
+dates. In an earlier build of the benchmark, on queries written from
+declarations added to Mathlib after January 2026, LeanExplore found the answer
+in the first ten results for 80\% of queries and LeanSearch and Lean Finder
+for none, where on older declarations they found 93\% and 95\%. A declaration
+is therefore an answer only if it has the same name and module in a January
+2026 snapshot. Of the Mathlib declarations in our July 2026 corpus, 88\% do.
+
+\paragraph{Splits.} Queries that are not independent share a group, and a
+group is never divided between development and test. Two queries from one
+discussion thread form a group, as do a query and its rewrite.
+
+%=====================================================================
+\section{Construction}
+\label{sec:construction}
+
+\subsection{Written queries}
+
+The first three buckets are written from a declaration, which gives each
+query one answer that is known to be correct. This is known-item
+simulation~\cite{azzopardi2007simulated}, with a language model as the
+writer~\cite{rahmani2024synthetic}.
+
+\paragraph{Targets.} Targets are drawn at random from the established
+declarations of Mathlib, with the draw flattened across its top-level areas so
+that the largest do not dominate. Declarations that Lean generates, as opposed
+to those an author wrote, are not eligible. The 2,400 written queries have 2,397
+distinct targets.
+
+\paragraph{Writing.} The writer sees the target's name, statement,
+documentation, and a natural-language description, together with the form to
+write and a style drawn from the real searches of that form: a word count,
+whether the query is lower case, and whether it is a question. A
+\code{name} query is produced by rule, as one of five variants: the full
+name, the name without its leading namespaces, the name with dots and
+underscores turned into spaces, the name with a typing error, or the name in
+lower case. Lean statements and proof states
+are written at the length of the statement. An earlier build held them to a
+word count from real searches, which produced padded and truncated statements,
+and we reviewed and rewrote those.
+
+\paragraph{Checks.} A query passes rule checks before it is judged. Its form,
+as decided by the rules of Section~\ref{sec:searches}, must be the form asked
+for. It must not contain the target's name unless the form calls for names,
+and it must be near the requested length.
+
+\paragraph{Judge.} A model from another family than the writer grades each
+query against its target, from 0 to 3. Grade 3 means that someone who searched
+with this query would be satisfied with the declaration as it stands, and
+grade 2 that they would have to adapt it in a clear way. The judge also says
+whether the query is specific, meaning that only this declaration or
+near-identical variants answer it. A written query is accepted at grade 3 and
+specific.
+
+\paragraph{Writers.} Of the 2,400 written queries, 160 names are made by rule
+and 1,294 were written by Claude Opus. Another 946 were first written by
+Claude Sonnet 5.5 and then reviewed by Claude Opus, which kept 624 and
+rewrote 322. The faults that led to a rewrite were Lean identifiers that do
+not exist, lemmas cited from the proof and not the statement, keyword
+stuffing, and queries that a sibling lemma answers equally well. A rewrite
+replaced a query only when the judge, \code{openai/gpt-6.1-terra}, accepted
+it. Every record names its writer.
+
+\subsection{Real questions}
+
+The fourth bucket is not written from a declaration. Its queries come from
+threads of the Lean Zulip chat in which someone asks whether a result exists
+and someone answers with the name of a declaration.
+
+\paragraph{From thread to query.} For each such thread a language model
+writes the search that the person asking might have typed, using only what the
+question says and nothing learned from the replies. The declarations named in the replies are
+the proposed answers. The judge grades each proposed answer against the query,
+and the query is kept when at least one has grade 2 or 3.
+
+\paragraph{In its own words.} The benchmark contains no text of any post. A
+query that repeats more than five consecutive words of a message in its
+thread is rejected. For 515 queries the thread could not be retrieved, and
+these have not been checked. \todo{check them before release}
+
+\paragraph{Two collections.} The bucket combines two collections made
+independently. Of 1,807 queries in the first, the judge accepted 767. Another
+648 had no proposed answer that is an eligible declaration, 349 had every
+proposed answer rejected, 34 contained the name of an answer, and 9 copied a
+post. Of the 767, 177 have answers outside Mathlib or newer than January
+2026, and 590 are in the benchmark. The second collection, from 1,650 threads,
+supplies the other 210.
+
+\subsection{Pooled answers}
+\label{sec:pooling}
+
+A written query starts with one answer, and a real question with the few
+that its thread names. Pooling is the standard remedy for incomplete
+labels~\cite{sparckjones1975pooling,voorhees2005trec}: the top results of
+several systems are merged and judged, and what is found relevant is added.
+
+We ran four engines on every query and pooled their first ten results. Each
+engine's list was cut at its first labelled answer, and candidates outside
+Mathlib or not established were removed. This left 20,141 candidates for
+2,669 queries. Claude Opus graded each candidate on the scale above. It saw
+the query, the answers already labelled, and the candidates in alphabetical
+order with their source, and did not see which engine returned a candidate or
+at what rank. Candidates graded 2 or 3 were added as labels.
+
+Pooling added 1,551 answers to 984 queries, so that 1,089 of the 3,200
+queries now have more than one answer. About two thirds of pooled queries
+gained nothing. The labels hold 3,348 answers of grade 3, 1,668 of grade 2,
+and 240 declarations of grade 1, which are related but do not count.
+
+\paragraph{What the cut preserves.} Whether an engine has an answer among its
+first $k$ results, and the rank of its first answer, depend only on its
+results up to its first answer. If the first answer under complete labels is
+the one already labelled, nothing above it was an answer. If it is an earlier
+result, that result was in the pool. Success@$k$ and reciprocal rank are
+therefore the same as if all ten results of every engine had been judged,
+while about half as many candidates need a grade. nDCG is not preserved,
+since it also counts answers below the first.
+
+%=====================================================================
+\section{Results}
+\label{sec:results}
+
+\paragraph{Setup.} We queried the hosted services of
+LeanExplore~\cite{asher2025leanexplore},
+LeanSearch~\cite{gao2026leansearchv2}, Lean Finder~\cite{lu2025leanfinder},
+and Loogle~\cite{breitner2023loogle} from 11 to 13 November 2026 and kept the
+first ten results of each. All 12,800 requests succeeded. A result is a hit
+when its grade is 2 or 3. We report Success@10, the share of queries with a
+hit in the first ten results, and Success@1, the share whose first result is a
+hit.
+
+\begin{table}[t]
+\centering\small
+\caption{Success@10 on the test split, with Success@1 in brackets. Each bucket
+has 640 test queries. The interval is a 95\% bootstrap interval for the
+benchmark score.}
+\label{tab:results}
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+\thead{Bucket} & \thead{LeanExplore} & \thead{LeanSearch} & \thead{Lean Finder} & \thead{Loogle} \\
+\midrule
+Names and keywords & 0.91 (0.52) & 0.93 (0.62) & 0.94 (0.75) & 0.07 (0.07) \\
+\rowrule
+Natural language & 0.86 (0.48) & 0.98 (0.72) & 0.98 (0.88) & 0.00 (0.00) \\
+\rowrule
+Formal & 0.54 (0.14) & 0.95 (0.68) & 0.96 (0.89) & 0.10 (0.10) \\
+\rowrule
+Real questions & 0.50 (0.27) & 0.77 (0.46) & 0.80 (0.56) & 0.00 (0.00) \\
+\midrule
+\textbf{Benchmark score} & \textbf{0.70 (0.35)} & \textbf{0.91 (0.62)} & \textbf{0.92 (0.77)} & \textbf{0.04 (0.04)} \\
+Success@10 interval & 0.69 to 0.72 & 0.90 to 0.92 & 0.91 to 0.93 & 0.04 to 0.05 \\
+Success@1 interval & 0.34 to 0.37 & 0.60 to 0.64 & 0.75 to 0.79 & 0.03 to 0.05 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{The ranking.} Table~\ref{tab:results} gives the scores. Lean
+Finder and LeanSearch find an answer in the first ten results for 92\% and
+91\% of queries, and their intervals overlap. They differ in where the answer
+lands: Lean Finder puts an answer first for 77\% of queries and LeanSearch for
+62\%. LeanExplore is behind both, at 70\% and 35\%. Loogle searches by name and
+pattern and is not built for most of these queries, and we include it as a
+reference point for the two forms that suit it.
+
+\paragraph{By bucket.} LeanExplore is within three points of the others on
+names and keywords at ten results, and twelve points behind on natural
+language. On formal queries it finds an answer for 54\% against 95\% and 96\%,
+and puts it first for 14\% against 68\% and 89\%. Real questions are the
+hardest bucket for every engine. The best engine answers 80\% of them, and for
+86 of the 640 no semantic engine returns an answer in ten results, against 19
+of the 1,920 written test queries.
+
+\paragraph{By form.} Figure~\ref{fig:forms} divides the buckets into forms.
+The bare name is the one form on which LeanExplore leads at ten results (0.89
+against 0.85 and 0.80), and Loogle answers 31\% of these, about the share that
+are full names typed without error. On proof states LeanExplore puts the answer first for 6\% of
+queries, against 65\% for LeanSearch and 90\% for Lean Finder. Proof states are one of
+the inputs that Lean Finder was built and evaluated
+for~\cite{lu2025leanfinder}, and
+LeanExplore searches over names and natural-language descriptions and not over
+statements.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{figures/forms.pdf}
+\caption{Scores by form on the test split. \code{question} is the real
+questions bucket. Loogle is left out.}
+\label{fig:forms}
+\end{figure}
+
+\paragraph{The effect of pooling.} Before pooling, the benchmark scores at
+ten results were 0.63, 0.85, 0.87, and 0.04. Pooling raised every engine and
+changed no ranking. It mattered most where labels were thinnest: on real
+questions LeanExplore rose from 0.33 to 0.50, LeanSearch from 0.58 to 0.77,
+and Lean Finder from 0.62 to 0.80. Scores from single-answer labels understate
+all engines, by different amounts.
+
+\paragraph{The effect of weighting.} Weighted by the shares of
+Table~\ref{tab:forms}, an earlier build of the written queries put the three
+semantic engines level on Mathlib, at 0.82 to 0.83 at ten results. The forms
+on which LeanExplore is weakest are the ones that its users rarely send it.
+With equal buckets the same engines are twenty points apart. The choice of
+weights decides the outcome, which is why we fix it by a rule that refers to
+no engine.
+
+%=====================================================================
+\section{Limitations}
+\label{sec:limitations}
+
+\paragraph{Labels come from language models.} Queries, acceptance, and pooled
+grades are all produced by language models, and no person has reviewed a
+sample. The writer and the first judge are from different families, but the
+pooled grades come from the family of the main writer. Language models are
+reported to agree with human assessors well enough to rank systems, but less
+well query by query~\cite{thomas2024llm,faggioli2023perspectives}. Graders also reported
+original labels that look generous or wrong, which we have not corrected.
+
+\paragraph{The pool covers four engines.} A new engine may return a valid
+answer that none of the four did, and it counts as a miss until it is judged.
+Pools are known to be robust to this for systems similar to those
+pooled~\cite{zobel1998reliable,buckley2004incomplete}, and less so for systems
+that are different in kind.
+
+\paragraph{The writer sees LeanExplore's descriptions.} The description shown
+to the writer is the one LeanExplore indexes, so written queries may share
+wording with its index. This favours LeanExplore in the first three buckets.
+The real questions bucket is free of it, and it is the bucket in which
+LeanExplore does worst relative to the others.
+
+\paragraph{The frame comes from one engine.} The eight forms and the lengths
+of written queries come from LeanExplore's traffic. The equal weighting
+removes the shares from the score but not the vocabulary of forms.
+
+\paragraph{Hosted engines are not pinned.} Each service was queried as it
+stood on the dates given and may change. We release the results so that the
+scores can be recomputed, but a later run of the same engine may differ.
+
+\paragraph{What the benchmark leaves out.} Every query has an answer, so it
+does not measure whether an engine can tell that nothing matches. It covers
+Mathlib alone, at one date. It also measures a single search and not the
+success of a person or agent who searches several times.
+
+%=====================================================================
+\section{Related work}
+
+\paragraph{Evaluations of Lean search engines.} LeanSearch was evaluated on
+50 queries written by its authors~\cite{gao2024leansearch}, and its second
+version on larger sets built for it~\cite{gao2026leansearchv2}. Lean Finder
+was evaluated on informalized statements, synthetic user queries, perturbed
+formal statements, and proof states, each with one gold declaration that must
+be matched exactly~\cite{lu2025leanfinder}. LeanExplore was evaluated on 300
+generated topical queries with no labelled answers, on which a language model
+ranked the engines~\cite{asher2025leanexplore}. Each set was built with the
+engine under test and fits its style of query. MIRB~\cite{ju2025mirb} collects
+mathematical retrieval tasks, some of them formal. Premise selection
+benchmarks~\cite{yang2023leandojo,tao2025premise} ask for the lemmas a proof
+uses given its goal, which is the task of our \code{goal} form with labels
+taken from proofs.
+
+\paragraph{Retrieval benchmarks.} BEIR~\cite{thakur2021beir} and
+MTEB~\cite{muennighoff2023mteb} showed that a ranking of retrieval models on
+one task does not carry over to another, and report an unweighted mean over
+tasks, as we do over buckets. CodeSearchNet~\cite{husain2019codesearchnet}
+derives queries from documentation, and CoSQA~\cite{huang2021cosqa} pairs
+real web queries with code. Our forms play the part of the query classes of
+web search~\cite{broder2002taxonomy}, read from the surface of the query.
+
+\paragraph{Test collections.} Pooling and the reuse of pooled judgments go
+back to the proposal of \citet{sparckjones1975pooling} and to
+TREC~\cite{voorhees2005trec}. Graded relevance follows
+\citet{jarvelin2002cumulated}. Language-model queries and judgments produce
+system rankings close to those of human
+collections~\cite{rahmani2024synthetic,thomas2024llm}, with the cautions of
+\citet{faggioli2023perspectives}.
+
+%=====================================================================
+\section{Conclusion}
+
+A benchmark for Lean declaration search has to decide which queries count,
+which declarations count, and which answers count, and each decision can
+favour an engine. We weight four kinds of search equally, admit only
+declarations that every engine indexes, and complete the answers by pooling.
+On 2,560 test queries Lean Finder and LeanSearch are close, and both are well
+ahead of LeanExplore, most of all on formal statements, proof states, and
+questions from real discussions. Weighted by LeanExplore's own traffic the
+three had looked level. Human review of a sample of labels and a track for
+queries with no answer are the next steps.
+
+{\small
+\bibliographystyle{plainnat}
+\bibliography{references}
+}
+
+\clearpage
+\appendix
+
+\section{Scores by form}
+\label{app:forms}
+
+Table~\ref{tab:byform} gives the numbers behind Figure~\ref{fig:forms}.
+
+\begin{table}[H]
+\centering\small
+\caption{Success@10 on the test split by form, with Success@1 in brackets.}
+\label{tab:byform}
+\begin{tabular}{@{}lrrrrr@{}}
+\toprule
+\thead{Form} & \thead{Queries} & \thead{LeanExplore} & \thead{LeanSearch} & \thead{Lean Finder} & \thead{Loogle} \\
+\midrule
+\code{name} & 128 & 0.89 (0.65) & 0.85 (0.72) & 0.80 (0.59) & 0.31 (0.31) \\
+\rowrule
+\code{names} & 64 & 0.88 (0.31) & 0.95 (0.42) & 0.94 (0.56) & 0.11 (0.05) \\
+\rowrule
+\code{names+keywords} & 192 & 0.92 (0.45) & 0.94 (0.61) & 0.97 (0.82) & 0.00 (0.00) \\
+\rowrule
+\code{keywords} & 256 & 0.93 (0.56) & 0.96 (0.63) & 0.99 (0.82) & 0.00 (0.00) \\
+\rowrule
+\code{prose} & 384 & 0.86 (0.50) & 0.98 (0.68) & 0.99 (0.86) & 0.00 (0.00) \\
+\rowrule
+\code{prose+names} & 256 & 0.87 (0.45) & 0.97 (0.77) & 0.98 (0.91) & 0.00 (0.00) \\
+\rowrule
+\code{formal} & 384 & 0.59 (0.20) & 0.95 (0.70) & 0.97 (0.88) & 0.16 (0.16) \\
+\rowrule
+\code{goal} & 256 & 0.46 (0.06) & 0.95 (0.65) & 0.96 (0.90) & 0.00 (0.00) \\
+\rowrule
+\code{question} & 640 & 0.50 (0.27) & 0.77 (0.45) & 0.80 (0.56) & 0.00 (0.00) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Searches by source}
+\label{app:sources}
+
+Table~\ref{tab:sources} divides the shares of Table~\ref{tab:forms} by where
+the search came from. The programmatic interface accounts for 77\% of
+searches, the website for 20\%, and the Model Context Protocol server for
+3\%.
+
+\begin{table}[H]
+\centering\small
+\caption{Share of LeanExplore searches in each form, by source. A dash means
+that fewer than ten searches were seen.}
+\label{tab:sources}
+\begin{tabular}{@{}lrrrrr@{}}
+\toprule
+\thead{Form} & \thead{All} & \thead{Website} & \thead{API} & \thead{MCP} & \thead{Median words} \\
+\midrule
+\code{name} & 5.5\% & 6.4\% & 4.2\% & 27.8\% & 1 \\
+\rowrule
+\code{names} & 1.5\% & 0.4\% & 1.7\% & 4.2\% & 2 \\
+\rowrule
+\code{names+keywords} & 22.7\% & 9.6\% & 26.4\% & 15.7\% & 5 \\
+\rowrule
+\code{keywords} & 26.2\% & 21.0\% & 28.0\% & 16.2\% & 6 \\
+\rowrule
+\code{prose} & 23.9\% & 46.2\% & 17.9\% & 26.3\% & 11 \\
+\rowrule
+\code{prose+names} & 17.0\% & 13.9\% & 18.2\% & 8.3\% & 10 \\
+\rowrule
+\code{formal} & 2.8\% & 2.6\% & 3.0\% & 1.6\% & 11 \\
+\rowrule
+\code{goal} & 0.4\% & -- & 0.5\% & -- & 12 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\end{document}

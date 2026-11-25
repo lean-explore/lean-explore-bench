@@ -6,45 +6,72 @@ Benchmarks for Lean 4 search engines.
 > unstable: interfaces, categories, data formats and numbers will change
 > without notice. Do not rely on it yet.
 
-Use this repository to evaluate Lean declaration search, compare retrieval
-stages and reranker configurations, and preserve reproducible evaluation
-contracts. Inspect [assisted-v2 results](docs/benchmark-assisted-v2.md), the
-[dataset card](docs/dataset-card.md) and the [manuscript](docs/preprint.md).
-Treat the reported labels as AI-assisted; independent human validation remains
-pending.
+The repository has three parts:
 
-The literature review behind the benchmark design is in
-[`docs/literature/`](docs/literature/README.md).
+- **The query mix**: a benchmark of 3,200 queries in four buckets of 800
+  (names and keywords, natural language, formal, and real questions from the
+  Lean Zulip), scored as the plain mean of the buckets. Inside the buckets are
+  the eight forms that real searches take (a name, several names, names with
+  keywords, keywords, prose, prose with names, formal statements, proof states). Queries are written to match the length
+  and style of real searches of each form, and every answer is a Mathlib
+  declaration that all engines index, so the score measures search and not
+  coverage. See [the query mix](docs/query-mix.md).
+- **The evaluation pilot**: a 50-query study of the LeanExplore pipeline,
+  stage by stage, with graded relevance labels. See the
+  [pilot report](docs/pilot-report.md).
+- **Query log analysis**: statistics on how people and agents search, computed
+  without exposing what they search for. See below.
 
-See [benchmark status](docs/benchmark-status.md) for what is ready, what has
-been checked and what remains before a validated benchmark release.
+## The query mix
 
-## Workflows
+`leb-mix` builds the mix from a LeanExplore corpus snapshot, sends it to
+search engines and scores the results by query type and by library.
 
-- [Offline reports and retrieval evaluation](tools/offline/README.md): Python-only
-  report building, local annotation, ranking metrics and paired comparisons.
+```sh
+pip install -e ".[dev]" -e tools/offline
+
+leb-mix profile  --log --to log-profile.json                # on the server that holds the log
+leb-mix generate --corpus lean_explore.db --out data/mix --style log-profile.json
+leb-mix zulip    --corpus lean_explore.db --out data/mix    # questions from the Lean Zulip
+leb-mix build    --corpus lean_explore.db --out data/mix    # assemble, split, export
+leb-mix compare  --reference log-profile.json --candidate mix-profile.json
+leb-mix run      --engine leanexplore --out data/mix        # also: leansearch, loogle, leanfinder
+leb-mix score    --engine leanexplore leansearch --out data/mix --weights log-profile.json
+```
+
+`profile` describes a set of queries by form and style using shares only, so a
+profile of the real log can leave the server. `compare` measures how far any
+query set is from it, and `score --weights` weights results by real traffic.
+
+`generate` and `zulip` call language models through OpenRouter and need
+`OPENROUTER_API_KEY`; both stop at a spending limit (`--budget`) and resume
+where they stopped. `zulip` also needs a `~/.zuliprc` for the Lean Zulip.
+Generated data is written under `data/`, which is not committed.
+
+## Documentation
+
+| Document | Contents |
+| --- | --- |
+| [Query mix](docs/query-mix.md) | Query forms, what real searches look like, how queries are written and checked, first results |
+| [Pilot report](docs/pilot-report.md) | The 50-query pilot: method, results, limits |
+| [Pilot dataset card](docs/pilot-dataset-card.md) | What the pilot data contains and where it lives |
+| [Evaluation protocol](docs/evaluation-protocol.md) | Relevance grades, metrics, splits, statistics |
+| [Human review](docs/human-review.md) | How to review labels; calibration decisions; open questions |
+| [Reproduction](docs/reproduction.md) | Recomputing the pilot scores; what is kept outside Git |
+| [Extraction and cache](docs/extraction-and-cache.md) | Verified metadata normalization and cache keys |
+| [Reranker training](docs/reranker-training.md) | A proposal; no training has been run |
+| [Search categories](docs/search-categories.md) | Query categories found in the search log |
+| [Generation design](docs/generation-design.md) | Plan for log-style synthetic queries |
+| [Literature review](docs/literature/README.md) | Background on search evaluation and Lean search engines |
+
+Tools with their own documentation:
+
+- [Offline evaluator](tools/offline/README.md): metrics, paired comparisons,
+  annotation and reports, in standard-library Python.
 - [Candidate selection experiments](experiments/candidate_selection/README.md):
-  runners and invented fixtures for retrieval ablations.
-- [Consolidation and publication scope](docs/benchmark-consolidation.md): source
-  provenance, preserved interfaces and external benchmark storage.
-
-Benchmark inputs, source records, annotations, hashes of inputs and measured
-outputs belong outside the repository. See the [preparation and review
-workflow](tools/offline/docs/benchmark-workflow.md).
-
-## Benchmark specifications
-
-- [Assisted-v2 results](docs/benchmark-assisted-v2.md)
-- [Dataset card](docs/dataset-card.md)
-- [Manuscript](docs/preprint.md)
-- [Assisted-v1 results](docs/benchmark-assisted-v1.md)
-- [Post-benchmark human review](docs/assisted-human-review.md)
-- [Methods and reporting](docs/benchmark-methods.md)
-- [Calibration decisions](docs/benchmark-review-questions-2026-11-06.md)
-- [Calibration review guide](docs/calibration-review-guide.md)
-- [Evaluation protocol](docs/evaluation-protocol.md)
-- [Reranker training specification](docs/reranker-training-specification.md)
-- [Extraction and cache contract](docs/extraction-boundary.md)
+  retrieval and reranking ablations on the local engine.
+- [Declaration metadata](experiments/declaration_metadata/README.md): the
+  metadata exporter, its Lean-checked normalization and the cache prototype.
 
 ## Query log analysis
 
@@ -58,7 +85,7 @@ number of categories that all reproduce on subsamples) and builds summary
 statistics and charts.
 Categories describe how people search, never what they search for.
 
-Keep real usage queries private. The Privacy Policy permits publishing only synthetic
+Real queries are private: our Privacy Policy allows publishing only synthetic
 queries and aggregate statistics. So the code is public, but it runs on the
 server that holds the log, decrypts in memory, and writes nothing that could
 reproduce a query:

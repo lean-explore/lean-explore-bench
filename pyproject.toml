@@ -39,6 +39,7 @@ dev = [
 
 [project.scripts]
 leb-querylog = "lean_explore_bench.cli:main"
+leb-mix = "lean_explore_bench.mix.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
@@ -66,7 +67,14 @@ python_version = "3.12"
 files = ["src", "tests"]
 
 [[tool.mypy.overrides]]
-module = ["datasketch.*", "plotly.*", "sentence_transformers.*", "sklearn.*", "umap.*"]
+module = [
+    "datasketch.*",
+    "leanexplore_benchmark.*",
+    "plotly.*",
+    "sentence_transformers.*",
+    "sklearn.*",
+    "umap.*",
+]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]

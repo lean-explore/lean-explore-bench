@@ -1,111 +1,103 @@
-# LeanExplore pilot evaluation protocol
+# Evaluation protocol
 
-Proposed protocol for the first two weeks. Freeze a numbered version after calibration. Record later changes and rerun affected development judgments. The final test follows the frozen version.
+This document describes how the LeanExplore pilot grades relevance and scores search engines. The
+rubric is still a draft: it has not been validated by independent human reviewers, and the results
+in the [pilot report](pilot-report.md) are engineering diagnostics, not a leaderboard.
 
-## What each case represents
+## Cases and queries
 
-A case is an information need, with query variants attached. Give it a source record, task-family ID, intended output, corpus scope and review status. Variants are not independent observations. Separate query form, intent, mathematical area, difficulty, provenance and answerability; they are different axes.
+A case is one information need with a documented interpretation. Its query variants stay attached
+to it and are not counted as independent observations. Query form, intent, mathematical area,
+difficulty, provenance and answerability are recorded as separate axes.
 
-| Primary query form | Initial development allocation if the pilot reaches 100 cases | Intended coverage |
-|---|---:|---|
-| Declaration name | 20 | Exact names, partial namespaces, spelling/case variants; distinguish exact lookup from requests for alternatives |
-| Keywords | 20 | Short mathematical terms and terse requests without a full sentence |
-| Natural-language prose | 20 | Explicit information needs, including assumptions and definitions |
-| Formula or formal statement | 20 | Lean or mathematical expressions, notation changes and fine mathematical distinctions |
-| Mixed text and code | 20 | Names/formulas combined with prose or relevant local hypotheses |
+Development cases are spread over five query forms: declaration name, keywords, natural-language
+prose, formula or formal statement, and mixed text and code. The planned allocation is 20 cases per
+form if the pilot reaches 100 cases. The balance exists for diagnostic coverage and says nothing
+about how often real users issue each form.
 
-Assign one primary form using a written tie-breaking rule; preserve secondary tags. Balance is for diagnostic coverage, not a claim about usage frequency. The old single-day log is dominated by one client; the later export also has channel and first-day biases. Neither determines a population mixture.
+## Relevance grades
 
-Aim to source no more than half the pilot from any one previously explored source tranche. Fill the rest with independently curated public tasks, including declaration-name needs and context-sensitive mathematical cases. This is a proposed quota to test during calibration. Cover several mathematical areas without letting one family generate most examples. Do not require a full Cartesian product of every axis.
+The reviewer settles the intended need before looking at candidates, then grades each
+query-document pair against the candidate's full statement.
 
-Proof-state premise selection, complete proof routes and verified no-answer tasks are separate diagnostic tracks. Add them only when their judgments and metrics are defined. They should not silently dilute the primary declaration-search score.
+| Grade | Meaning |
+|---:|---|
+| 3 | Directly satisfies the need, or is an equivalent result that is equally usable. |
+| 2 | Usable after a documented, reasonable adaptation, such as routine specialization of a more general result. |
+| 1 | Related or supporting, but not sufficient for the task. |
+| 0 | Irrelevant, or mathematically unusable under the stated assumptions. |
 
-## Source and generation rules
+Grades depend on the task. An exact-name query is graded as exact lookup unless its interpretation
+explicitly admits mathematical alternatives, and an explicit task restriction takes precedence over
+the general-result rule for grade 2. A pair whose relevance is uncertain is left unjudged.
 
-Keep previously explored synthetic queries development-only. Treat upstream answer-status flags as source annotations, not final benchmark correctness. Preserve the distinction between an original question, a synthetic reformulation and a proposed answer.
+## Answerability
 
-Generate question-derived queries from question-only inputs. Record the input actually shown to the generator; do not infer blinding from the absence of an exact target name. Declaration-to-query generation is a separate, explicitly synthetic source. Do not describe it as an observed user need.
+Whether a target exists in the pinned corpus is recorded separately from relevance. The statuses
+are: target present, target name absent, availability unresolved, and expert-reviewed absence of
+any adequate answer. A failed name lookup, a failed engine search or a negative pool does not show
+that no adequate answer exists, because an equivalent older result may be present. A repaired
+query becomes a new, answer-informed development variant; the original run and grades are not
+carried over to it.
 
-Audit generation exposure and query repairs as separate fields. Reconcile all categories against the total before reporting a blinding breakdown.
+## Pooling and review
 
-For every source, retain attribution and redistribution status. Keep private usage logs and their annotations out of the public collection. The source inventory and public release are separate products.
+Candidates are pooled from several first-stage retrieval channels and from selected final rankings,
+then deduplicated. Pools start from the top 10 results of each run plus proposed targets, which
+enter as candidates and not as accepted labels. Deeper candidates are audited where traces reveal
+a miss. Engine identity and rank are hidden from the reviewer.
 
-## Split and test reservation
+Current labels come from an assisted profile: an AI assistant proposed 402 grades and left 17
+pairs unresolved. Four earlier human decisions take precedence over them. No inter-rater agreement
+is reported, because no independent second review has been done.
+[Human review](human-review.md) describes how labels are corrected.
 
-Build grouping constraints from source thread, original request, paraphrases, declaration aliases/equivalents and theorem family. Use their connected components as split units and inspect oversized components. Record how theorem families were assigned; a name-prefix heuristic alone is insufficient.
+## Metrics
 
-Before tuning, reserve fresh sources intended to produce about 30 test cases outside previously explored sources and development families. Keep the reservation manifest separate from development inputs. The reservation is a starting tranche, not a claim that 30 cases establish a reliable leaderboard.
-
-Benchmark designers may fix form/domain strata, but model choices, prompts, training mixtures and thresholds must use development evidence only. If an affected test family informs those choices, reclassify it as development and replace it. Freeze test membership and judgments before the final comparison; do not repeatedly check test scores while iterating.
-
-For training experiments, hold out task and target families from supervised training examples, not from the searchable corpus. Test declarations must remain searchable. Compare cross-form transfer separately from cross-family transfer; different query styles are not automatically independent tasks.
-
-## Review and relevance
-
-Review the query's intended need before looking at suggested answers. Resolve target availability in the pinned corpus. Inspect assumptions, types, imports and alternative declarations. Keep candidate availability separate from whether any valid answer exists.
-
-For each query-document pair, record a relation such as direct answer, equivalent answer, usable specialization, supporting lemma, irrelevant or unresolved. Assign a grade according to the task:
-
-- 3: directly satisfies the need, including an equivalent result when equally usable.
-- 2: usable with documented, reasonable adaptation.
-- 1: related or supporting, but insufficient for this task by itself.
-- 0: irrelevant or mathematically unusable under the stated assumptions.
-
-These grades are not a universal ordering of theorem relations. A supporting lemma can satisfy a premise-selection task. Multi-premise routes need their own annotations and scoring.
-
-Use explicit statuses for target present, target name absent, unresolved availability and expert-reviewed absence of an adequate answer within the defined corpus/task. A newly introduced name, failed engine search or failed LLM judge does not prove absence of equivalent older results. Keep unknown relevance unjudged. For ranking calculations, disclose that the evaluator assigns unjudged documents zero gain; this does not establish irrelevance.
-
-Pool deduplicated candidates from diverse retrieval channels and selected reranked results. Start with top-10 outputs plus proposed answers; audit deeper candidates where traces reveal misses. Record pool depth and judged coverage. A 100-case pilot does not imply exhaustive judgments of all top-50 pools.
-
-Hide engine identity and rank during judgments. Preserve individual reviews before adjudication. Request independent second judgments on the ten calibration cases and a stratified subset of the remaining cases, sized from available reviewer hours. Report actual double-review counts and disagreements; do not fabricate agreement from a single assessor or use an LLM as a second human.
-
-## Metrics and reporting
-
-Reuse the existing evaluator: linear gain equals grade, binary relevance is grade at least 2. Use Success@1/5/10 and MRR@10 for known-item tasks; nDCG@10 for graded declaration search. For candidate generation, report Success@50/100 and recall of known relevant declarations at those cutoffs. Success means at least one acceptable answer; recall measures the fraction of known relevant answers retrieved.
-
-With incomplete judgments, recall is relative to known answers and oracle rankings are relative to judged candidates. Report Judged@10 and pool construction. Record unsupported cutoffs as unavailable. Preserve errors, timeouts and missing requests in operational denominators.
-
-Report per-form and per-intent results, a declared balanced summary, and independent family counts. Use family-grouped paired comparisons and uncertainty intervals. Prespecify a small comparison family; use Holm correction for confirmatory multiple tests or label additional analyses exploratory. Small pilot differences are not reliable model-selection guarantees.
-
-Separate query ambiguity, faulty labels, target absence, extraction/index omission, candidate-selection loss, reranker error, final-mixture regression and request failure. Record the first observed failure stage and any contributing causes.
-
-## Minimal experiment sequence
-
-| Experiment | Question | Controls and output |
+| Metric | Definition | Used for |
 |---|---|---|
-| E0, reproduction | Does the recorded baseline reproduce? | Corpus and model hashes, patches, seeds, hardware and settings; rankings plus stage traces |
-| E1, first-stage channels | Which channels add useful candidates? | Exact-name reference, lexical-only, dense-only and current fusion on one corpus; fixed final candidate budgets of 50/100; union overlap and marginal coverage |
-| E2, existing signals | What does dependency boosting contribute? | Separate pre-rerank boost from the dependency term after reranking; current mixture versus neural score alone on fixed candidates |
-| E3, mathematical inputs | Can models distinguish equations under the right assumptions? | Same query-candidate pairs; name/description, trusted formal statement, and combined input; embedding similarity versus reranker scores |
+| Success@1/5/10 | At least one acceptable answer (grade 2 or 3) in the top k. | Known-item tasks |
+| MRR@10 | Reciprocal rank of the first acceptable answer in the top 10. | Known-item tasks |
+| nDCG@10 | Graded ranking quality with linear gain equal to the grade. | Graded declaration search |
+| Success@50/100, Recall@50/100 | Recall is the fraction of known relevant declarations retrieved. | Candidate generation |
+| Judged@10 | Fraction of the top 10 that has a judgment. | Label coverage |
 
-E0 and E1 take priority. Run E2 and E3 as bounded diagnostics within the Week 2 budget. Do not expand into a full grid of methods, depths and models.
+Because judgments are incomplete, recall is relative to known answers. Judged@10 and pool depth
+are therefore reported next to every quality metric. Results are given per query form and per
+intent, together with a declared balanced summary.
 
-BM25+ appears in name retrieval and in the final informal-text mixture. Ablate these uses separately. A positive BM25+ score may reflect smoothing; use verified token overlap when testing lexical-match gates. A channel ablation does not establish whether BM25+ beats BM25: that requires matched documents, tokenization and parameters. Keep that controlled variant comparison optional.
+## Unjudged documents and failed requests
 
-Treat exact-name lookup as a scoped route respecting package/version filters. Treat a gate based on a word such as scheme as an untested routing hypothesis. Compare any routing rule with an unrestricted union and count the relevant candidates it excludes. Do not assume such gates are established mathematical-search practice.
+The evaluator gives an unjudged retrieved document zero gain. This is a computational convention
+and does not establish that the document is irrelevant. Judged@k divides by k, so short responses
+and unjudged results both lower it.
 
-For E3, use positive transformations such as valid bound-variable renaming and checked equivalent formulations; use reviewed near-misses involving quantifiers, hypotheses, types or inequality direction. A changed symbol is not automatically a negative. Keep a challenge-set score separate from ordinary retrieval accuracy.
+Every scheduled request stays in the denominator. Errors and timeouts are recorded as failures with
+no documents, and a query missing from a run counts as a failure, not as an exclusion. A cutoff
+deeper than the candidate lists an engine actually returned is reported as unavailable.
 
-The inspected reranker receives name plus informalization, without a separate formal-signature field. Formal-input experiments must include complete hypotheses and track truncation. Use existing trusted metadata for the bounded sample; a new general parser must not block the pilot.
+## Splits and leakage
 
-On fixed pools, compute the best ranking achievable from the judged candidates to distinguish missing-candidate failures from reranking headroom. Then check end-to-end behavior with the original request and cost budget. The final score currently mixes neural, lexical, dependency and fuzzy-name signals, so it is not a pure reranker measurement.
+Split units are the connected components of a grouping graph built from source thread, original
+request, paraphrases, declaration aliases and equivalents, and theorem family. These components
+are reported separately from mathematical families, which remain provisional: a component can
+merge tasks that are not one family.
 
-## Training plan after diagnosis
+All previously explored material is development-only. Test cases come from fresh sources reserved
+before tuning. Model choices, prompts, training mixtures and thresholds use development evidence
+only; a test family that informs any of them moves to development and is replaced. Held-out
+families are excluded from supervised training examples, but their declarations stay searchable.
 
-Specify the reranker input and desired notion of relevance first. Build positives and hard negatives from several retrieval channels, reviewing false negatives and equivalents. Hold source and theorem families out across train/dev/test; record generation model, prompt and revisions. Include a cross-bucket transfer experiment rather than tuning solely to the benchmark mixture.
+The pilot test set is a frozen set of 30 queries. Its eight prespecified configurations were run
+without tuning on test results, and the queries are now exposed. The two source documents disagree
+here: one records this run as complete, and the other says to report zero final test cases until
+family review is finished.
 
-Week 2 delivers a data and training specification, with a cost estimate. A full fine-tuning run is not required for the November benchmark paper.
+## Statistical comparison
 
-## Calibration addendum, 7 November
-
-The assistant review is complete as a proposal, with 402 graded pairs and 17 unresolved pairs. The scientific rubric remains a draft pending human calibration. Exact-name tasks retain exact lookup unless an interpretation explicitly permits mathematical alternatives. General results that satisfy the task after documented routine specialization receive grade 2; explicit task-specific restrictions take precedence. Distinguish an invalid query from a verified no-answer task. Preserve a repaired query as a new, answer-informed development variant; do not transfer the original run or grades silently.
-
-Generated declaration names require their own elaborated type. A parent definition, an adjacent declaration or a source span does not certify the generated candidate. Checks in another Lean environment are supporting evidence and retain that environment identity.
-
-Report split-connected components separately from proposed mathematical families. Adding review documents can merge components even when relevance grades remain unaccepted. This is conservative exposure accounting, not evidence that all merged tasks belong to one mathematical family.
-
-## Apply the assisted evaluation profile
-
-Use resolved AI proposals for descriptive evaluation under the assisted profile. Retain assessor provenance and state that independent human validation is pending. Give accepted human decisions precedence. Leave unresolved judgments unjudged and retain a human-review target for every pair and case. Do not infer unanswerability from a negative pool or treat assisted closure as independent scientific validation.
-
-The frozen 30-query test and its eight prespecified configurations were run without tuning from test results. Source exposure is recorded, and mathematical families remain provisional. The released queries are now exposed. See [the assisted results](benchmark-assisted-v1.md) and [the correction workflow](assisted-human-review.md).
+Comparisons are paired and grouped by family; the [offline tools](../tools/offline/README.md)
+provide group bootstrap intervals and a paired group-randomization test. The set of comparisons is
+small and fixed in advance. Confirmatory comparisons use the Holm correction, and any other
+analysis is labelled exploratory. Reports give the number of independent families alongside the
+number of queries. Small differences in the pilot are not a reliable basis for choosing between
+models.

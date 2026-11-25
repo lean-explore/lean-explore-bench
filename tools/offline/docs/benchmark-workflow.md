@@ -1,148 +1,89 @@
 # Benchmark preparation and review
 
-The workflow reads external benchmark inputs and writes external artifacts.
-The repository contains code and invented test fixtures. Keep queries, labels,
-provenance records, corpus inventories, fingerprints and measured runs outside
-Git checkouts. Outputs refuse existing directories.
+This workflow turns a file of benchmark cases into a scored evaluation: it checks the
+train/development/test split, exports candidates for blind grading, validates the grades and
+scores engine runs. All files are JSON and stay outside Git checkouts; the first four
+commands refuse an output directory that exists or lies inside a checkout.
 
-Run the CLI with an installed `tools/offline` package, or set
-`PYTHONPATH=tools/offline/src` and use `python -m leanexplore_benchmark`.
+The commands need the `tools/offline` package installed. Alternatively,
+`PYTHONPATH=tools/offline/src python -m leanexplore_benchmark` replaces `leq-bench`.
 
-## Inputs
+## Steps
 
-A corpus inventory has `corpus_revision`, a Boolean `complete`, and a
-`documents` object keyed by canonical document ID. Optional `aliases` map an
-equivalent ID directly to a canonical ID. Reject collisions and dangling aliases.
-Document evidence can contain `name`, `statement`, `context` and `module`.
-An incomplete inventory yields unresolved availability for missing IDs.
+1. Validate the cases and build the collection for one split.
 
-A benchmark input has `schema_version: 1`, `corpus_revision` and `cases`.
-Each case requires:
+   ```sh
+   leq-bench prepare --cases /external/cases.json --corpus /external/corpus.json \
+     --split development --out /external/prepared
+   ```
 
-- `id` and `query`;
-- `split`: train, development or test;
-- `form`: name, keywords, prose, formula or mixed;
-- `track`: human, agent or unknown, based on the query's provenance;
-- `links`: nonempty opaque source, original-request or theorem-family keys;
-- `family_reviewed` and `test_exposed`: explicit Booleans.
+   This writes `collection.json` (scorer input), `prepared.json` (the collection plus the
+   full case records) and `split-audit.json`.
 
-Optional `targets` are proposed document IDs. Optional `provenance` and
-generation metadata are preserved in the external sidecar. These fields do not
-become relevance labels. `answerability` defaults to unknown.
+2. Convert engine observations into a run.
 
-The grouping audit takes connected components of shared links, normalized query
-text and target identities, including aliases and reviewed documents. Text uses
-Unicode NFC and whitespace normalization, preserving case. Every component must
-have one split. Inspect large components: shared broad lemmas can over-connect
-tasks. The audit cannot discover an equivalence that nobody recorded.
+   ```sh
+   leq-bench adapt-run --observations /external/observations.json \
+     --collection /external/prepared/collection.json --corpus /external/corpus.json \
+     --name baseline --max-k 10 --out /external/adapted
+   ```
 
-Test cases require reviewed family assignments and no exposure to development.
-Reserve source and target families before generation or tuning. Hold test
-families out of training examples while retaining their declarations in the
-searchable corpus.
+   This writes `run.json`. A case without a record counts as a missing request.
 
-## Reviews and adjudication
+3. Export a candidate pool; `--run` may be repeated.
 
-Each entry in `reviews` contains `id`, `document_id`, `reviewer`,
-`assessor_type` (human or assistant), `status` (proposed, accepted or rejected),
-`grade` (integer 0..3 or null), `uncertain` and `reason`. Store assumptions,
-formal-check evidence and measured minutes with the record when available.
+   ```sh
+   leq-bench pool --prepared /external/prepared/prepared.json \
+     --corpus /external/corpus.json --run /external/adapted/run.json \
+     --depth 10 --seed 42 --out /external/review
+   ```
 
-Only explicitly accepted, resolved human judgments enter the scorer. This is a
-data contract, not authentication of a claimed assessor identity. Assistant
-proposals remain available for review. A missing target does not establish that
-the information need has no answer.
+   `packet.json` holds each query with its candidates (top results of every run, proposed
+   targets, judged documents) in seeded order. Ranks go to `pool-audit.json`. Test cases are
+   refused.
 
-Conflicting accepted labels require an entry in `adjudications`. It contains
-the same assessor, status, evidence and grade fields, plus `review_ids`
-referencing every accepted original label for that document. Original reviews
-remain in the sidecar. Agreement statistics require independently collected
-reviews; adjudication is not an independent second review.
+4. Validate an assessor's grades, then score.
 
-An unanswerable case requires an accepted `answerability_review` using the
-same assessor/status/uncertainty/reason fields. Its rationale must describe the
-searched corpus and task scope. Answerable cases need a relevant accepted grade.
-Unknown cases remain in operational denominators without relevance scores.
+   ```sh
+   leq-bench check-reviews --packet /external/review/packet.json \
+     --submission /external/assessor.json --out /external/validated-review
+   leq-bench evaluate --collection /external/prepared/collection.json \
+     --run /external/adapted/run.json --out /external/evaluation.json
+   ```
 
-## Commands
+   Validated grades remain proposals until they are entered in the case file as accepted
+   reviews and step 1 is repeated.
 
-Prepare one split:
+## Input files
 
-```sh
-leq-bench prepare --cases /external/cases.json --corpus /external/corpus.json \
-  --split development --out /external/prepared
-```
+| File | Contents |
+|---|---|
+| Corpus | `corpus_revision`, Boolean `complete`, `documents` keyed by ID (optional `name`, `statement`, `context`, `module`), optional `aliases` from equivalent to canonical IDs |
+| Cases | `schema_version: 1`, `corpus_revision`, `cases` |
+| Observations | `corpus_revision`, `records` with `id`, `status`, ranked `documents`, optional `latency_ms`, `cost_usd`, `abstained` |
+| Submission | `packet_sha256`, `reviewer`, `assessor_type`, `records` with `case_id`, `document_id`, `grade`, `uncertain`, `reason`, optional `minutes` |
 
-The output contains `collection.json`, `prepared.json` with the sidecar, and
-`split-audit.json`. Every scored document must resolve in the pinned inventory.
+Each case has `id`, `query`, `split` (train, development, test), `form` (name, keywords,
+prose, formula, mixed), `track` (human, agent, unknown), a nonempty list `links` of source or
+theorem-family keys, and Booleans `family_reviewed` and `test_exposed`. Optional fields are
+`targets`, `answerability` (default unknown), `reviews` and `adjudications`.
 
-Adapt observations:
+A review has `id`, `document_id`, `reviewer`, `assessor_type` (human or assistant), `status`
+(proposed, accepted, rejected), `grade` (0 to 3 or null), `uncertain` and `reason`.
 
-```sh
-leq-bench adapt-run --observations /external/observations.json \
-  --collection /external/prepared/collection.json --corpus /external/corpus.json \
-  --name baseline --max-k 10 --out /external/adapted
-```
+## Rules the code enforces
 
-Observations have `corpus_revision` and a `records` list. Each record has
-`id`, `status` and ranked `documents`; optional `latency_ms`, `cost_usd`
-and `abstained` follow the evaluator contract. Preserve errors and timeouts.
-Omitted scheduled cases remain missing requests. The adapter does not run an
-engine, infer relevance, or silently lower the requested retrieval depth.
+- Cases that share a link, normalized query text or target form one group, and a group must
+  lie in one split.
+- A test case needs `family_reviewed: true` and `test_exposed: false`.
+- Only accepted human reviews that are not uncertain become judgments. Proposed targets and
+  assistant reviews do not.
+- Conflicting accepted grades need an adjudication whose `review_ids` name every accepted
+  review of that document.
+- An unanswerable case needs an accepted `answerability_review`; an answerable case needs a
+  grade of at least 2.
 
-Export a candidate pool from one or more runs:
+## Limits
 
-```sh
-leq-bench pool --prepared /external/prepared/prepared.json \
-  --corpus /external/corpus.json --run /external/adapted/run.json \
-  --depth 10 --seed 42 --out /external/review
-```
-
-Use repeated `--run` arguments for different retrieval channels. The pool
-deduplicates canonical documents, adds proposed targets and accepted labels,
-and orders candidates by a seeded hash. `packet.json` contains the query and
-document evidence. `pool-audit.json` separately retains rank, run bindings and
-failure status. The development export refuses test cases.
-
-First assess the information need without the candidate list. Then grade the
-pairs while hiding rank and engine identity. Preserve unresolved labels.
-
-An assessor submission contains `packet_sha256`, `reviewer`,
-`assessor_type` and `records`. Each record contains `case_id`,
-`document_id`, `grade`, `uncertain`, `reason` and optional measured
-`minutes`. An uncertain record leaves its grade null.
-
-```sh
-leq-bench check-reviews --packet /external/review/packet.json \
-  --submission /external/assessor.json --out /external/validated-review
-leq-bench evaluate --collection /external/prepared/collection.json \
-  --run /external/adapted/run.json --out /external/evaluation.json
-```
-
-Review validation verifies packet identity and pairs, then preserves the
-submission as proposed. Acceptance and adjudication are explicit subsequent
-decisions in the external case input. Rebuild the collection after those decisions.
-
-## Calibration and reporting
-
-Use five primary forms with a written tie-break: a bare declaration identifier
-is a name; prose with essential code is mixed; a standalone mathematical or Lean
-statement is formula; a short non-sentential request is keywords; remaining
-natural-language requests are prose. Keep secondary tags. A formula containing
-its target's name is not a name-free representation test.
-
-Grade direct or equally usable equivalent answers as 3, answers requiring a
-documented reasonable adaptation as 2, insufficient supporting results as 1,
-and irrelevant or unusable results as 0. Check all hypotheses and types. A
-supporting lemma can be sufficient in a separately defined premise-selection
-task. Unknown is unjudged, not zero.
-
-Report query counts, distinct task-family counts and query-document judgment
-counts separately. Measure time for query assessment, pair judgments and
-adjudication. Estimate remaining work from those measurements; if they are
-missing, show scenarios rather than a claimed observed rate.
-
-Freeze a protocol revision after calibration. Record label corrections, retain
-the original submissions, and repeat affected development evaluations. Report
-judgment coverage with metrics. Limit method comparisons to a prespecified set
-and use family-grouped paired uncertainty estimates.
+The split audit cannot find an equivalence that nobody recorded. A missing target does not
+show that a query has no answer.
