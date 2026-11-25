@@ -4,6 +4,7 @@
 build directory. Engine results are read from and written to ``DIR/runs``.
 
     leb run   DIR --engine leanexplore
+    leb run   DIR --engine bm25 --corpus lean_explore.db
     leb score DIR --engine leanexplore --split test
 """
 
@@ -36,13 +37,24 @@ def read_profile(path: Path | None, group: str) -> dict[str, Any] | None:
     return value
 
 
+def _engine(args: argparse.Namespace) -> engines.Engine:
+    """Build the engine named on the command line."""
+    if args.engine in engines.ENGINES:
+        return engines.ENGINES[args.engine]()
+    if args.corpus is None:
+        raise SystemExit(f"{args.engine} runs on a corpus snapshot: pass --corpus")
+    from lean_explore_bench.engines.bm25 import BM25
+
+    return BM25(corpus=args.corpus)
+
+
 def _run(args: argparse.Namespace) -> None:
     records = [
         record
         for record in dataset.load_queries(args.directory)
         if args.split == "all" or record.split == args.split
     ]
-    engine = engines.ENGINES[args.engine]()
+    engine = _engine(args)
     path = args.directory / "runs" / f"{args.engine}.jsonl"
     results = engines.run(engine, records, path, limit=args.limit)
     failed = sum(results[record.id]["status"] != "ok" for record in records)
@@ -80,7 +92,9 @@ def _parser() -> argparse.ArgumentParser:
     splits = [*SPLITS, "all"]
     command = commands.add_parser("run", help="send every query to a search engine")
     command.add_argument("directory", type=Path, help="directory of the benchmark")
-    command.add_argument("--engine", choices=sorted(engines.ENGINES), required=True)
+    names = sorted([*engines.ENGINES, *engines.LOCAL_ENGINES])
+    command.add_argument("--engine", choices=names, required=True)
+    command.add_argument("--corpus", type=Path, help="corpus snapshot, for bm25")
     command.add_argument("--limit", type=int, default=10, help="results per query")
     command.add_argument("--split", choices=splits, default="all")
     command = commands.add_parser("score", help="score engine runs by bucket")

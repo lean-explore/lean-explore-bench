@@ -1,8 +1,8 @@
 """Reject data files from the Git index.
 
 The benchmark data is published as a dataset, not in this repository, and
-the search log it was styled on is private. Only source, documentation and
-the paper belong here.
+the search log it was styled on is private. Only source and documentation
+belong here.
 """
 
 from __future__ import annotations
@@ -23,8 +23,6 @@ DATA_DIRECTORIES = {
 }
 SUFFIXES = {
     "docs": {".md"},
-    "baselines": {".py"},
-    "paper": {".bib", ".gitignore", ".md", ".pdf", ".py", ".sty", ".tex"},
     "scripts": {".py"},
     "src": {".py"},
     "tests": {".py"},
@@ -32,7 +30,7 @@ SUFFIXES = {
 
 
 def allowed_path(name: str) -> bool:
-    """Allow source, documentation and paper files; data directories fail."""
+    """Allow source and documentation files; data directories fail."""
     path = Path(name)
     if set(path.parts) & DATA_DIRECTORIES:
         return False

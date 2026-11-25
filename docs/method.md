@@ -148,8 +148,10 @@ earlier pilot and could not be matched to a thread.
 
 A written query starts with one labelled answer, the declaration it was written
 from, although other declarations may answer it equally well. To correct this, the
-first ten results of four engines (LeanExplore, LeanSearch, Lean Finder and Loogle)
-were pooled for each query. Each engine's list was cut at its first labelled answer,
+first ten results of four engines were pooled for each query: LeanExplore,
+LeanSearch, Lean Finder and Loogle. Loogle searches by name and pattern and not by
+meaning, so it is not one of the engines compared, but its results were graded with
+the others. Each engine's list was cut at its first labelled answer,
 and candidates outside Mathlib or not established were removed.
 
 Claude Opus graded the 20,141 remaining candidates of 2,669 queries, seeing them in
@@ -191,13 +193,14 @@ leb-build contribute --corpus lean_explore.db --out data/v1 --queries contribute
 leb-build generate   --corpus lean_explore.db --out data/v1 --style log-profile.json \
                    --shape balanced --established january.db
 leb-build build      --corpus lean_explore.db --out data/v1 --shape balanced --established january.db
-leb run data/v1 --engine leanexplore
+leb run data/v1 --engine leanexplore                      # and the other hosted engines
+leb run data/v1 --engine bm25 --corpus lean_explore.db
 leb-build pool       --corpus lean_explore.db --out data/v1 --shape balanced --established january.db \
                    --until-answer --to tasks.jsonl
 leb-build pool       --corpus lean_explore.db --out data/v1 --grades grades.jsonl --judge NAME
 leb score data/v1 --engine leanexplore --split test
 leb-build export     --out data/v1 --to release --card docs/dataset-card.md \
-                   --engine leanexplore leansearch leanfinder loogle bm25
+                   --engine leanexplore leansearch leanfinder bm25
 ```
 
 `leb-build tasks` and `leb-build submit` export writing tasks for an agent and take its

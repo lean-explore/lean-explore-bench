@@ -16,20 +16,18 @@ on Hugging Face. This repository holds the code that builds, runs and scores it.
 
 ## Results
 
-Success@10 on the 2,560 test queries, with Success@1 in brackets. The four hosted
+Success@10 on the 2,560 test queries, with Success@1 in brackets. The three hosted
 engines were queried from 11 to 13 November 2026.
 
-| Bucket | Lean Finder | LeanSearch | LeanExplore | BM25 | Loogle |
-| --- | ---: | ---: | ---: | ---: | ---: |
-| Names and keywords | 0.94 (0.75) | 0.93 (0.62) | 0.91 (0.52) | 0.66 (0.29) | 0.07 (0.07) |
-| Natural language | 0.98 (0.88) | 0.98 (0.72) | 0.86 (0.48) | 0.41 (0.13) | 0.00 (0.00) |
-| Formal | 0.96 (0.89) | 0.95 (0.68) | 0.54 (0.14) | 0.75 (0.30) | 0.10 (0.10) |
-| Real questions | 0.80 (0.56) | 0.77 (0.45) | 0.50 (0.27) | 0.24 (0.10) | 0.00 (0.00) |
-| **Benchmark score** | **0.92 (0.77)** | **0.91 (0.62)** | **0.70 (0.35)** | **0.52 (0.20)** | **0.04 (0.04)** |
+| Bucket | Lean Finder | LeanSearch | LeanExplore | BM25 |
+| --- | ---: | ---: | ---: | ---: |
+| Names and keywords | 0.94 (0.75) | 0.93 (0.62) | 0.91 (0.52) | 0.66 (0.29) |
+| Natural language | 0.98 (0.88) | 0.98 (0.72) | 0.86 (0.48) | 0.41 (0.13) |
+| Formal | 0.96 (0.89) | 0.95 (0.68) | 0.54 (0.14) | 0.75 (0.30) |
+| Real questions | 0.80 (0.56) | 0.77 (0.45) | 0.50 (0.27) | 0.24 (0.10) |
+| **Benchmark score** | **0.92 (0.77)** | **0.91 (0.62)** | **0.70 (0.35)** | **0.52 (0.20)** |
 
 BM25 results were not graded for extra answers, so its scores are lower bounds.
-Loogle searches by name and pattern, so only bare names and some formal statements
-suit it.
 
 ## Score an engine
 
@@ -55,19 +53,21 @@ Tune only on the development split (640 queries). A new engine can return correc
 answers that are not labelled yet, and they count as misses until they are graded;
 [evaluation](docs/evaluation.md#adding-an-engine) explains how to grade them.
 
-`leb run bench --engine leanexplore` queries one of the engines that the package
-knows (`leanexplore`, `leansearch`, `leanfinder`, `loogle`). Scoring needs no
-dependency beyond Python 3.10.
+`leb run bench --engine leanexplore` queries one of the hosted engines that the
+package knows (`leanexplore`, `leansearch`, `leanfinder`). The BM25
+baseline runs locally: `pip install -e ".[bm25]"`, then
+`leb run bench --engine bm25 --corpus lean_explore.db`. To add an engine, add a
+module to `src/lean_explore_bench/engines/`. Scoring needs no dependency beyond
+Python 3.10.
 
 ## Layout
 
 | Path | Contents |
 | --- | --- |
 | `src/lean_explore_bench/` | Load the dataset, run engines, score them (`leb`) |
+| `src/lean_explore_bench/engines/` | One module per engine: `leanexplore`, `leansearch`, `leanfinder`, `bm25` |
 | `src/lean_explore_bench/builder/` | What made the benchmark (`leb-build`); not needed to use it |
-| `baselines/` | The BM25 baseline |
 | `docs/` | [Method](docs/method.md), [evaluation](docs/evaluation.md), [dataset card](docs/dataset-card.md) |
-| `paper/` | Draft of the paper |
 | `tests/` | Tests, in the same layout as the package |
 
 ## Privacy

@@ -29,8 +29,6 @@ configs:
         path: runs/leansearch.jsonl
       - split: leanfinder
         path: runs/leanfinder.jsonl
-      - split: loogle
-        path: runs/loogle.jsonl
       - split: bm25
         path: runs/bm25.jsonl
 ---
@@ -91,21 +89,21 @@ related but not enough. Grades 2 and 3 count as hits.
 ## Fields of `runs`
 
 One file per engine and one row per query: `id` and `documents`, the names of the
-ten declarations the engine returned, best first. LeanExplore, LeanSearch, Lean
-Finder and Loogle are the hosted services, queried from 11 to 13 November 2026. BM25
+ten declarations the engine returned, best first. LeanExplore, LeanSearch and Lean
+Finder are the hosted services, queried from 11 to 13 November 2026. BM25
 is a baseline over the name, documentation and source of every Mathlib declaration.
 
 ## Results
 
 Success@10 on the test split, with Success@1 in brackets.
 
-| Bucket | Lean Finder | LeanSearch | LeanExplore | BM25 | Loogle |
-| --- | ---: | ---: | ---: | ---: | ---: |
-| Names and keywords | 0.94 (0.75) | 0.93 (0.62) | 0.91 (0.52) | 0.66 (0.29) | 0.07 (0.07) |
-| Natural language | 0.98 (0.88) | 0.98 (0.72) | 0.86 (0.48) | 0.41 (0.13) | 0.00 (0.00) |
-| Formal | 0.96 (0.89) | 0.95 (0.68) | 0.54 (0.14) | 0.75 (0.30) | 0.10 (0.10) |
-| Real questions | 0.80 (0.56) | 0.77 (0.45) | 0.50 (0.27) | 0.24 (0.10) | 0.00 (0.00) |
-| **Benchmark score** | **0.92 (0.77)** | **0.91 (0.62)** | **0.70 (0.35)** | **0.52 (0.20)** | **0.04 (0.04)** |
+| Bucket | Lean Finder | LeanSearch | LeanExplore | BM25 |
+| --- | ---: | ---: | ---: | ---: |
+| Names and keywords | 0.94 (0.75) | 0.93 (0.62) | 0.91 (0.52) | 0.66 (0.29) |
+| Natural language | 0.98 (0.88) | 0.98 (0.72) | 0.86 (0.48) | 0.41 (0.13) |
+| Formal | 0.96 (0.89) | 0.95 (0.68) | 0.54 (0.14) | 0.75 (0.30) |
+| Real questions | 0.80 (0.56) | 0.77 (0.45) | 0.50 (0.27) | 0.24 (0.10) |
+| **Benchmark score** | **0.92 (0.77)** | **0.91 (0.62)** | **0.70 (0.35)** | **0.52 (0.20)** |
 
 BM25 results were not graded for extra answers, so its scores are lower bounds.
 
