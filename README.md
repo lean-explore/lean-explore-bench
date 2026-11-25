@@ -8,16 +8,17 @@ questions from Lean Zulip threads. The score is the mean of the four buckets.
 
 ## Results
 
-Share of test queries with a correct answer in the first ten results, and in
-brackets the share where the first result is correct.
+Each test query scores 1/n, where n is the position of the first correct result
+among the first ten, and 0 if there is none (MRR@10). In brackets, the share of
+queries where the first result is correct.
 
 | Bucket | Lean Finder | LeanSearch | LeanExplore | BM25 |
 | --- | ---: | ---: | ---: | ---: |
-| Names and keywords | 0.94 (0.75) | 0.93 (0.62) | 0.91 (0.52) | 0.66 (0.29) |
-| Natural language | 0.98 (0.88) | 0.98 (0.72) | 0.86 (0.48) | 0.41 (0.13) |
-| Formal | 0.96 (0.89) | 0.95 (0.68) | 0.54 (0.14) | 0.75 (0.30) |
-| Real questions | 0.80 (0.56) | 0.77 (0.45) | 0.50 (0.27) | 0.24 (0.10) |
-| **Score** | **0.92 (0.77)** | **0.91 (0.62)** | **0.70 (0.35)** | **0.52 (0.20)** |
+| Names and keywords | 0.82 (0.75) | 0.74 (0.62) | 0.66 (0.52) | 0.41 (0.29) |
+| Natural language | 0.93 (0.88) | 0.82 (0.72) | 0.63 (0.48) | 0.21 (0.13) |
+| Formal | 0.92 (0.89) | 0.79 (0.68) | 0.27 (0.14) | 0.46 (0.30) |
+| Real questions | 0.64 (0.56) | 0.56 (0.45) | 0.36 (0.27) | 0.14 (0.10) |
+| **Score** | **0.83 (0.77)** | **0.73 (0.62)** | **0.48 (0.35)** | **0.30 (0.20)** |
 
 The three hosted engines were queried from 11 to 13 November 2026.
 
