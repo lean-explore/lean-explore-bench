@@ -144,9 +144,12 @@ The full method is in the
 The dataset contains no search query from LeanExplore's users. The search log was
 used only for aggregate counts of query form and length.
 
-Thread queries are rewrites in new words. The dataset holds no text of any Zulip
-post and no author name; a query that repeats more than five consecutive words of a
-post was rejected. 210 queries carry a link to the public thread they came from.
+Thread queries are rewrites of requests made in public Lean Zulip threads. The
+dataset holds no author name and no post. Of the 781 thread queries that could be
+checked against their thread, 766 share at most five consecutive words with any
+post; the other 15 share a run of six to ten words, in every case a formula or a
+standard mathematical phrase. 210 queries carry a link to the public thread they
+came from.
 
 ## Limits
 

@@ -135,9 +135,15 @@ A thread query is kept when the judge grades at least one proposed answer 2 or 3
 Of the 1,807 contributed queries, 767 were accepted, and 177 of those are left out
 because their answers lie outside Mathlib or are not established.
 
-The benchmark contains no text of any post and no author name: a thread query that
-repeats more than five consecutive words of a post is rejected. Only the rewritten
-query, its graded answers and, where recorded, a link to the thread are stored.
+The benchmark holds no author name and no post: only the rewritten query, its graded
+answers and, where recorded, a link to the thread are stored. A thread query should
+not repeat more than five consecutive words of a post. The 210 queries of the first
+kind were rejected when they did. The 571 contributed queries that carry a message
+identifier were checked against their whole thread afterwards: 556 are within the
+limit, and 15 share a run of six to ten words with a post, in every case a formula
+or a standard mathematical phrase such as "universal property of the free
+commutative algebra". They are kept. The other 19 contributed queries come from an
+earlier pilot and could not be matched to a thread.
 
 ## Pooled answers
 

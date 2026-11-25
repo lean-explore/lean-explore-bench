@@ -233,9 +233,10 @@ which someone asks for a result and a reply names a declaration. A language
 model writes the search that the asker might have typed, using nothing from
 the replies. The declarations named in the replies are proposed answers, and
 the query is kept if the judge grades at least one of them 2 or 3. The
-benchmark contains no text of any post: a query that repeats more than five
-consecutive words of a message is rejected. \todo{515 queries are not yet
-checked against their thread.}
+benchmark contains no post and no author name. Of the 781 thread queries that
+could be checked against their thread, 766 share at most five consecutive
+words with any post. The other 15 share a run of six to ten words, in each
+case a formula or a standard mathematical phrase.
 
 \paragraph{Pooled answers.} A written query starts with one answer. To find
 the others we pooled the first ten results of four engines for each
