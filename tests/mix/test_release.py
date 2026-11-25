@@ -124,7 +124,14 @@ def test_export_writes_splits_and_runs_that_load_back(tmp_path: Path) -> None:
     }
     run = [json.loads(line) for line in (to / "runs" / "engine.jsonl").open()]
     assert [row["id"] for row in run] == ["a", "b", "t"]
-    assert run[0]["engine"] == "engine"
+    assert run[0] == {
+        "engine": "engine",
+        "id": "a",
+        "status": "ok",
+        "limit": 10,
+        "documents": ["Alpha.beta"],
+        "latency_ms": None,
+    }
     loaded = release.load_queries(to)
     assert sorted(record.id for record in loaded) == ["a", "b", "t"]
     assert release.load_queries(build) == sorted(records, key=lambda r: r.id)

@@ -154,7 +154,17 @@ def export(build: Path, to: Path, engines: Iterable[str]) -> dict[str, int]:
         missing = ids - set(results)
         if missing:
             raise ValueError(f"{engine} has no result for {len(missing)} queries")
-        rows = [{"engine": engine, **results[key]} for key in sorted(ids)]
+        rows = [
+            {
+                "engine": engine,
+                "id": key,
+                "status": results[key]["status"],
+                "limit": results[key]["limit"],
+                "documents": results[key]["documents"],
+                "latency_ms": results[key].get("latency_ms"),
+            }
+            for key in sorted(ids)
+        ]
         _write_rows(to / "runs" / f"{engine}.jsonl", rows)
         counts[f"runs/{engine}.jsonl"] = len(rows)
     return counts
